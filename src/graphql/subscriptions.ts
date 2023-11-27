@@ -13,10 +13,13 @@ export const onCreateGame = /* GraphQL */ `subscription OnCreateGame($filter: Mo
     id
     code
     players
+    playerTurn
     deck
     discardDeck
-    playerTurn
     status
+    rounds
+    currentRound
+    gameType
     createdAt
     updatedAt
     __typename
@@ -31,10 +34,13 @@ export const onUpdateGame = /* GraphQL */ `subscription OnUpdateGame($filter: Mo
     id
     code
     players
+    playerTurn
     deck
     discardDeck
-    playerTurn
     status
+    rounds
+    currentRound
+    gameType
     createdAt
     updatedAt
     __typename
@@ -49,10 +55,13 @@ export const onDeleteGame = /* GraphQL */ `subscription OnDeleteGame($filter: Mo
     id
     code
     players
+    playerTurn
     deck
     discardDeck
-    playerTurn
     status
+    rounds
+    currentRound
+    gameType
     createdAt
     updatedAt
     __typename

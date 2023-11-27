@@ -7,6 +7,7 @@ import { createGame } from "@/graphql/mutations";
 import { CreateGameInput } from "@/API";
 import { Amplify } from "aws-amplify";
 import amplifyconfig from "../amplifyconfiguration.json";
+import { Round } from "./types";
 Amplify.configure(amplifyconfig);
 
 const client = generateClient();
@@ -14,6 +15,30 @@ const client = generateClient();
 export default function Home() {
   const router = useRouter();
   const [playerName, setPlayerName] = useState("");
+
+  const rounds: Round[] = [
+    {
+      id: 0,
+      status: "in-progress",
+      score: {},
+      drawCount: 3,
+      roundWinner: -1,
+    },
+    {
+      id: 1,
+      status: "in-progress",
+      score: {},
+      drawCount: 4,
+      roundWinner: -1,
+    },
+    {
+      id: 2,
+      status: "in-progress",
+      score: {},
+      drawCount: 5,
+      roundWinner: -1,
+    },
+  ];
 
   const onCreateGame = async (e: any) => {
     e.preventDefault();
@@ -33,6 +58,9 @@ export default function Home() {
             discardDeck: JSON.stringify([]),
             playerTurn: 0,
             status: "open",
+            rounds: JSON.stringify(rounds),
+            currentRound: 0,
+            gameType: "grandma",
           } as CreateGameInput,
         },
       });

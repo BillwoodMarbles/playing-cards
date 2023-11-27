@@ -6,9 +6,12 @@ input AMPLIFY {
 type Game @model {
   id: ID!
   code: String!
-  players: AWSJSON
-  deck: AWSJSON
-  discardDeck: AWSJSON
-  playerTurn: Int
-  status: String
+  players: AWSJSON!
+  playerTurn: Int!
+  deck: AWSJSON!
+  discardDeck: AWSJSON!
+  status: String!
+  rounds: AWSJSON!
+  currentRound: Int!
+  gameType: String!
 }

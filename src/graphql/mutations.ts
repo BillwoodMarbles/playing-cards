@@ -16,10 +16,13 @@ export const createGame = /* GraphQL */ `mutation CreateGame(
     id
     code
     players
+    playerTurn
     deck
     discardDeck
-    playerTurn
     status
+    rounds
+    currentRound
+    gameType
     createdAt
     updatedAt
     __typename
@@ -37,10 +40,13 @@ export const updateGame = /* GraphQL */ `mutation UpdateGame(
     id
     code
     players
+    playerTurn
     deck
     discardDeck
-    playerTurn
     status
+    rounds
+    currentRound
+    gameType
     createdAt
     updatedAt
     __typename
@@ -58,10 +64,13 @@ export const deleteGame = /* GraphQL */ `mutation DeleteGame(
     id
     code
     players
+    playerTurn
     deck
     discardDeck
-    playerTurn
     status
+    rounds
+    currentRound
+    gameType
     createdAt
     updatedAt
     __typename

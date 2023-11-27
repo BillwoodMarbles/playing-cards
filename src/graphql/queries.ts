@@ -13,10 +13,13 @@ export const getGame = /* GraphQL */ `query GetGame($id: ID!) {
     id
     code
     players
+    playerTurn
     deck
     discardDeck
-    playerTurn
     status
+    rounds
+    currentRound
+    gameType
     createdAt
     updatedAt
     __typename
@@ -33,10 +36,13 @@ export const listGames = /* GraphQL */ `query ListGames(
       id
       code
       players
+      playerTurn
       deck
       discardDeck
-      playerTurn
       status
+      rounds
+      currentRound
+      gameType
       createdAt
       updatedAt
       __typename

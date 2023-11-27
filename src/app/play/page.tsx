@@ -10,26 +10,22 @@ import { Amplify } from "aws-amplify";
 import amplifyconfig from "../../amplifyconfiguration.json";
 import { updateGame } from "@/graphql/mutations";
 import CardComponent from "../components/Card";
-import { Card, GameStatus } from "../types";
+import { Card, Game, GameStatus, Player, PlayerAction, Round } from "../types";
 const client = generateClient();
 Amplify.configure(amplifyconfig);
 
-interface Player {
-  id: number;
-  name: string;
-  cards: Card[];
-  type: "host" | "player";
-}
-
-interface Game {
-  id: string;
-  code: string;
-  players: Player[];
-  deck: Card[];
-  discardDeck: Card[];
-  playerTurn: number;
-  status: GameStatus;
-}
+const playerActions: PlayerAction[] = [
+  {
+    type: "draw",
+    completed: false,
+    description: "Draw a card from the deck or discard pile",
+  },
+  {
+    type: "discard",
+    completed: false,
+    description: "Discard a card",
+  },
+];
 
 export default function Play() {
   const router = useRouter();
@@ -37,9 +33,12 @@ export default function Play() {
   const [gameCode, setGameCode] = useState<string | null>(null);
   const [playerName, setPlayerName] = useState("");
   const [playerId, setPlayerId] = useState("");
-  const [dealCount, setDealCount] = useState<number>(3);
   const [game, setGame] = useState<Game | null>(null);
   const [myPlayer, setMyPlayer] = useState<number | null>(null);
+
+  const currentAction = playerActions.find(
+    (action) => action.completed === false
+  );
 
   const onAddPlayer = (e: any) => {
     e.preventDefault();
@@ -71,6 +70,16 @@ export default function Play() {
     }
   };
 
+  const resetPlayerActions = () => {
+    playerActions.forEach((action) => {
+      action.completed = false;
+    });
+  };
+
+  const getCurrentPlayerAction = () => {
+    return playerActions.find((action) => action.completed === false);
+  };
+
   const onUpdateGameGQL = async (game: Game) => {
     try {
       await client.graphql({
@@ -84,6 +93,8 @@ export default function Play() {
             discardDeck: JSON.stringify(game.discardDeck),
             playerTurn: game.playerTurn,
             status: game.status,
+            rounds: JSON.stringify(game.rounds),
+            currentRound: game.currentRound,
           },
         },
       });
@@ -127,7 +138,6 @@ export default function Play() {
       const newGame = { ...game };
       newGame.status = "open";
       setGame(newGame);
-      setDealCount(3);
       onUpdateGameGQL(newGame);
     }
   };
@@ -139,6 +149,22 @@ export default function Play() {
         return player;
       }
     }
+  };
+
+  const initializeRound = (game: Game): Game => {
+    const newGame = { ...game };
+    newGame.deck = shuffleDeck(getNewDeck());
+    newGame.discardDeck = [];
+    newGame.players?.forEach((player) => {
+      player.cards = [];
+    });
+
+    // set round status to in-progress
+    const newRounds = [...newGame.rounds];
+    newRounds[newGame.currentRound].status = "in-progress";
+    newGame.rounds = newRounds;
+
+    return newGame;
   };
 
   const onStartGame = () => {
@@ -153,10 +179,11 @@ export default function Play() {
         return;
       }
 
-      const newGame = { ...game };
+      let newGame = { ...game };
       newGame.status = "in-progress";
+      newGame = initializeRound(newGame);
+
       setGame(newGame);
-      setDealCount(3);
       onUpdateGameGQL(newGame);
     }
   };
@@ -165,6 +192,30 @@ export default function Play() {
     if (game) {
       const newGame = { ...game };
       newGame.playerTurn = (newGame.playerTurn + 1) % newGame.players.length;
+      resetPlayerActions();
+      setGame(newGame);
+      onUpdateGameGQL(newGame);
+    }
+  };
+
+  const onClaimRound = () => {
+    if (game) {
+      const newGame = { ...game };
+      newGame.rounds[newGame.currentRound].roundWinner =
+        myPlayer !== null && myPlayer >= 0 ? myPlayer : -1;
+      newGame.playerTurn = (newGame.playerTurn + 1) % newGame.players.length;
+      resetPlayerActions();
+      setGame(newGame);
+      onUpdateGameGQL(newGame);
+    }
+  };
+
+  const onEndRound = () => {
+    if (game) {
+      let newGame = { ...game };
+      newGame.rounds[newGame.currentRound].status = "complete";
+      newGame.currentRound = (newGame.currentRound + 1) % newGame.rounds.length;
+      newGame = initializeRound(newGame);
       setGame(newGame);
       onUpdateGameGQL(newGame);
     }
@@ -173,20 +224,34 @@ export default function Play() {
   const onEndGame = () => {
     if (game) {
       const newGame = { ...game };
-      newGame.status = "finished";
+      newGame.status = "complete";
       setGame(newGame);
+    }
+  };
+
+  const onCompleteAction = () => {
+    if (currentAction) {
+      currentAction.completed = true;
     }
   };
 
   const onDrawCard = () => {
     if (isMyTurn()) {
       drawCardFromDeck();
+      onCompleteAction();
     }
   };
 
   const onDrawCardFromDiscardDeck = () => {
     if (isMyTurn()) {
       drawCardFromDiscardDeck();
+      onCompleteAction();
+    }
+  };
+
+  const getCurrnetRound = () => {
+    if (game) {
+      return game.rounds[game.currentRound];
     }
   };
 
@@ -194,13 +259,19 @@ export default function Play() {
     if (game) {
       const newGame = { ...game };
       newGame.deck = shuffleDeck(getNewDeck());
-      newGame.discardDeck = [];
       newGame.players?.forEach((player) => {
-        player.cards = newGame.deck.slice(0, dealCount);
-        newGame.deck = newGame.deck.slice(dealCount);
+        player.cards = newGame.deck.slice(0, getCurrnetRound()?.drawCount);
+        newGame.deck = newGame.deck.slice(getCurrnetRound()?.drawCount);
       });
+
+      // deal card to discard deck
+      const card = newGame.deck[0];
+      const newDeck = newGame.deck.slice(1);
+      newGame.deck = newDeck;
+      const newDiscardDeck = [card];
+      newGame.discardDeck = newDiscardDeck;
+
       setGame(newGame);
-      setDealCount(dealCount + 1);
       onUpdateGameGQL(newGame);
     }
   };
@@ -215,6 +286,8 @@ export default function Play() {
           (c) => c.id !== card.id
         );
         newGame.players[myPlayer!].cards = newPlayerCards;
+
+        onCompleteAction();
         setGame(newGame);
         onUpdateGameGQL(newGame);
       }
@@ -264,7 +337,6 @@ export default function Play() {
       const newGame = { ...game };
       newGame.deck = shuffleDeck(newGame.deck);
       setGame(newGame);
-      onUpdateGameGQL(newGame);
     }
   };
 
@@ -278,6 +350,9 @@ export default function Play() {
         deck: game.deck ? JSON.parse(game.deck) : [],
         discardDeck: game.discardDeck ? JSON.parse(game.discardDeck) : [],
         players: game.players ? JSON.parse(game.players) : [],
+        rounds: game.rounds ? JSON.parse(game.rounds) : [],
+        currentRound: game.currentRound || 0,
+        gameType: game.gameType || "standard",
       };
       return parsedGame;
     }
@@ -291,7 +366,6 @@ export default function Play() {
         query: onUpdateGame,
         variables: {
           filter: {
-            // Only receive Todo messages where the "type" field is "Personal"
             id: { eq: code },
           },
         },
@@ -306,6 +380,16 @@ export default function Play() {
       });
     } catch (err) {
       console.error("error subscribing to game updates", err);
+    }
+  };
+
+  const getCurrentRoundWinner = () => {
+    if (game) {
+      const round = game.rounds[game.currentRound];
+
+      if (round.roundWinner >= 0) {
+        return game.players[round.roundWinner].name;
+      }
     }
   };
 
@@ -346,7 +430,6 @@ export default function Play() {
 
   useEffect(() => {
     const code = searchParams.get("code");
-    const playerId = searchParams.get("player");
     setGameCode(code);
   }, [searchParams]);
 
@@ -431,11 +514,21 @@ export default function Play() {
             </>
           )}
 
-          <div className="flex justify-center px-4 py-2 rounded-md">
+          <div className="flex justify-center px-4 py-2 rounded-md flex-col items-center">
             {game && (
-              <strong>
-                {game.players[game.playerTurn]?.name}&lsquo;s Turn
-              </strong>
+              <>
+                <strong>
+                  {game.players[game.playerTurn]?.name}&lsquo;s Turn
+                </strong>
+
+                {getCurrentRoundWinner() && (
+                  <div className="text-center">
+                    <strong>Round Winner: {getCurrentRoundWinner()}</strong>
+                  </div>
+                )}
+
+                {isMyTurn() && getCurrentPlayerAction()?.description}
+              </>
             )}
           </div>
           <div className="flex items-center justify-center grow">
@@ -451,7 +544,9 @@ export default function Play() {
                           card={card}
                           onClick={() => onDrawCard()}
                           hidden
-                          disabled={!isMyTurn()}
+                          disabled={
+                            !isMyTurn() || currentAction?.type !== "draw"
+                          }
                         >
                           Draw
                         </CardComponent>
@@ -462,7 +557,8 @@ export default function Play() {
                   )}
                 </div>
                 <div className="w-24 mx-1">
-                  {game.discardDeck.length > 0 ? (
+                  {game.discardDeck.length > 0 &&
+                  game.discardDeck[game.discardDeck.length - 1] ? (
                     (() => {
                       const card = getCardSuitAndValue(
                         game.discardDeck[game.discardDeck.length - 1].id
@@ -472,7 +568,9 @@ export default function Play() {
                           key={card.id}
                           card={card}
                           onClick={() => onDrawCardFromDiscardDeck()}
-                          disabled={!isMyTurn()}
+                          disabled={
+                            !isMyTurn() || currentAction?.type !== "draw"
+                          }
                         />
                       );
                     })()
@@ -484,25 +582,26 @@ export default function Play() {
             )}
           </div>
 
-          {myPlayer !== null && (
+          {game.status === "in-progress" && myPlayer !== null && (
             <>
               <div className="pt-4 px-3 bg-slate-100 w-full">
                 {isMyTurn() && (
                   <div className="mb-6 flex justify-between">
-                    <div className="border-grey-200">
-                      <button
+                    <div className="border-grey-200 w-full">
+                      {/* <button
                         className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md"
                         onClick={shuffleCards}
                       >
                         Shuffle
-                      </button>
-                      <button
-                        className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md"
-                        onClick={onDealCardsToPlayers}
-                      >
-                        Deal
-                      </button>
-
+                      </button> */}
+                      {getCurrnetRound()?.status === "open" && (
+                        <button
+                          className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md"
+                          onClick={onDealCardsToPlayers}
+                        >
+                          Deal
+                        </button>
+                      )}
                       {/* {game.status === "in-progress" &&
                         getMyPlayer() &&
                         getMyPlayer()?.type === "host" && (
@@ -513,16 +612,34 @@ export default function Play() {
                             End Game
                           </button>
                         )} */}
+
+                      {!currentAction && (
+                        <>
+                          <button
+                            className="px-6 py-2 mb-2 mr-2 bg-red-300 rounded-md"
+                            onClick={onClaimRound}
+                          >
+                            GRANDMA!!!
+                          </button>
+
+                          <button
+                            className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md float-right"
+                            onClick={onEndTurn}
+                          >
+                            End Turn
+                          </button>
+                        </>
+                      )}
                     </div>
 
-                    <div>
+                    {/* <div>
                       <button
                         className="px-6 py-2 mb-2 mr-2 bg-red-300 rounded-md"
                         onClick={onEndTurn}
                       >
                         End Turn
                       </button>
-                    </div>
+                    </div> */}
                   </div>
                 )}
 
@@ -534,7 +651,9 @@ export default function Play() {
                           key={card.id}
                           card={card}
                           onClick={() => onDiscardCard(card)}
-                          disabled={!isMyTurn()}
+                          disabled={
+                            !isMyTurn() || currentAction?.type !== "discard"
+                          }
                         />
                       </>
                     );

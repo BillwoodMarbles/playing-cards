@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-cards-dev-191229-authRole",
+      "UnauthRoleArn": "arn:aws:iam::608217835991:role/amplify-cards-dev-191229-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::608217835991:role/amplify-cards-dev-191229-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-cards-dev-191229-deployment",
+      "UnauthRoleName": "amplify-cards-dev-191229-unauthRole",
+      "StackName": "amplify-cards-dev-191229",
+      "StackId": "arn:aws:cloudformation:us-east-1:608217835991:stack/amplify-cards-dev-191229/cdeb3a30-8cd2-11ee-ab75-124b4a2ff6a1",
+      "AmplifyAppId": "dnwipm93ty4f5"
+    },
+    "categories": {
+      "api": {
+        "cards": {}
+      }
+    }
+  }
+}

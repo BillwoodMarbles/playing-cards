@@ -358,7 +358,7 @@ export default function Play() {
   }, []);
 
   return (
-    <section className="w-full min-h-screen flex flex-col">
+    <>
       <div className="px-4 py-2 flex items-center w-full">
         <div className="w-1/4">Code: {gameCode}</div>
         <h1 className="text-2xl text-center grow">Grandma</h1>
@@ -403,7 +403,7 @@ export default function Play() {
 
           {game.players.length > 0 && (
             <>
-              <div className="p-3 bg-slate-100 mb-3">
+              <div className="p-3 bg-slate-100 mb-3 w-full">
                 <h2 className="text-sm text-center">Players</h2>
                 <ul className="flex justify-center">
                   {game.players.map((player) => {
@@ -417,6 +417,7 @@ export default function Play() {
                   })}
                 </ul>
               </div>
+
               {game.status === "open" &&
                 getMyPlayer() &&
                 getMyPlayer()?.type === "host" && (
@@ -437,9 +438,8 @@ export default function Play() {
               </strong>
             )}
           </div>
-
-          {game.status === "in-progress" && (
-            <div className="flex items-center justify-center grow">
+          <div className="flex items-center justify-center grow">
+            {game.status === "in-progress" && (
               <div className="flex mb-6 justify-center">
                 <div className="w-24 mx-1">
                   {game.deck.length > 0 ? (
@@ -481,12 +481,12 @@ export default function Play() {
                   )}
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {myPlayer !== null && (
             <>
-              <div className="pt-4 px-3 bg-slate-100">
+              <div className="pt-4 px-3 bg-slate-100 w-full">
                 {isMyTurn() && (
                   <div className="mb-6 flex justify-between">
                     <div className="border-grey-200">
@@ -545,6 +545,6 @@ export default function Play() {
           )}
         </>
       )}
-    </section>
+    </>
   );
 }

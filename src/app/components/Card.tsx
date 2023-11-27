@@ -34,7 +34,6 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 const Card: FC<CardProps> = ({ card, hidden, children, disabled, onClick }) => {
   const getBackgroundClass = () => {
     if (!card) {
-      console.log("no card");
       return "bg-gray-100";
     } else if (hidden) {
       return "bg-red-300";

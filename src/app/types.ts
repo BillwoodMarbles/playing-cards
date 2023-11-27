@@ -10,6 +10,7 @@ export interface Round {
   score: any;
   drawCount: number;
   roundWinner: number;
+  dealer: number;
 }
 
 export interface Player {

@@ -23,6 +23,7 @@ export default function Home() {
       score: {},
       drawCount: 3,
       roundWinner: -1,
+      dealer: -1,
     },
     {
       id: 1,
@@ -30,6 +31,7 @@ export default function Home() {
       score: {},
       drawCount: 4,
       roundWinner: -1,
+      dealer: -1,
     },
     {
       id: 2,
@@ -37,6 +39,7 @@ export default function Home() {
       score: {},
       drawCount: 5,
       roundWinner: -1,
+      dealer: -1,
     },
   ];
 

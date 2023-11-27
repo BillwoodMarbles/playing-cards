@@ -11,8 +11,36 @@ import amplifyconfig from "../../amplifyconfiguration.json";
 import { updateGame } from "@/graphql/mutations";
 import CardComponent from "../components/Card";
 import { Card, Game, GameStatus, Player, PlayerAction, Round } from "../types";
+import { get } from "http";
 const client = generateClient();
 Amplify.configure(amplifyconfig);
+
+const gameRounds: Round[] = [
+  {
+    id: 0,
+    status: "in-progress",
+    score: {},
+    drawCount: 3,
+    roundWinner: -1,
+    dealer: -1,
+  },
+  {
+    id: 1,
+    status: "in-progress",
+    score: {},
+    drawCount: 4,
+    roundWinner: -1,
+    dealer: -1,
+  },
+  {
+    id: 2,
+    status: "in-progress",
+    score: {},
+    drawCount: 5,
+    roundWinner: -1,
+    dealer: -1,
+  },
+];
 
 const playerActions: PlayerAction[] = [
   {
@@ -35,6 +63,7 @@ export default function Play() {
   const [playerId, setPlayerId] = useState("");
   const [game, setGame] = useState<Game | null>(null);
   const [myPlayer, setMyPlayer] = useState<number | null>(null);
+  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 
   const currentAction = playerActions.find(
     (action) => action.completed === false
@@ -134,9 +163,19 @@ export default function Play() {
   };
 
   const onNewGame = () => {
+    // reset game
     if (game) {
       const newGame = { ...game };
+      newGame.deck = [];
+      newGame.discardDeck = [];
+      newGame.playerTurn = 0;
       newGame.status = "open";
+      newGame.rounds = gameRounds;
+      newGame.currentRound = 0;
+      newGame.gameType = "grandma";
+      newGame.players?.forEach((player) => {
+        player.cards = [];
+      });
       setGame(newGame);
       onUpdateGameGQL(newGame);
     }
@@ -161,8 +200,15 @@ export default function Play() {
 
     // set round status to in-progress
     const newRounds = [...newGame.rounds];
-    newRounds[newGame.currentRound].status = "in-progress";
+    newRounds[newGame.currentRound].status = "open";
+
+    // if first round set dealer to host player
+    newRounds[newGame.currentRound].dealer =
+      newGame.currentRound % newGame.players.length;
+
     newGame.rounds = newRounds;
+
+    newGame.playerTurn = (newGame.currentRound + 1) % newGame.players.length;
 
     return newGame;
   };
@@ -191,7 +237,15 @@ export default function Play() {
   const onEndTurn = () => {
     if (game) {
       const newGame = { ...game };
-      newGame.playerTurn = (newGame.playerTurn + 1) % newGame.players.length;
+      const nextPlayer = (newGame.playerTurn + 1) % newGame.players.length;
+      newGame.playerTurn = nextPlayer;
+
+      if (getCurrentRoundWinner()) {
+        if (newGame.players[nextPlayer].name === getCurrentRoundWinner()) {
+          newGame.rounds[newGame.currentRound].status = "complete";
+        }
+      }
+
       resetPlayerActions();
       setGame(newGame);
       onUpdateGameGQL(newGame);
@@ -210,22 +264,13 @@ export default function Play() {
     }
   };
 
-  const onEndRound = () => {
+  const onStartNewRound = () => {
     if (game) {
       let newGame = { ...game };
-      newGame.rounds[newGame.currentRound].status = "complete";
       newGame.currentRound = (newGame.currentRound + 1) % newGame.rounds.length;
       newGame = initializeRound(newGame);
       setGame(newGame);
       onUpdateGameGQL(newGame);
-    }
-  };
-
-  const onEndGame = () => {
-    if (game) {
-      const newGame = { ...game };
-      newGame.status = "complete";
-      setGame(newGame);
     }
   };
 
@@ -270,6 +315,11 @@ export default function Play() {
       newGame.deck = newDeck;
       const newDiscardDeck = [card];
       newGame.discardDeck = newDiscardDeck;
+
+      // set round status to in-progress
+      const newRounds = [...newGame.rounds];
+      newRounds[newGame.currentRound].status = "in-progress";
+      newGame.rounds = newRounds;
 
       setGame(newGame);
       onUpdateGameGQL(newGame);
@@ -332,13 +382,8 @@ export default function Play() {
     return { suit, value, id };
   };
 
-  const shuffleCards = () => {
-    if (game) {
-      const newGame = { ...game };
-      newGame.deck = shuffleDeck(newGame.deck);
-      setGame(newGame);
-    }
-  };
+  console.log(getCurrnetRound(), myPlayer);
+  console.log(game?.status);
 
   const parseGameData = (game: any) => {
     if (game) {
@@ -421,6 +466,72 @@ export default function Play() {
     }
   };
 
+  const getNotifcations = () => {
+    const notifications = [];
+
+    if (game?.status === "open") {
+      if (game.players.length < 2) {
+        notifications.push(
+          <div className="text-center">Waiting for players...</div>
+        );
+      } else {
+        if (getMyPlayer()?.type === "host") {
+          notifications.push(<div className="text-center">Ready to start</div>);
+        } else {
+          notifications.push(
+            <div className="text-center">Waiting for host to start</div>
+          );
+        }
+      }
+    } else if (game?.status === "in-progress") {
+      if (getCurrnetRound()?.status === "complete") {
+        if (isLastRound()) {
+          notifications.push(<div className="text-center">Game Over</div>);
+        } else {
+          notifications.push(
+            <div className="text-center">
+              Round Over. Waiting for host to start new round
+            </div>
+          );
+        }
+      } else if (getCurrnetRound()?.status === "open") {
+        if (getCurrnetRound()?.dealer === myPlayer) {
+          notifications.push(<div className="text-center">Ready to deal</div>);
+        } else {
+          notifications.push(
+            <div className="text-center">Waiting for dealer</div>
+          );
+        }
+      } else {
+        if (getCurrentRoundWinner()) {
+          notifications.push(
+            <div className="text-center">
+              GRANDMA!!! - {getCurrentRoundWinner()}
+            </div>
+          );
+        }
+
+        if (isMyTurn()) {
+          notifications.push(getCurrentPlayerAction()?.description);
+        } else {
+          notifications.push(
+            <div className="text-center">
+              {game.players[game.playerTurn]?.name}&lsquo;s Turn
+            </div>
+          );
+        }
+      }
+    }
+
+    return notifications;
+  };
+
+  const isLastRound = () => {
+    if (game) {
+      return game.currentRound === game.rounds.length - 1;
+    }
+  };
+
   useEffect(() => {
     if (gameCode) {
       getGameByCode(gameCode);
@@ -444,20 +555,17 @@ export default function Play() {
     <>
       <div className="px-4 py-2 flex items-center w-full">
         <div className="w-1/4">Code: {gameCode}</div>
-        <h1 className="text-2xl text-center grow">Grandma</h1>
+        <h1 className="text-2xl text-center grow">
+          Grandma (
+          {getCurrnetRound() && getCurrnetRound()!.id >= 0
+            ? getCurrnetRound()!.id + 1
+            : "-"}{" "}
+          of {game?.rounds.length})
+        </h1>
         <div className="w-1/4 text-right">
           <h2>{getPlayerName(playerId)}</h2>
         </div>
       </div>
-
-      {!game && (
-        <button
-          className="px-6 py-2 mb-5 bg-blue-300 rounded-md"
-          onClick={onNewGame}
-        >
-          New Game
-        </button>
-      )}
 
       {game && (
         <>
@@ -500,168 +608,180 @@ export default function Play() {
                   })}
                 </ul>
               </div>
+            </>
+          )}
 
-              {game.status === "open" &&
-                getMyPlayer() &&
-                getMyPlayer()?.type === "host" && (
+          <div className="flex justify-center px-4 py-2 rounded-md flex-col items-center">
+            {getNotifcations().map((notification) => notification)}
+          </div>
+
+          <div className="flex items-center justify-center grow">
+            {game.status === "in-progress" && (
+              <>
+                {getCurrnetRound()?.status === "complete" && (
+                  <div>
+                    <h2 className="text-center">
+                      Round Winner: {getCurrentRoundWinner()}
+                    </h2>
+                    <div className="flex justify-center w-full flex-wrap pr-14">
+                      {game.players[getCurrnetRound()!.roundWinner].cards.map(
+                        (card, index) => {
+                          return (
+                            <>
+                              <CardComponent
+                                key={card.id}
+                                card={card}
+                                disabled
+                              />
+                            </>
+                          );
+                        }
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {getCurrnetRound()?.status === "in-progress" && (
+                  <div className="flex mb-6 justify-center">
+                    <div className="w-24 mx-1">
+                      {game.deck.length > 0 ? (
+                        (() => {
+                          const card = getCardSuitAndValue(game.deck[0].id);
+                          return (
+                            <CardComponent
+                              key={card.id}
+                              card={card}
+                              onClick={() => onDrawCard()}
+                              hidden
+                              disabled={
+                                !isMyTurn() || currentAction?.type !== "draw"
+                              }
+                            >
+                              Draw
+                            </CardComponent>
+                          );
+                        })()
+                      ) : (
+                        <CardComponent disabled />
+                      )}
+                    </div>
+                    <div className="w-24 mx-1">
+                      {game.discardDeck.length > 0 &&
+                      game.discardDeck[game.discardDeck.length - 1] ? (
+                        (() => {
+                          const card = getCardSuitAndValue(
+                            game.discardDeck[game.discardDeck.length - 1].id
+                          );
+                          return (
+                            <CardComponent
+                              key={card.id}
+                              card={card}
+                              onClick={() => onDrawCardFromDiscardDeck()}
+                              disabled={
+                                !isMyTurn() || currentAction?.type !== "draw"
+                              }
+                            />
+                          );
+                        })()
+                      ) : (
+                        <CardComponent disabled />
+                      )}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          <div className="pt-4 px-3 bg-slate-100 w-full">
+            {getCurrnetRound()?.status === "complete" && !isLastRound() && (
+              <div className="flex mb-6 justify-center">
+                <button
+                  className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md"
+                  onClick={onStartNewRound}
+                >
+                  Start New Round
+                </button>
+              </div>
+            )}
+
+            {getCurrnetRound()?.status === "complete" && isLastRound() && (
+              <div className="flex mb-6 justify-center">
+                <button
+                  className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md"
+                  onClick={onNewGame}
+                >
+                  New Game
+                </button>
+              </div>
+            )}
+
+            {game.status === "open" &&
+              getMyPlayer() &&
+              getMyPlayer()?.type === "host" &&
+              game.players.length >= 2 && (
+                <div className="flex justify-center">
                   <button
                     className="px-6 py-2 mb-5 bg-blue-300 rounded-md"
                     onClick={onStartGame}
                   >
                     Start Game
                   </button>
-                )}
-            </>
-          )}
-
-          <div className="flex justify-center px-4 py-2 rounded-md flex-col items-center">
-            {game && (
-              <>
-                <strong>
-                  {game.players[game.playerTurn]?.name}&lsquo;s Turn
-                </strong>
-
-                {getCurrentRoundWinner() && (
-                  <div className="text-center">
-                    <strong>Round Winner: {getCurrentRoundWinner()}</strong>
-                  </div>
-                )}
-
-                {isMyTurn() && getCurrentPlayerAction()?.description}
-              </>
-            )}
-          </div>
-          <div className="flex items-center justify-center grow">
-            {game.status === "in-progress" && (
-              <div className="flex mb-6 justify-center">
-                <div className="w-24 mx-1">
-                  {game.deck.length > 0 ? (
-                    (() => {
-                      const card = getCardSuitAndValue(game.deck[0].id);
-                      return (
-                        <CardComponent
-                          key={card.id}
-                          card={card}
-                          onClick={() => onDrawCard()}
-                          hidden
-                          disabled={
-                            !isMyTurn() || currentAction?.type !== "draw"
-                          }
-                        >
-                          Draw
-                        </CardComponent>
-                      );
-                    })()
-                  ) : (
-                    <CardComponent disabled />
-                  )}
                 </div>
-                <div className="w-24 mx-1">
-                  {game.discardDeck.length > 0 &&
-                  game.discardDeck[game.discardDeck.length - 1] ? (
-                    (() => {
-                      const card = getCardSuitAndValue(
-                        game.discardDeck[game.discardDeck.length - 1].id
-                      );
-                      return (
-                        <CardComponent
-                          key={card.id}
-                          card={card}
-                          onClick={() => onDrawCardFromDiscardDeck()}
-                          disabled={
-                            !isMyTurn() || currentAction?.type !== "draw"
-                          }
-                        />
-                      );
-                    })()
-                  ) : (
-                    <CardComponent disabled />
-                  )}
+              )}
+
+            {getCurrnetRound()?.status === "open" &&
+              getCurrnetRound()?.dealer === myPlayer && (
+                <div className="flex justify-center">
+                  <button
+                    className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md"
+                    onClick={onDealCardsToPlayers}
+                  >
+                    Deal
+                  </button>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
 
-          {game.status === "in-progress" && myPlayer !== null && (
-            <>
-              <div className="pt-4 px-3 bg-slate-100 w-full">
-                {isMyTurn() && (
-                  <div className="mb-6 flex justify-between">
-                    <div className="border-grey-200 w-full">
-                      {/* <button
-                        className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md"
-                        onClick={shuffleCards}
-                      >
-                        Shuffle
-                      </button> */}
-                      {getCurrnetRound()?.status === "open" && (
-                        <button
-                          className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md"
-                          onClick={onDealCardsToPlayers}
-                        >
-                          Deal
-                        </button>
-                      )}
-                      {/* {game.status === "in-progress" &&
-                        getMyPlayer() &&
-                        getMyPlayer()?.type === "host" && (
-                          <button
-                            className="px-6 py-2 mb-2 mr-2 float-right bg-red-300 rounded-md"
-                            onClick={onEndGame}
-                          >
-                            End Game
-                          </button>
-                        )} */}
-
-                      {!currentAction && (
-                        <>
-                          <button
-                            className="px-6 py-2 mb-2 mr-2 bg-red-300 rounded-md"
-                            onClick={onClaimRound}
-                          >
-                            GRANDMA!!!
-                          </button>
-
-                          <button
-                            className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md float-right"
-                            onClick={onEndTurn}
-                          >
-                            End Turn
-                          </button>
-                        </>
-                      )}
-                    </div>
-
-                    {/* <div>
+            {game.status === "in-progress" && isMyTurn() && (
+              <div className="mb-6 flex justify-center">
+                {!currentAction && (
+                  <>
+                    {!getCurrentRoundWinner() && (
                       <button
                         className="px-6 py-2 mb-2 mr-2 bg-red-300 rounded-md"
-                        onClick={onEndTurn}
+                        onClick={onClaimRound}
                       >
-                        End Turn
+                        GRANDMA!!!
                       </button>
-                    </div> */}
-                  </div>
+                    )}
+                    <button
+                      className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md float-right"
+                      onClick={onEndTurn}
+                    >
+                      End Turn
+                    </button>
+                  </>
                 )}
-
-                <div className="flex justify-center w-full flex-wrap pr-14 overflow-hidden">
-                  {game.players[myPlayer!].cards.map((card, index) => {
-                    return (
-                      <>
-                        <CardComponent
-                          key={card.id}
-                          card={card}
-                          onClick={() => onDiscardCard(card)}
-                          disabled={
-                            !isMyTurn() || currentAction?.type !== "discard"
-                          }
-                        />
-                      </>
-                    );
-                  })}
-                </div>
               </div>
-            </>
-          )}
+            )}
+
+            <div className="flex justify-center w-full flex-wrap pr-14 overflow-hidden">
+              {game.players[myPlayer!]?.cards?.map((card, index) => {
+                return (
+                  <>
+                    <CardComponent
+                      key={card.id}
+                      card={card}
+                      onClick={() => onDiscardCard(card)}
+                      disabled={
+                        !isMyTurn() || currentAction?.type !== "discard"
+                      }
+                    />
+                  </>
+                );
+              })}
+            </div>
+          </div>
         </>
       )}
     </>

@@ -57,8 +57,6 @@ export default function Play() {
       setGame(newGame);
       setPlayerId(newPlayer.name);
       setMyPlayer(newPlayer.id);
-
-      // add player id to next router url
       onUpdateGameGQL(newGame);
       router.push(`/play?code=${game?.code}&player=${newPlayer.name}`);
     }

@@ -31,32 +31,22 @@ function useOutsideAlerter(ref: any) {
     };
   }, [ref]);
 }
-const gameRounds: Round[] = [
-  {
-    id: 0,
-    status: "in-progress",
-    score: {},
-    drawCount: 3,
-    roundWinner: -1,
-    dealer: -1,
-  },
-  {
-    id: 1,
-    status: "in-progress",
-    score: {},
-    drawCount: 4,
-    roundWinner: -1,
-    dealer: -1,
-  },
-  {
-    id: 2,
-    status: "in-progress",
-    score: {},
-    drawCount: 5,
-    roundWinner: -1,
-    dealer: -1,
-  },
-];
+
+const buildDefaultRounds = () => {
+  const rounds: Round[] = [];
+  for (let i = 0; i < 10; i++) {
+    rounds.push({
+      id: i,
+      status: "open",
+      score: {},
+      drawCount: i + 3,
+      roundWinner: -1,
+      dealer: -1,
+    });
+  }
+  return rounds;
+};
+const gameRounds = buildDefaultRounds();
 
 const playerActions: PlayerAction[] = [
   {

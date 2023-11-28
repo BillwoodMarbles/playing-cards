@@ -58,10 +58,6 @@ const gameRounds: Round[] = [
   },
 ];
 
-interface PlayerCard extends Card {
-  order: number;
-}
-
 const playerActions: PlayerAction[] = [
   {
     type: "draw",
@@ -163,13 +159,23 @@ export default function Play() {
   };
 
   const getNewDeck = () => {
+    const cardsPerDeck = 52;
+    const deckCount = 2;
     const newDeck = [];
-    for (let i = 0; i < 52; i++) {
-      newDeck.push({ id: i, suit: Math.floor(i / 13), value: i % 13 });
+    for (let i = 0; i < deckCount; i++) {
+      for (let j = 0; j < cardsPerDeck; j++) {
+        newDeck.push({
+          id: i * cardsPerDeck + j,
+          suit: Math.floor(j / 13),
+          value: j % 13,
+        });
+      }
     }
-    // add jokers to deck
-    newDeck.push({ id: 52, suit: 4, value: 13 });
-    newDeck.push({ id: 53, suit: 4, value: 13 });
+
+    for (let i = 0; i < deckCount * 2; i++) {
+      newDeck.push({ id: deckCount * cardsPerDeck + i, suit: 4, value: 13 });
+    }
+
     return newDeck;
   };
 
@@ -340,7 +346,9 @@ export default function Play() {
       const playerCards = game.players[myPlayer].cards;
 
       playerCards.forEach((card) => {
-        if (!newPlayerCardSortOrder.find((id) => id === card.id)) {
+        const cardId = newPlayerCardSortOrder.find((id) => id === card.id);
+
+        if (cardId === undefined) {
           newPlayerCardSortOrder.push(card.id);
         }
       });
@@ -355,8 +363,15 @@ export default function Play() {
     if (game && myPlayer !== null) {
       const newSortOrder = checkThatPlayerCardsExistInSortOrder();
       const cardIndex = newSortOrder.findIndex((id) => id === card.id);
-      newSortOrder.splice(cardIndex, 1);
-      newSortOrder.splice(cardIndex + orderAdjustment, 0, card.id);
+
+      if (
+        cardIndex + orderAdjustment >= 0 &&
+        cardIndex + orderAdjustment < game.players[myPlayer].cards.length
+      ) {
+        newSortOrder.splice(cardIndex, 1);
+        newSortOrder.splice(cardIndex + orderAdjustment, 0, card.id || 0);
+      }
+
       setPlayerCardsSortOrder(newSortOrder);
     }
   };
@@ -761,17 +776,20 @@ export default function Play() {
                         (() => {
                           const card = game.deck[0];
                           return (
-                            <CardComponent
-                              key={card.id}
-                              card={card}
-                              onClick={() => onDrawCard()}
-                              hidden
-                              disabled={
-                                !isMyTurn() || currentAction?.type !== "draw"
-                              }
-                            >
-                              Draw
-                            </CardComponent>
+                            <>
+                              {/* <span>{game.deck.length}</span> */}
+                              <CardComponent
+                                key={card.id}
+                                card={card}
+                                onClick={() => onDrawCard()}
+                                hidden
+                                disabled={
+                                  !isMyTurn() || currentAction?.type !== "draw"
+                                }
+                              >
+                                Draw
+                              </CardComponent>
+                            </>
                           );
                         })()
                       ) : (
@@ -785,13 +803,16 @@ export default function Play() {
                           const card =
                             game.discardDeck[game.discardDeck.length - 1];
                           return (
-                            <CardComponent
-                              wild={isWildCard(card)}
-                              key={card.id}
-                              card={card}
-                              onClick={onDiscardPileClick}
-                              disabled={!isMyTurn()}
-                            />
+                            <>
+                              {/* <span>{game.discardDeck.length}</span> */}
+                              <CardComponent
+                                wild={isWildCard(card)}
+                                key={card.id}
+                                card={card}
+                                onClick={onDiscardPileClick}
+                                disabled={!isMyTurn()}
+                              />
+                            </>
                           );
                         })()
                       ) : (

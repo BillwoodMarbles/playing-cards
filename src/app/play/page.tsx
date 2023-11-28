@@ -327,8 +327,6 @@ export default function Play() {
     }
   };
 
-  console.log("game", game);
-
   const getCurrnetRound = () => {
     if (game) {
       return game.rounds[game.currentRound];
@@ -343,7 +341,6 @@ export default function Play() {
 
       playerCards.forEach((card) => {
         if (!newPlayerCardSortOrder.find((id) => id === card.id)) {
-          console.log("not found", card);
           newPlayerCardSortOrder.push(card.id);
         }
       });
@@ -355,10 +352,8 @@ export default function Play() {
   };
 
   const changeCardOrder = (card: Card, orderAdjustment: number) => {
-    console.log(card, orderAdjustment);
     if (game && myPlayer !== null) {
       const newSortOrder = checkThatPlayerCardsExistInSortOrder();
-      console.log("NEW SORT ORDER", newSortOrder);
       const cardIndex = newSortOrder.findIndex((id) => id === card.id);
       newSortOrder.splice(cardIndex, 1);
       newSortOrder.splice(cardIndex + orderAdjustment, 0, card.id);
@@ -639,6 +634,12 @@ export default function Play() {
     }
   };
 
+  const copyCurrentRouteToClipboard = () => {
+    let path = window.location.href.split("?")[0];
+    path += `?code=${gameCode}`;
+    navigator.clipboard.writeText(path);
+  };
+
   useEffect(() => {
     if (gameCode) {
       getGameByCode(gameCode);
@@ -661,7 +662,12 @@ export default function Play() {
   return (
     <>
       <div className="px-4 py-2 flex items-center w-full">
-        <div className="w-1/4">Code: {gameCode}</div>
+        <div className="w-1/4">
+          {gameCode}
+          <button className="ml-2" onClick={copyCurrentRouteToClipboard}>
+            Share
+          </button>
+        </div>
         <h1 className="text-2xl text-center grow">
           Grandma (
           {getCurrnetRound() && getCurrnetRound()!.id >= 0

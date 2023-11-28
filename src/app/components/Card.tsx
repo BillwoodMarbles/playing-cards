@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-const suits = ["♠", "♥", "♦", "♣"];
+const suits = ["♠", "♥", "♦", "♣", "🃏"];
 const values = [
   "A",
   "2",
@@ -15,6 +15,7 @@ const values = [
   "J",
   "Q",
   "K",
+  " ",
 ];
 
 interface Card {
@@ -29,9 +30,21 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
   onClick?: () => void;
   disabled?: boolean;
+  wild?: boolean;
+  selected?: boolean;
 }
 
-const Card: FC<CardProps> = ({ card, hidden, children, disabled, onClick }) => {
+const Card: FC<CardProps> = ({
+  card,
+  hidden,
+  children,
+  disabled,
+  wild,
+  onClick,
+  selected,
+}) => {
+  const selectedClass = selected ? "border-4 border-blue-500" : "";
+  const wildClass = wild ? "bg-yellow-300" : "";
   const getBackgroundClass = () => {
     if (!card) {
       return "bg-gray-100";
@@ -62,7 +75,7 @@ const Card: FC<CardProps> = ({ card, hidden, children, disabled, onClick }) => {
       <div
         className={`absolute w-24 h-32 border border-gray-400 rounded-lg flex items-center justify-center ${getCardColorClass(
           card
-        )} ${getBackgroundClass()} ${disabledClass}`}
+        )} ${getBackgroundClass()} ${disabledClass} ${wildClass} ${selectedClass}`}
       >
         {children && children}
 
@@ -73,13 +86,13 @@ const Card: FC<CardProps> = ({ card, hidden, children, disabled, onClick }) => {
             </div>
 
             <div className="absolute left-1 top-1 flex justify-center flex-col">
-              <div className="text-xs">{values[card.value]}</div>{" "}
+              <div className="text-xs">{values[card.value]}</div>
               <div className="text-xs">{suits[card.suit]}</div>
             </div>
 
             <div className="absolute right-1 bottom-1 flex justify-center flex-col">
               <div className="text-xs">{suits[card.suit]}</div>
-              <div className="text-xs">{values[card.value]}</div>{" "}
+              <div className="text-xs">{values[card.value]}</div>
             </div>
           </div>
         )}

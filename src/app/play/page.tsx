@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { generateClient } from "aws-amplify/api";
 import { onUpdateGame } from "@/graphql/subscriptions";
@@ -11,10 +11,26 @@ import amplifyconfig from "../../amplifyconfiguration.json";
 import { updateGame } from "@/graphql/mutations";
 import CardComponent from "../components/Card";
 import { Card, Game, GameStatus, Player, PlayerAction, Round } from "../types";
-import { get } from "http";
 const client = generateClient();
 Amplify.configure(amplifyconfig);
-
+function useOutsideAlerter(ref: any) {
+  useEffect(() => {
+    /**
+     * Alert if clicked on outside of element
+     */
+    function handleClickOutside(event: any) {
+      if (ref.current && !ref.current.contains(event.target)) {
+        // alert("You clicked outside of me!");
+      }
+    }
+    // Bind the event listener
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [ref]);
+}
 const gameRounds: Round[] = [
   {
     id: 0,
@@ -42,6 +58,10 @@ const gameRounds: Round[] = [
   },
 ];
 
+interface PlayerCard extends Card {
+  order: number;
+}
+
 const playerActions: PlayerAction[] = [
   {
     type: "draw",
@@ -58,11 +78,15 @@ const playerActions: PlayerAction[] = [
 export default function Play() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const wrapperRef = useRef(null);
+  useOutsideAlerter(wrapperRef);
+
   const [gameCode, setGameCode] = useState<string | null>(null);
   const [playerName, setPlayerName] = useState("");
   const [playerId, setPlayerId] = useState("");
   const [game, setGame] = useState<Game | null>(null);
   const [myPlayer, setMyPlayer] = useState<number | null>(null);
+  const [playerCardSortOrder, setPlayerCardsSortOrder] = useState<number[]>([]);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 
   const currentAction = playerActions.find(
@@ -143,6 +167,9 @@ export default function Play() {
     for (let i = 0; i < 52; i++) {
       newDeck.push({ id: i, suit: Math.floor(i / 13), value: i % 13 });
     }
+    // add jokers to deck
+    newDeck.push({ id: 52, suit: 4, value: 13 });
+    newDeck.push({ id: 53, suit: 4, value: 13 });
     return newDeck;
   };
 
@@ -287,16 +314,79 @@ export default function Play() {
     }
   };
 
-  const onDrawCardFromDiscardDeck = () => {
+  const onDiscardPileClick = () => {
     if (isMyTurn()) {
-      drawCardFromDiscardDeck();
-      onCompleteAction();
+      if (currentAction?.type === "discard" && selectedCard) {
+        onDiscardCard(selectedCard);
+      }
+
+      if (currentAction?.type === "draw") {
+        drawCardFromDiscardDeck();
+        onCompleteAction();
+      }
     }
   };
+
+  console.log("game", game);
 
   const getCurrnetRound = () => {
     if (game) {
       return game.rounds[game.currentRound];
+    }
+  };
+
+  const checkThatPlayerCardsExistInSortOrder = () => {
+    const newPlayerCardSortOrder = [...playerCardSortOrder];
+
+    if (game && myPlayer !== null) {
+      const playerCards = game.players[myPlayer].cards;
+
+      playerCards.forEach((card) => {
+        if (!newPlayerCardSortOrder.find((id) => id === card.id)) {
+          console.log("not found", card);
+          newPlayerCardSortOrder.push(card.id);
+        }
+      });
+
+      setPlayerCardsSortOrder(newPlayerCardSortOrder);
+    }
+
+    return newPlayerCardSortOrder;
+  };
+
+  const changeCardOrder = (card: Card, orderAdjustment: number) => {
+    console.log(card, orderAdjustment);
+    if (game && myPlayer !== null) {
+      const newSortOrder = checkThatPlayerCardsExistInSortOrder();
+      console.log("NEW SORT ORDER", newSortOrder);
+      const cardIndex = newSortOrder.findIndex((id) => id === card.id);
+      newSortOrder.splice(cardIndex, 1);
+      newSortOrder.splice(cardIndex + orderAdjustment, 0, card.id);
+      setPlayerCardsSortOrder(newSortOrder);
+    }
+  };
+
+  const getPlayerCards = () => {
+    if (game && myPlayer !== null) {
+      // sort player cards by order
+      const playerCards = game.players[myPlayer].cards;
+      const newPlayerCards: Card[] = [];
+
+      playerCardSortOrder.forEach((id) => {
+        const card = playerCards.find((card) => card.id === id);
+        if (card) {
+          newPlayerCards.push(card);
+        }
+      });
+
+      // for all playerCards not in newPlayerCards add to end of newPlayerCards
+      playerCards.forEach((card) => {
+        if (!newPlayerCards.find((c) => c.id === card.id)) {
+          newPlayerCards.push(card);
+        }
+      });
+
+      return newPlayerCards;
     }
   };
 
@@ -306,6 +396,16 @@ export default function Play() {
       newGame.deck = shuffleDeck(getNewDeck());
       newGame.players?.forEach((player) => {
         player.cards = newGame.deck.slice(0, getCurrnetRound()?.drawCount);
+
+        // get card ids from player cards
+        const playerCardIds = player.cards.map((card) => card.id);
+
+        if (myPlayer !== null && player.id === myPlayer) {
+          const newPlayerCardSortOrder = playerCardIds;
+          newPlayerCardSortOrder.sort((a, b) => a - b);
+          setPlayerCardsSortOrder(newPlayerCardSortOrder);
+        }
+
         newGame.deck = newGame.deck.slice(getCurrnetRound()?.drawCount);
       });
 
@@ -337,6 +437,7 @@ export default function Play() {
         );
         newGame.players[myPlayer!].cards = newPlayerCards;
 
+        setSelectedCard(null);
         onCompleteAction();
         setGame(newGame);
         onUpdateGameGQL(newGame);
@@ -381,9 +482,6 @@ export default function Play() {
     const id = card;
     return { suit, value, id };
   };
-
-  console.log(getCurrnetRound(), myPlayer);
-  console.log(game?.status);
 
   const parseGameData = (game: any) => {
     if (game) {
@@ -526,6 +624,15 @@ export default function Play() {
     return notifications;
   };
 
+  const isWildCard = (card: Card) => {
+    const roundWildCard = (getCurrnetRound()?.drawCount || 0) - 1;
+    if (card.value === roundWildCard) {
+      return true;
+    }
+
+    return card.value === 13;
+  };
+
   const isLastRound = () => {
     if (game) {
       return game.currentRound === game.rounds.length - 1;
@@ -646,7 +753,7 @@ export default function Play() {
                     <div className="w-24 mx-1">
                       {game.deck.length > 0 ? (
                         (() => {
-                          const card = getCardSuitAndValue(game.deck[0].id);
+                          const card = game.deck[0];
                           return (
                             <CardComponent
                               key={card.id}
@@ -669,22 +776,20 @@ export default function Play() {
                       {game.discardDeck.length > 0 &&
                       game.discardDeck[game.discardDeck.length - 1] ? (
                         (() => {
-                          const card = getCardSuitAndValue(
-                            game.discardDeck[game.discardDeck.length - 1].id
-                          );
+                          const card =
+                            game.discardDeck[game.discardDeck.length - 1];
                           return (
                             <CardComponent
+                              wild={isWildCard(card)}
                               key={card.id}
                               card={card}
-                              onClick={() => onDrawCardFromDiscardDeck()}
-                              disabled={
-                                !isMyTurn() || currentAction?.type !== "draw"
-                              }
+                              onClick={onDiscardPileClick}
+                              disabled={!isMyTurn()}
                             />
                           );
                         })()
                       ) : (
-                        <CardComponent disabled />
+                        <CardComponent onClick={onDiscardPileClick} />
                       )}
                     </div>
                   </div>
@@ -765,17 +870,36 @@ export default function Play() {
               </div>
             )}
 
-            <div className="flex justify-center w-full flex-wrap pr-14 overflow-hidden">
-              {game.players[myPlayer!]?.cards?.map((card, index) => {
+            {selectedCard && (
+              <div className="flex justify-center mb-4">
+                <button
+                  className="px-2 py-1 mx-1 bg-blue-300 rounded-md"
+                  onClick={() => changeCardOrder(selectedCard, -1)}
+                >
+                  Left
+                </button>
+                <button
+                  className="px-2 py-1 mx-1 bg-blue-300 rounded-md"
+                  onClick={() => changeCardOrder(selectedCard, 1)}
+                >
+                  Right
+                </button>
+              </div>
+            )}
+
+            <div
+              ref={wrapperRef}
+              className="flex justify-center w-full flex-wrap pr-14 overflow-hidden relative"
+            >
+              {getPlayerCards()?.map((card, index) => {
                 return (
                   <>
                     <CardComponent
+                      selected={selectedCard?.id === card.id}
+                      wild={isWildCard(card)}
                       key={card.id}
                       card={card}
-                      onClick={() => onDiscardCard(card)}
-                      disabled={
-                        !isMyTurn() || currentAction?.type !== "discard"
-                      }
+                      onClick={() => setSelectedCard(card)}
                     />
                   </>
                 );

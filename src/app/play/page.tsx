@@ -1,4 +1,5 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -10,9 +11,13 @@ import { Amplify } from "aws-amplify";
 import amplifyconfig from "../../amplifyconfiguration.json";
 import { updateGame } from "@/graphql/mutations";
 import CardComponent from "../components/Card";
-import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
-
+import { FaAngleLeft, FaAngleRight, FaShareFromSquare } from "react-icons/fa6";
 import { Card, Game, GameStatus, Player, PlayerAction, Round } from "../types";
+import NotificationsComponent from "../components/Notifications";
+import HandContainer from "../components/HandContainer";
+import Players from "../components/Players";
+import { GameClass } from "../classes/game";
+
 const client = generateClient();
 Amplify.configure(amplifyconfig);
 function useOutsideAlerter(ref: any) {
@@ -92,22 +97,13 @@ export default function Play() {
         type: "player",
       };
 
-      const newGame = { ...game };
+      const newGame = new GameClass(game);
       newGame.players.push(newPlayer);
       setGame(newGame);
       setPlayerId(newPlayer.name);
       setMyPlayer(newPlayer.id);
       onUpdateGameGQL(newGame);
       router.push(`/play?code=${game?.code}&player=${newPlayer.name}`);
-    }
-  };
-
-  const getPlayerName = (playerId: string | null) => {
-    if (game && playerId !== null) {
-      const player = game.players.find((player) => player.name === playerId);
-      if (player) {
-        return player.name;
-      }
     }
   };
 
@@ -150,49 +146,16 @@ export default function Play() {
     }
   };
 
-  const getNewDeck = () => {
-    const cardsPerDeck = 52;
-    const deckCount = 2;
-    const newDeck = [];
-    for (let i = 0; i < deckCount; i++) {
-      for (let j = 0; j < cardsPerDeck; j++) {
-        newDeck.push({
-          id: i * cardsPerDeck + j,
-          suit: Math.floor(j / 13),
-          value: j % 13,
-        });
-      }
-    }
-
-    for (let i = 0; i < deckCount * 2; i++) {
-      newDeck.push({ id: deckCount * cardsPerDeck + i, suit: 4, value: 13 });
-    }
-
-    return newDeck;
-  };
-
-  const shuffleDeck = (deck: Card[]) => {
-    const newDeck = [...deck];
-    for (let i = 0; i < newDeck.length; i++) {
-      const j = Math.floor(Math.random() * newDeck.length);
-      const temp = newDeck[i];
-      newDeck[i] = newDeck[j];
-      newDeck[j] = temp;
-    }
-    return newDeck;
-  };
-
   const onNewGame = () => {
     // reset game
     if (game) {
-      const newGame = { ...game };
-      newGame.deck = [];
-      newGame.discardDeck = [];
-      newGame.playerTurn = 0;
-      newGame.status = "open";
-      newGame.rounds = gameRounds;
-      newGame.currentRound = 0;
-      newGame.gameType = "grandma";
+      const newGame = new GameClass({
+        rounds: gameRounds,
+        code: game.code,
+        id: game.id,
+        players: game.players,
+        gameType: game.gameType,
+      });
       newGame.players?.forEach((player) => {
         player.cards = [];
       });
@@ -210,29 +173,6 @@ export default function Play() {
     }
   };
 
-  const initializeRound = (game: Game): Game => {
-    const newGame = { ...game };
-    newGame.deck = shuffleDeck(getNewDeck());
-    newGame.discardDeck = [];
-    newGame.players?.forEach((player) => {
-      player.cards = [];
-    });
-
-    // set round status to in-progress
-    const newRounds = [...newGame.rounds];
-    newRounds[newGame.currentRound].status = "open";
-
-    // if first round set dealer to host player
-    newRounds[newGame.currentRound].dealer =
-      newGame.currentRound % newGame.players.length;
-
-    newGame.rounds = newRounds;
-
-    newGame.playerTurn = (newGame.currentRound + 1) % newGame.players.length;
-
-    return newGame;
-  };
-
   const onStartGame = () => {
     if (
       game &&
@@ -245,9 +185,9 @@ export default function Play() {
         return;
       }
 
-      let newGame = { ...game };
+      let newGame = new GameClass(game);
       newGame.status = "in-progress";
-      newGame = initializeRound(newGame);
+      newGame.initializeRound();
 
       setGame(newGame);
       onUpdateGameGQL(newGame);
@@ -256,7 +196,7 @@ export default function Play() {
 
   const onEndTurn = () => {
     if (game) {
-      const newGame = { ...game };
+      const newGame = new GameClass(game);
       const nextPlayer = (newGame.playerTurn + 1) % newGame.players.length;
       newGame.playerTurn = nextPlayer;
 
@@ -274,7 +214,7 @@ export default function Play() {
 
   const onClaimRound = () => {
     if (game) {
-      const newGame = { ...game };
+      const newGame = new GameClass(game);
       newGame.rounds[newGame.currentRound].roundWinner =
         myPlayer !== null && myPlayer >= 0 ? myPlayer : -1;
       newGame.playerTurn = (newGame.playerTurn + 1) % newGame.players.length;
@@ -286,9 +226,9 @@ export default function Play() {
 
   const onStartNewRound = () => {
     if (game) {
-      let newGame = { ...game };
+      let newGame = new GameClass(game);
       newGame.currentRound = (newGame.currentRound + 1) % newGame.rounds.length;
-      newGame = initializeRound(newGame);
+      newGame.initializeRound();
       setGame(newGame);
       onUpdateGameGQL(newGame);
     }
@@ -389,8 +329,9 @@ export default function Play() {
 
   const onDealCardsToPlayers = () => {
     if (game) {
-      const newGame = { ...game };
-      newGame.deck = shuffleDeck(getNewDeck());
+      const newGame = new GameClass(game);
+      newGame.initializeDeck();
+
       newGame.players?.forEach((player) => {
         player.cards = newGame.deck.slice(0, getCurrnetRound()?.drawCount);
 
@@ -426,8 +367,8 @@ export default function Play() {
   const onDiscardCard = (card: Card) => {
     if (isMyTurn()) {
       if (game && myPlayer !== null) {
-        const newGame = { ...game };
-        const newDiscardDeck = [...game.discardDeck, card];
+        const newGame = new GameClass(game);
+        const newDiscardDeck = [...newGame.discardDeck, card];
         newGame.discardDeck = newDiscardDeck;
         const newPlayerCards = newGame.players[myPlayer!].cards.filter(
           (c) => c.id !== card.id
@@ -444,12 +385,12 @@ export default function Play() {
 
   const drawCardFromDeck = () => {
     if (game) {
-      const newGame = { ...game };
-      const card = game.deck[0];
-      const newDeck = game.deck.slice(1);
+      const newGame = new GameClass(game);
+      const card = newGame.deck[0];
+      const newDeck = newGame.deck.slice(1);
       newGame.deck = newDeck;
 
-      const newPlayerCards = [...game.players[myPlayer!].cards, card];
+      const newPlayerCards = [...newGame.players[myPlayer!].cards, card];
       newGame.players[myPlayer!].cards = newPlayerCards;
       setGame(newGame);
       onUpdateGameGQL(newGame);
@@ -458,7 +399,7 @@ export default function Play() {
 
   const drawCardFromDiscardDeck = () => {
     if (game) {
-      const newGame = { ...game };
+      const newGame = new GameClass(game);
       const card = game.discardDeck[game.discardDeck.length - 1];
       const newDiscardDeck = game.discardDeck.slice(
         0,
@@ -466,7 +407,7 @@ export default function Play() {
       );
       newGame.discardDeck = newDiscardDeck;
 
-      const newPlayerCards = [...game.players[myPlayer!].cards, card];
+      const newPlayerCards = [...newGame.players[myPlayer!].cards, card];
       newGame.players[myPlayer!].cards = newPlayerCards;
       setGame(newGame);
       onUpdateGameGQL(newGame);
@@ -554,66 +495,6 @@ export default function Play() {
     }
   };
 
-  const getNotifcations = () => {
-    const notifications = [];
-
-    if (game?.status === "open") {
-      if (game.players.length < 2) {
-        notifications.push(
-          <div className="text-center">Waiting for players...</div>
-        );
-      } else {
-        if (getMyPlayer()?.type === "host") {
-          notifications.push(<div className="text-center">Ready to start</div>);
-        } else {
-          notifications.push(
-            <div className="text-center">Waiting for host to start</div>
-          );
-        }
-      }
-    } else if (game?.status === "in-progress") {
-      if (getCurrnetRound()?.status === "complete") {
-        if (isLastRound()) {
-          notifications.push(<div className="text-center">Game Over</div>);
-        } else {
-          notifications.push(
-            <div className="text-center">
-              Round Over. Waiting for host to start new round
-            </div>
-          );
-        }
-      } else if (getCurrnetRound()?.status === "open") {
-        if (getCurrnetRound()?.dealer === myPlayer) {
-          notifications.push(<div className="text-center">Ready to deal</div>);
-        } else {
-          notifications.push(
-            <div className="text-center">Waiting for dealer</div>
-          );
-        }
-      } else {
-        if (getCurrentRoundWinner()) {
-          notifications.push(
-            <div className="text-center">
-              GRANDMA!!! - {getCurrentRoundWinner()}
-            </div>
-          );
-        }
-
-        if (isMyTurn()) {
-          notifications.push(getCurrentPlayerAction()?.description);
-        } else {
-          notifications.push(
-            <div className="text-center">
-              {game.players[game.playerTurn]?.name}&lsquo;s Turn
-            </div>
-          );
-        }
-      }
-    }
-
-    return notifications;
-  };
-
   const isWildCard = (card: Card) => {
     const roundWildCard = (getCurrnetRound()?.drawCount || 0) - 1;
     if (card.value === roundWildCard) {
@@ -666,9 +547,12 @@ export default function Play() {
     <>
       <header className="px-4 py-3 flex items-center w-full">
         <div className="w-1/4">
-          {gameCode}
-          <button className="ml-2" onClick={copyCurrentRouteToClipboard}>
-            Share
+          <button
+            className="ml-2 flex items-center"
+            onClick={copyCurrentRouteToClipboard}
+          >
+            {gameCode}
+            <FaShareFromSquare className="ml-2" />
           </button>
         </div>
         <div className="text-center grow">
@@ -716,37 +600,17 @@ export default function Play() {
           )}
 
           {game.players.length > 0 && (
-            <>
-              <div className="py-4 px-3 bg-slate-100 border-2 border-b-white w-full">
-                <ul className="flex justify-center">
-                  {game.players.map((player) => {
-                    return (
-                      <li key={player.id} className="mx-1">
-                        <div
-                          className={`rounded-full border-2 flex items-center justify-center transform ease-in-out duration-100 h-14 w-14 ${
-                            game.playerTurn === player.id
-                              ? "border-green-600 bg-green-200 scale-110"
-                              : "border-gray-600 bg-gray-200"
-                          }`}
-                        >
-                          <div
-                            className={`rounded-lg flex items-center justify-center py-0 px-1 text-xs`}
-                          >
-                            {player.name}
-                          </div>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            </>
+            <Players playerTurn={game.playerTurn} players={game.players} />
           )}
 
           <div className="flex items-center justify-center grow relative flex-col w-full bg-slate-100">
-            <div className="flex justify-center px-4 py-2 rounded-md flex-col items-center absolute top-4">
-              {getNotifcations().map((notification) => notification)}
-            </div>
+            <NotificationsComponent
+              game={game}
+              player={getMyPlayer()}
+              isPlayerTurn={isMyTurn()}
+              currentPlayerAction={getCurrentPlayerAction()}
+              currentRound={getCurrnetRound()}
+            />
 
             <div className="w-full">
               {game.status === "in-progress" && (
@@ -756,11 +620,9 @@ export default function Play() {
                       <h2 className="text-center">
                         Round Winner: {getCurrentRoundWinner()}
                       </h2>
-                      <div className="overflow-x-scroll overflow-y-visible flex">
-                        <div className="flex py-4 w-full mx-4">
-                          {game.players[
-                            getCurrnetRound()!.roundWinner
-                          ].cards.map((card, index) => {
+                      <HandContainer>
+                        {game.players[getCurrnetRound()!.roundWinner].cards.map(
+                          (card, index) => {
                             return (
                               <>
                                 <div
@@ -779,9 +641,9 @@ export default function Play() {
                                 </div>
                               </>
                             );
-                          })}
-                        </div>
-                      </div>
+                          }
+                        )}
+                      </HandContainer>
                     </div>
                   )}
 
@@ -844,53 +706,45 @@ export default function Play() {
           </div>
 
           <div className="py-4 bg-slate-100 w-full grow-0 border-t-2 border-t-white">
-            <div>
+            <div className="flex justify-center">
               {getCurrnetRound()?.status === "complete" && !isLastRound() && (
-                <div className="flex justify-center">
-                  <button
-                    className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md"
-                    onClick={onStartNewRound}
-                  >
-                    Start New Round
-                  </button>
-                </div>
+                <button
+                  className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md"
+                  onClick={onStartNewRound}
+                >
+                  Start New Round
+                </button>
               )}
 
               {getCurrnetRound()?.status === "complete" && isLastRound() && (
-                <div className="flex justify-center">
-                  <button
-                    className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md"
-                    onClick={onNewGame}
-                  >
-                    New Game
-                  </button>
-                </div>
+                <button
+                  className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md"
+                  onClick={onNewGame}
+                >
+                  New Game
+                </button>
               )}
 
               {game.status === "open" &&
                 getMyPlayer() &&
                 getMyPlayer()?.type === "host" &&
                 game.players.length >= 2 && (
-                  <div className="flex justify-center">
-                    <button
-                      className="px-6 py-2 mb-5 bg-blue-300 rounded-md"
-                      onClick={onStartGame}
-                    >
-                      Start Game
-                    </button>
-                  </div>
+                  <button
+                    className="px-6 py-2 mb-5 bg-blue-300 rounded-md"
+                    onClick={onStartGame}
+                  >
+                    Start Game
+                  </button>
                 )}
 
               {getCurrnetRound()?.status === "open" &&
                 getCurrnetRound()?.dealer === myPlayer && (
-                  <div className="flex justify-center">
-                    <button
-                      className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md"
-                      onClick={onDealCardsToPlayers}
-                    >
-                      Deal
-                    </button>
-                  </div>
+                  <button
+                    className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md"
+                    onClick={onDealCardsToPlayers}
+                  >
+                    Deal
+                  </button>
                 )}
 
               {game.status === "in-progress" && isMyTurn() && (
@@ -915,54 +769,52 @@ export default function Play() {
                   )}
                 </div>
               )}
+            </div>
 
-              <div className="relative overflow-hidden">
-                {selectedCard && (
-                  <>
-                    <div className="absolute -left-4 flex items-center z-10 top-1/2 -translate-y-1/2">
-                      <button
-                        className="px-2 py-1 mx-1 w-10 h-10 bg-blue-300 rounded-full shadow-md flex items-center justify-center"
-                        onClick={() => changeCardOrder(selectedCard, -1)}
-                      >
-                        <FaAngleLeft />
-                      </button>
-                    </div>
-
-                    <div className="absolute -right-4 flex items-center z-10 top-1/2 -translate-y-1/2">
-                      <button
-                        className="px-2 py-1 mx-1 w-10 h-10 bg-blue-300 rounded-full shadow-md flex items-center justify-center"
-                        onClick={() => changeCardOrder(selectedCard, 1)}
-                      >
-                        <FaAngleRight />
-                      </button>
-                    </div>
-                  </>
-                )}
-                <div className="overflow-x-scroll overflow-y-visible flex">
-                  <div className="flex py-4 w-full mx-4">
-                    {getPlayerCards()?.map((card, index) => {
-                      return (
-                        <div
-                          key={card.id}
-                          style={{ minWidth: "2rem", maxWidth: "6rem" }}
-                          className="relative w-full h-28 mx-2 first-of-type:ml-auto last-of-type:mr-auto"
-                        >
-                          <div className="absolute left-0 top-0">
-                            <CardComponent
-                              selected={selectedCard?.id === card.id}
-                              wild={isWildCard(card)}
-                              card={card}
-                              onClick={() => onCardInHandClick(card)}
-                              size="small"
-                              index={index}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
+            <div className="relative overflow-hidden">
+              {selectedCard && (
+                <>
+                  <div className="absolute -left-4 flex items-center z-10 top-1/2 -translate-y-1/2">
+                    <button
+                      className="px-2 py-1 mx-1 w-12 h-12 bg-blue-300 rounded-full shadow-md flex items-center justify-center"
+                      onClick={() => changeCardOrder(selectedCard, -1)}
+                    >
+                      <FaAngleLeft />
+                    </button>
                   </div>
-                </div>
-              </div>
+
+                  <div className="absolute -right-4 flex items-center z-10 top-1/2 -translate-y-1/2">
+                    <button
+                      className="px-2 py-1 mx-1 w-12 h-12 bg-blue-300 rounded-full shadow-md flex items-center justify-center"
+                      onClick={() => changeCardOrder(selectedCard, 1)}
+                    >
+                      <FaAngleRight />
+                    </button>
+                  </div>
+                </>
+              )}
+              <HandContainer>
+                {getPlayerCards()?.map((card, index) => {
+                  return (
+                    <div
+                      key={card.id}
+                      style={{ minWidth: "2rem", maxWidth: "6rem" }}
+                      className="relative w-full h-28 mx-2 first-of-type:ml-auto last-of-type:mr-auto"
+                    >
+                      <div className="absolute left-0 top-0">
+                        <CardComponent
+                          selected={selectedCard?.id === card.id}
+                          wild={isWildCard(card)}
+                          card={card}
+                          onClick={() => onCardInHandClick(card)}
+                          size="small"
+                          index={index}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </HandContainer>
             </div>
           </div>
         </>

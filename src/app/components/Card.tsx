@@ -36,7 +36,7 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   index?: number;
 }
 
-const Card: FC<CardProps> = ({
+const CardComponent: FC<CardProps> = ({
   card,
   hidden,
   children,
@@ -118,4 +118,4 @@ const Card: FC<CardProps> = ({
   );
 };
 
-export default Card;
+export default CardComponent;

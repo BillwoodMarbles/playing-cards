@@ -10,6 +10,8 @@ import { Amplify } from "aws-amplify";
 import amplifyconfig from "../../amplifyconfiguration.json";
 import { updateGame } from "@/graphql/mutations";
 import CardComponent from "../components/Card";
+import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
+
 import { Card, Game, GameStatus, Player, PlayerAction, Round } from "../types";
 const client = generateClient();
 Amplify.configure(amplifyconfig);
@@ -178,11 +180,6 @@ export default function Play() {
       newDeck[j] = temp;
     }
     return newDeck;
-  };
-
-  const onSelectPlayer = (playerId: number) => {
-    setMyPlayer(playerId);
-    router.push(`/play?code=${game?.code}&player=${playerId}`);
   };
 
   const onNewGame = () => {
@@ -476,13 +473,6 @@ export default function Play() {
     }
   };
 
-  const getCardSuitAndValue = (card: number) => {
-    const suit = Math.floor(card / 13);
-    const value = card % 13;
-    const id = card;
-    return { suit, value, id };
-  };
-
   const parseGameData = (game: any) => {
     if (game) {
       const parsedGame: Game = {
@@ -645,6 +635,14 @@ export default function Play() {
     navigator.clipboard.writeText(path);
   };
 
+  const onCardInHandClick = (card: Card) => {
+    if (selectedCard && selectedCard.id === card.id) {
+      setSelectedCard(null);
+    } else {
+      setSelectedCard(card);
+    }
+  };
+
   useEffect(() => {
     if (gameCode) {
       getGameByCode(gameCode);
@@ -666,24 +664,30 @@ export default function Play() {
 
   return (
     <>
-      <div className="px-4 py-2 flex items-center w-full">
+      <header className="px-4 py-3 flex items-center w-full">
         <div className="w-1/4">
           {gameCode}
           <button className="ml-2" onClick={copyCurrentRouteToClipboard}>
             Share
           </button>
         </div>
-        <h1 className="text-2xl text-center grow">
-          Grandma (
-          {getCurrnetRound() && getCurrnetRound()!.id >= 0
-            ? getCurrnetRound()!.id + 1
-            : "-"}{" "}
-          of {game?.rounds.length})
-        </h1>
-        <div className="w-1/4 text-right">
-          <h2>{getPlayerName(playerId)}</h2>
+        <div className="text-center grow">
+          <h1 className="text-2xl">Grandma</h1>
+          <p className="text-xs">
+            (round{" "}
+            {getCurrnetRound() && getCurrnetRound()!.id >= 0
+              ? getCurrnetRound()!.id + 1
+              : "-"}{" "}
+            of {game?.rounds.length})
+          </p>
         </div>
-      </div>
+
+        <div className="w-1/4 flex justify-end">
+          {/* <div
+            className={`rounded-full border-2 flex items-center justify-center h-10 w-10 border-green-600 bg-green-200`}
+          ></div> */}
+        </div>
+      </header>
 
       {game && (
         <>
@@ -693,6 +697,7 @@ export default function Play() {
                 <div>
                   <label>
                     <input
+                      className="w-full px-3 py-2 border border-gray-400 rounded-md"
                       type="text"
                       value={playerName}
                       placeholder="Player Name"
@@ -712,15 +717,24 @@ export default function Play() {
 
           {game.players.length > 0 && (
             <>
-              <div className="p-3 bg-slate-100 mb-3 w-full">
-                <h2 className="text-sm text-center">Players</h2>
+              <div className="py-4 px-3 bg-slate-100 border-2 border-b-white w-full">
                 <ul className="flex justify-center">
                   {game.players.map((player) => {
                     return (
                       <li key={player.id} className="mx-1">
-                        <a href="#" onClick={() => onSelectPlayer(player.id)}>
-                          {player.name}
-                        </a>
+                        <div
+                          className={`rounded-full border-2 flex items-center justify-center transform ease-in-out duration-100 h-14 w-14 ${
+                            game.playerTurn === player.id
+                              ? "border-green-600 bg-green-200 scale-110"
+                              : "border-gray-600 bg-gray-200"
+                          }`}
+                        >
+                          <div
+                            className={`rounded-lg flex items-center justify-center py-0 px-1 text-xs`}
+                          >
+                            {player.name}
+                          </div>
+                        </div>
                       </li>
                     );
                   })}
@@ -729,198 +743,226 @@ export default function Play() {
             </>
           )}
 
-          <div className="flex justify-center px-4 py-2 rounded-md flex-col items-center">
-            {getNotifcations().map((notification) => notification)}
-          </div>
+          <div className="flex items-center justify-center grow relative flex-col w-full bg-slate-100">
+            <div className="flex justify-center px-4 py-2 rounded-md flex-col items-center absolute top-4">
+              {getNotifcations().map((notification) => notification)}
+            </div>
 
-          <div className="flex items-center justify-center grow">
-            {game.status === "in-progress" && (
-              <>
-                {getCurrnetRound()?.status === "complete" && (
-                  <div>
-                    <h2 className="text-center">
-                      Round Winner: {getCurrentRoundWinner()}
-                    </h2>
-                    <div className="flex justify-center w-full flex-wrap pr-14">
-                      {game.players[getCurrnetRound()!.roundWinner].cards.map(
-                        (card, index) => {
-                          return (
-                            <>
-                              <CardComponent
-                                key={card.id}
-                                card={card}
-                                disabled
-                              />
-                            </>
-                          );
-                        }
-                      )}
+            <div className="w-full">
+              {game.status === "in-progress" && (
+                <>
+                  {getCurrnetRound()?.status === "complete" && (
+                    <div>
+                      <h2 className="text-center">
+                        Round Winner: {getCurrentRoundWinner()}
+                      </h2>
+                      <div className="overflow-x-scroll overflow-y-visible flex">
+                        <div className="flex py-4 w-full mx-4">
+                          {game.players[
+                            getCurrnetRound()!.roundWinner
+                          ].cards.map((card, index) => {
+                            return (
+                              <>
+                                <div
+                                  key={card.id}
+                                  style={{ minWidth: "1rem", maxWidth: "6rem" }}
+                                  className="relative w-full h-28 mx-2 first-of-type:ml-auto last-of-type:mr-auto"
+                                >
+                                  <div className="absolute left-0 top-0">
+                                    <CardComponent
+                                      key={card.id}
+                                      card={card}
+                                      disabled
+                                      size="small"
+                                    />
+                                  </div>
+                                </div>
+                              </>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {getCurrnetRound()?.status === "in-progress" && (
-                  <div className="flex mb-6 justify-center">
-                    <div className="w-24 mx-1">
-                      {game.deck.length > 0 ? (
-                        (() => {
-                          const card = game.deck[0];
-                          return (
-                            <>
-                              {/* <span>{game.deck.length}</span> */}
-                              <CardComponent
-                                key={card.id}
-                                card={card}
-                                onClick={() => onDrawCard()}
-                                hidden
-                                disabled={
-                                  !isMyTurn() || currentAction?.type !== "draw"
-                                }
-                              >
-                                Draw
-                              </CardComponent>
-                            </>
-                          );
-                        })()
-                      ) : (
-                        <CardComponent disabled />
-                      )}
+                  {getCurrnetRound()?.status === "in-progress" && (
+                    <div className="flex mb-6 justify-center">
+                      <div className="mx-1">
+                        {game.deck.length > 0 ? (
+                          (() => {
+                            const card = game.deck[0];
+                            return (
+                              <>
+                                {/* <span>{game.deck.length}</span> */}
+                                <CardComponent
+                                  key={card.id}
+                                  card={card}
+                                  onClick={() => onDrawCard()}
+                                  hidden
+                                  disabled={
+                                    !isMyTurn() ||
+                                    currentAction?.type !== "draw"
+                                  }
+                                >
+                                  Draw
+                                </CardComponent>
+                              </>
+                            );
+                          })()
+                        ) : (
+                          <CardComponent disabled />
+                        )}
+                      </div>
+                      <div className="mx-1">
+                        {game.discardDeck.length > 0 &&
+                        game.discardDeck[game.discardDeck.length - 1] ? (
+                          (() => {
+                            const card =
+                              game.discardDeck[game.discardDeck.length - 1];
+                            return (
+                              <>
+                                {/* <span>{game.discardDeck.length}</span> */}
+                                <CardComponent
+                                  wild={isWildCard(card)}
+                                  key={card.id}
+                                  card={card}
+                                  onClick={onDiscardPileClick}
+                                  disabled={!isMyTurn()}
+                                />
+                              </>
+                            );
+                          })()
+                        ) : (
+                          <CardComponent onClick={onDiscardPileClick} />
+                        )}
+                      </div>
                     </div>
-                    <div className="w-24 mx-1">
-                      {game.discardDeck.length > 0 &&
-                      game.discardDeck[game.discardDeck.length - 1] ? (
-                        (() => {
-                          const card =
-                            game.discardDeck[game.discardDeck.length - 1];
-                          return (
-                            <>
-                              {/* <span>{game.discardDeck.length}</span> */}
-                              <CardComponent
-                                wild={isWildCard(card)}
-                                key={card.id}
-                                card={card}
-                                onClick={onDiscardPileClick}
-                                disabled={!isMyTurn()}
-                              />
-                            </>
-                          );
-                        })()
-                      ) : (
-                        <CardComponent onClick={onDiscardPileClick} />
-                      )}
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-
-          <div className="pt-4 px-3 bg-slate-100 w-full">
-            {getCurrnetRound()?.status === "complete" && !isLastRound() && (
-              <div className="flex mb-6 justify-center">
-                <button
-                  className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md"
-                  onClick={onStartNewRound}
-                >
-                  Start New Round
-                </button>
-              </div>
-            )}
-
-            {getCurrnetRound()?.status === "complete" && isLastRound() && (
-              <div className="flex mb-6 justify-center">
-                <button
-                  className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md"
-                  onClick={onNewGame}
-                >
-                  New Game
-                </button>
-              </div>
-            )}
-
-            {game.status === "open" &&
-              getMyPlayer() &&
-              getMyPlayer()?.type === "host" &&
-              game.players.length >= 2 && (
-                <div className="flex justify-center">
-                  <button
-                    className="px-6 py-2 mb-5 bg-blue-300 rounded-md"
-                    onClick={onStartGame}
-                  >
-                    Start Game
-                  </button>
-                </div>
+                  )}
+                </>
               )}
+            </div>
+          </div>
 
-            {getCurrnetRound()?.status === "open" &&
-              getCurrnetRound()?.dealer === myPlayer && (
+          <div className="py-4 bg-slate-100 w-full grow-0 border-t-2 border-t-white">
+            <div>
+              {getCurrnetRound()?.status === "complete" && !isLastRound() && (
                 <div className="flex justify-center">
                   <button
                     className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md"
-                    onClick={onDealCardsToPlayers}
+                    onClick={onStartNewRound}
                   >
-                    Deal
+                    Start New Round
                   </button>
                 </div>
               )}
 
-            {game.status === "in-progress" && isMyTurn() && (
-              <div className="mb-6 flex justify-center">
-                {!currentAction && (
-                  <>
-                    {!getCurrentRoundWinner() && (
-                      <button
-                        className="px-6 py-2 mb-2 mr-2 bg-red-300 rounded-md"
-                        onClick={onClaimRound}
-                      >
-                        GRANDMA!!!
-                      </button>
-                    )}
+              {getCurrnetRound()?.status === "complete" && isLastRound() && (
+                <div className="flex justify-center">
+                  <button
+                    className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md"
+                    onClick={onNewGame}
+                  >
+                    New Game
+                  </button>
+                </div>
+              )}
+
+              {game.status === "open" &&
+                getMyPlayer() &&
+                getMyPlayer()?.type === "host" &&
+                game.players.length >= 2 && (
+                  <div className="flex justify-center">
                     <button
-                      className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md float-right"
-                      onClick={onEndTurn}
+                      className="px-6 py-2 mb-5 bg-blue-300 rounded-md"
+                      onClick={onStartGame}
                     >
-                      End Turn
+                      Start Game
                     </button>
+                  </div>
+                )}
+
+              {getCurrnetRound()?.status === "open" &&
+                getCurrnetRound()?.dealer === myPlayer && (
+                  <div className="flex justify-center">
+                    <button
+                      className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md"
+                      onClick={onDealCardsToPlayers}
+                    >
+                      Deal
+                    </button>
+                  </div>
+                )}
+
+              {game.status === "in-progress" && isMyTurn() && (
+                <div className="flex justify-center">
+                  {!currentAction && (
+                    <>
+                      {!getCurrentRoundWinner() && (
+                        <button
+                          className="px-6 py-2 mb-2 mr-2 bg-red-300 rounded-md"
+                          onClick={onClaimRound}
+                        >
+                          GRANDMA!!!
+                        </button>
+                      )}
+                      <button
+                        className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md float-right"
+                        onClick={onEndTurn}
+                      >
+                        End Turn
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+
+              <div className="relative overflow-hidden">
+                {selectedCard && (
+                  <>
+                    <div className="absolute -left-4 flex items-center z-10 top-1/2 -translate-y-1/2">
+                      <button
+                        className="px-2 py-1 mx-1 w-10 h-10 bg-blue-300 rounded-full shadow-md flex items-center justify-center"
+                        onClick={() => changeCardOrder(selectedCard, -1)}
+                      >
+                        <FaAngleLeft />
+                      </button>
+                    </div>
+
+                    <div className="absolute -right-4 flex items-center z-10 top-1/2 -translate-y-1/2">
+                      <button
+                        className="px-2 py-1 mx-1 w-10 h-10 bg-blue-300 rounded-full shadow-md flex items-center justify-center"
+                        onClick={() => changeCardOrder(selectedCard, 1)}
+                      >
+                        <FaAngleRight />
+                      </button>
+                    </div>
                   </>
                 )}
+                <div className="overflow-x-scroll overflow-y-visible flex">
+                  <div className="flex py-4 w-full mx-4">
+                    {getPlayerCards()?.map((card, index) => {
+                      return (
+                        <div
+                          key={card.id}
+                          style={{ minWidth: "2rem", maxWidth: "6rem" }}
+                          className="relative w-full h-28 mx-2 first-of-type:ml-auto last-of-type:mr-auto"
+                        >
+                          <div className="absolute left-0 top-0">
+                            <CardComponent
+                              selected={selectedCard?.id === card.id}
+                              wild={isWildCard(card)}
+                              card={card}
+                              onClick={() => onCardInHandClick(card)}
+                              size="small"
+                              index={index}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
-            )}
-
-            {selectedCard && (
-              <div className="flex justify-center mb-4">
-                <button
-                  className="px-2 py-1 mx-1 bg-blue-300 rounded-md"
-                  onClick={() => changeCardOrder(selectedCard, -1)}
-                >
-                  Left
-                </button>
-                <button
-                  className="px-2 py-1 mx-1 bg-blue-300 rounded-md"
-                  onClick={() => changeCardOrder(selectedCard, 1)}
-                >
-                  Right
-                </button>
-              </div>
-            )}
-
-            <div
-              ref={wrapperRef}
-              className="flex justify-center w-full flex-wrap pr-14 overflow-hidden relative"
-            >
-              {getPlayerCards()?.map((card, index) => {
-                return (
-                  <>
-                    <CardComponent
-                      selected={selectedCard?.id === card.id}
-                      wild={isWildCard(card)}
-                      key={card.id}
-                      card={card}
-                      onClick={() => setSelectedCard(card)}
-                    />
-                  </>
-                );
-              })}
             </div>
           </div>
         </>

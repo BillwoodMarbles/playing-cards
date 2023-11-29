@@ -64,30 +64,37 @@ export default function Home() {
   };
 
   return (
-    <section className="w-full">
-      <h1 className="text-4xl mb-6">Card Night</h1>
+    <>
+      <header className="w-full flex justify-center items-center py-2">
+        <div className="flex items-center">
+          <h1 className="text-2xl">Card Night</h1>
+        </div>
+      </header>
 
-      <div>
-        <form onSubmit={onCreateGame}>
-          <div className="mb-4">
-            <label>
-              Player Name:
-              <input
-                type="text"
-                value={playerName}
-                onChange={(e) => setPlayerName(e.target.value)}
-              />
-            </label>
-          </div>
-          <button
-            type="submit"
-            className="px-6 py-2 mb-5 bg-blue-300 rounded-md"
-            onClick={onCreateGame}
-          >
-            Create Game
-          </button>
-        </form>
-      </div>
-    </section>
+      <section className="w-full py-4 px-2 bg-slate-100 grow text-center">
+        <div className="max-w-xs mx-auto">
+          <form onSubmit={onCreateGame}>
+            <div className="mb-4">
+              <label>
+                <input
+                  className="w-full px-3 py-2 border border-gray-400 rounded-md"
+                  type="text"
+                  value={playerName}
+                  placeholder="Player Name"
+                  onChange={(e) => setPlayerName(e.target.value)}
+                />
+              </label>
+            </div>
+            <button
+              type="submit"
+              className="px-6 py-2 mb-5 bg-blue-300 rounded-md"
+              onClick={onCreateGame}
+            >
+              Create Game
+            </button>
+          </form>
+        </div>
+      </section>
+    </>
   );
 }

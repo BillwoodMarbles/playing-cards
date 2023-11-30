@@ -806,7 +806,7 @@ export default function Play() {
                           onClick={() => onCardInHandClick(card)}
                           size="small"
                           index={index}
-                          animation={dealingCards ? "reveal-hand" : "slide"}
+                          animation={dealingCards ? "reveal-hand" : "none"}
                         />
                       </div>
                     </div>

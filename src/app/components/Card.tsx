@@ -55,7 +55,7 @@ const CardComponent: FC<CardProps> = ({
 
   const selectedClass = selected ? "ring-2 ring-blue-300 -translate-y-2" : "";
   const wildClass = wild
-    ? "bg-gradient-to-br from-indigo-700 via-purple-500 to-pink-700 text-white"
+    ? "bg-gradient-to-br from-indigo-600 via-purple-500 to-pink-600 text-white"
     : "";
   const getBackgroundClass = () => {
     if (!card) {

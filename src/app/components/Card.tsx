@@ -54,14 +54,14 @@ const CardComponent: FC<CardProps> = ({
   const [initialLoad, setInitialLoad] = useState(false);
 
   const selectedClass = selected ? "ring-2 ring-blue-300 -translate-y-2" : "";
-  const wildClass = wild
-    ? "bg-gradient-to-br from-indigo-600 via-purple-500 to-pink-600 text-white"
-    : "";
+
   const getBackgroundClass = () => {
     if (!card) {
       return "bg-white border border-gray-400";
     } else if (hidden) {
       return "bg-gradient-to-br from-red-300 to-red-400";
+    } else if (wild) {
+      return "bg-gradient-to-br from-indigo-600 via-purple-500 to-pink-600 text-white";
     } else {
       return "bg-gradient-to-br from-white to-slate-50";
     }
@@ -133,7 +133,7 @@ const CardComponent: FC<CardProps> = ({
       onClick={onCardClick}
       className={`relative shadow-[0_4px_5px_-1px_rgba(0,0,0,0.33)] transition ease-in-out duration-75 flex items-center h- justify-center ${getSizeClasses()} ${getCardColorClass(
         card
-      )} ${getBackgroundClass()} ${disabledClass} ${wildClass} ${selectedClass} ${animationClass()}`}
+      )} ${getBackgroundClass()} ${disabledClass} ${selectedClass} ${animationClass()}`}
       style={
         {
           zIndex: index,

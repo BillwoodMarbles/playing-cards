@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 
 const suits = ["♠", "♥", "♦", "♣", "🃏"];
 const values = [
@@ -18,6 +18,8 @@ const values = [
   " ",
 ];
 
+type CardAnimation = "none" | "slide" | "flip" | "reveal-hand";
+
 interface Card {
   id: number;
   suit: number;
@@ -34,6 +36,7 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   selected?: boolean;
   size?: "small" | "medium" | "large";
   index?: number;
+  animation?: CardAnimation;
 }
 
 const CardComponent: FC<CardProps> = ({
@@ -46,10 +49,13 @@ const CardComponent: FC<CardProps> = ({
   selected,
   size,
   index,
+  animation = "none",
 }) => {
+  const [initialLoad, setInitialLoad] = useState(false);
+
   const selectedClass = selected ? "ring-2 ring-blue-300 -translate-y-2" : "";
   const wildClass = wild
-    ? "bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white"
+    ? "bg-gradient-to-br from-indigo-700 via-purple-500 to-pink-700 text-white"
     : "";
   const getBackgroundClass = () => {
     if (!card) {
@@ -76,6 +82,31 @@ const CardComponent: FC<CardProps> = ({
     }
   };
 
+  const animationClass = () => {
+    switch (animation) {
+      case "slide":
+        return "animate-reveal-hand";
+      case "flip":
+        return "animate-flip";
+      case "reveal-hand":
+        return "animate-reveal-hand";
+      default:
+        return "";
+    }
+  };
+
+  const getAnimationDelay = () => {
+    if (animation === "slide" || initialLoad) {
+      return 0;
+    } else {
+      if (index) {
+        return index * 100;
+      } else {
+        return 0;
+      }
+    }
+  };
+
   const getSizeClasses = () => {
     switch (size) {
       case "small":
@@ -89,13 +120,26 @@ const CardComponent: FC<CardProps> = ({
     }
   };
 
+  useEffect(() => {
+    if (animation === "reveal-hand") {
+      setTimeout(() => {
+        setInitialLoad(true);
+      }, getAnimationDelay() * 500);
+    }
+  });
+
   return (
     <div
       onClick={onCardClick}
       className={`relative shadow-[0_4px_5px_-1px_rgba(0,0,0,0.33)] transition ease-in-out duration-75 flex items-center h- justify-center ${getSizeClasses()} ${getCardColorClass(
         card
-      )} ${getBackgroundClass()} ${disabledClass} ${wildClass} ${selectedClass}`}
-      style={{ zIndex: index }}
+      )} ${getBackgroundClass()} ${disabledClass} ${wildClass} ${selectedClass} ${animationClass()}`}
+      style={
+        {
+          zIndex: index,
+          "--animation-delay": `${getAnimationDelay()}ms`,
+        } as React.CSSProperties
+      }
     >
       {children && children}
 

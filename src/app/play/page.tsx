@@ -18,6 +18,7 @@ import HandContainer from "../components/HandContainer";
 import Players from "../components/Players";
 import { GameClass } from "../classes/Game";
 import { GRANDMA_GAME_TYPE, getGameConfig } from "../data/game-configs";
+import "../components/animations.css";
 
 const client = generateClient();
 Amplify.configure(amplifyconfig);
@@ -67,6 +68,7 @@ export default function Play() {
   const [gameData, setGameData] = useState<any>(null);
   const [myPlayer, setMyPlayer] = useState<number | null>(null);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+  const [dealingCards, setDealingCards] = useState(false);
 
   const currentAction = playerActions.find(
     (action) => action.completed === false
@@ -188,6 +190,10 @@ export default function Play() {
 
       if (getCurrentRoundWinner()) {
         if (newGame.players[nextPlayer].name === getCurrentRoundWinner()) {
+          setDealingCards(true);
+          setTimeout(() => {
+            setDealingCards(false);
+          }, 2000);
           newGame.rounds[newGame.currentRound].status = "complete";
         }
       }
@@ -291,6 +297,12 @@ export default function Play() {
       newGame.rounds = newRounds;
 
       setGame(newGame);
+      setDealingCards(true);
+
+      setTimeout(() => {
+        setDealingCards(false);
+      }, 2000);
+
       onUpdateGameGQL(newGame);
     }
   };
@@ -456,6 +468,10 @@ export default function Play() {
       });
 
       if (gameData.data) {
+        setDealingCards(true);
+        setTimeout(() => {
+          setDealingCards(false);
+        }, 2000);
         setGameData(gameData.data.getGame);
       } else {
         console.error("no game data available");
@@ -613,6 +629,8 @@ export default function Play() {
                                       card={card}
                                       disabled
                                       size="small"
+                                      index={index}
+                                      animation="reveal-hand"
                                     />
                                   </div>
                                 </div>
@@ -680,7 +698,7 @@ export default function Play() {
             </div>
           </div>
 
-          <div className="pb-4 bg-slate-100 w-full grow-0 relative">
+          <div className="pb-4 bg-slate-100 w-full grow-0 relative z-20">
             <div className="flex justify-center absolute left-0 bottom-full w-full">
               {getCurrnetRound()?.status === "complete" && !isLastRound() && (
                 <button
@@ -746,7 +764,7 @@ export default function Play() {
               )}
             </div>
 
-            <div className="relative overflow-hidden">
+            <div className="relative overflow-visible">
               {selectedCard && (
                 <>
                   <div className="absolute -left-4 flex items-center z-50 top-1/2 -translate-y-1/2">
@@ -782,12 +800,13 @@ export default function Play() {
                     >
                       <div className="absolute left-0 top-0">
                         <CardComponent
-                          selected={selectedCard?.id === card.id}
+                          selected={selectedCard?.id === card?.id}
                           wild={isWildCard(card)}
                           card={card}
                           onClick={() => onCardInHandClick(card)}
                           size="small"
                           index={index}
+                          animation={dealingCards ? "reveal-hand" : "slide"}
                         />
                       </div>
                     </div>

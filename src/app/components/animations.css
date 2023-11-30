@@ -1,0 +1,69 @@
+@keyframes reveal {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes slide {
+  0% {
+    transform: translateY(-50px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.animate-reveal-hand {
+  opacity: 0;
+  animation-name: reveal, slide;
+  animation-duration: 0.5s;
+  animation-delay: var(--animation-delay);
+  animation-iteration-count: 1;
+  animation-timing-function: ease-out;
+  -webkit-animation-fill-mode: forwards, none; /* Chrome 16+, Safari 4+ */
+  -moz-animation-fill-mode: forwards, none; /* FF 5+ */
+  -o-animation-fill-mode: forwards, none; /* Not implemented yet */
+  -ms-animation-fill-mode: forwards, none; /* IE 10+ */
+  animation-fill-mode: forwards, none;
+}
+
+.animate-slide-in {
+  animation-name: slide;
+  animation-duration: 0.5s;
+  animation-delay: var(--animation-delay);
+  animation-iteration-count: 1;
+}
+
+@keyframes selected {
+  0% {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+  80% {
+    transform: translateY(-30px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-20px);
+    opacity: 1;
+  }
+}
+
+.animate-selected {
+  animation-name: selected;
+  animation-duration: 0.5s;
+  animation-delay: 0;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: 1;
+  -webkit-animation-fill-mode: forwards; /* Chrome 16+, Safari 4+ */
+  -moz-animation-fill-mode: forwards; /* FF 5+ */
+  -o-animation-fill-mode: forwards; /* Not implemented yet */
+  -ms-animation-fill-mode: forwards; /* IE 10+ */
+  animation-fill-mode: forwards;
+}

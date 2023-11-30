@@ -6,8 +6,10 @@ interface HandContainerProps {
 
 const HandContainer: FC<HandContainerProps> = ({ children }) => {
   return (
-    <div className="overflow-x-scroll overflow-y-visible flex">
-      <div className="flex py-4 w-full mx-4">{children}</div>
+    <div className="px-6">
+      <div className="flex py-4 flex-wrap justify-center w-full pr-12 pb-16">
+        {children}
+      </div>
     </div>
   );
 };

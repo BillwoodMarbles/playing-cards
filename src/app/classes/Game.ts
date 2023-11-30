@@ -1,3 +1,4 @@
+import { getGameConfig } from "../data/game-configs";
 import { Card, Game, GameStatus, Player, Round } from "../types";
 
 export class GameClass {
@@ -20,7 +21,14 @@ export class GameClass {
     this.discardDeck = game?.discardDeck || [];
     this.playerTurn = game?.playerTurn || 0;
     this.status = game?.status || "open";
-    this.rounds = game?.rounds || [];
+
+    if (!game?.rounds && game?.gameType) {
+      const config = getGameConfig(game.gameType);
+      this.rounds = config.rounds;
+    } else {
+      this.rounds = game?.rounds || [];
+    }
+
     this.currentRound = game?.currentRound || 0;
     this.gameType = game?.gameType || "";
   }
@@ -52,14 +60,18 @@ export class GameClass {
   }
 
   initializeRound() {
+    console.log("initializing round");
     this.initializeDeck();
     this.discardDeck = [];
     this.players?.forEach((player) => {
       player.cards = [];
     });
 
+    console.log("initializing round", this.currentRound, this.rounds);
+
     // set round status to in-progress
     const newRounds = [...this.rounds];
+    console.log("newRounds", newRounds);
     newRounds[this.currentRound].status = "open";
 
     // if first round set dealer to host player

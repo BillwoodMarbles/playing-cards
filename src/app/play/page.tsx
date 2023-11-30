@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { generateClient } from "aws-amplify/api";
 import { onUpdateGame } from "@/graphql/subscriptions";
 import { getGame } from "@/graphql/queries";
-import { GetGameQuery, GetGameQueryVariables } from "@/API";
+import { GetGameQueryVariables } from "@/API";
 import { Amplify } from "aws-amplify";
 import amplifyconfig from "../../amplifyconfiguration.json";
 import { updateGame } from "@/graphql/mutations";
@@ -17,6 +17,7 @@ import NotificationsComponent from "../components/Notifications";
 import HandContainer from "../components/HandContainer";
 import Players from "../components/Players";
 import { GameClass } from "../classes/game";
+import { GRANDMA_GAME_TYPE, getGameConfig } from "../data/game-configs";
 
 const client = generateClient();
 Amplify.configure(amplifyconfig);
@@ -39,21 +40,7 @@ function useOutsideAlerter(ref: any) {
   }, [ref]);
 }
 
-const buildDefaultRounds = () => {
-  const rounds: Round[] = [];
-  for (let i = 0; i < 10; i++) {
-    rounds.push({
-      id: i,
-      status: "open",
-      score: {},
-      drawCount: i + 3,
-      roundWinner: -1,
-      dealer: -1,
-    });
-  }
-  return rounds;
-};
-const gameRounds = buildDefaultRounds();
+const gameConfig = getGameConfig(GRANDMA_GAME_TYPE);
 
 const playerActions: PlayerAction[] = [
   {
@@ -74,12 +61,11 @@ export default function Play() {
   const wrapperRef = useRef(null);
   useOutsideAlerter(wrapperRef);
 
-  const [gameCode, setGameCode] = useState<string | null>(null);
   const [playerName, setPlayerName] = useState("");
   const [playerId, setPlayerId] = useState("");
   const [game, setGame] = useState<Game | null>(null);
+  const [gameData, setGameData] = useState<any>(null);
   const [myPlayer, setMyPlayer] = useState<number | null>(null);
-  const [playerCardSortOrder, setPlayerCardsSortOrder] = useState<number[]>([]);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 
   const currentAction = playerActions.find(
@@ -150,7 +136,7 @@ export default function Play() {
     // reset game
     if (game) {
       const newGame = new GameClass({
-        rounds: gameRounds,
+        rounds: gameConfig.rounds,
         code: game.code,
         id: game.id,
         players: game.players,
@@ -266,64 +252,19 @@ export default function Play() {
     }
   };
 
-  const checkThatPlayerCardsExistInSortOrder = () => {
-    const newPlayerCardSortOrder = [...playerCardSortOrder];
-
-    if (game && myPlayer !== null) {
-      const playerCards = game.players[myPlayer].cards;
-
-      playerCards.forEach((card) => {
-        const cardId = newPlayerCardSortOrder.find((id) => id === card.id);
-
-        if (cardId === undefined) {
-          newPlayerCardSortOrder.push(card.id);
-        }
-      });
-
-      setPlayerCardsSortOrder(newPlayerCardSortOrder);
-    }
-
-    return newPlayerCardSortOrder;
-  };
-
   const changeCardOrder = (card: Card, orderAdjustment: number) => {
     if (game && myPlayer !== null) {
-      const newSortOrder = checkThatPlayerCardsExistInSortOrder();
-      const cardIndex = newSortOrder.findIndex((id) => id === card.id);
-
-      if (
-        cardIndex + orderAdjustment >= 0 &&
-        cardIndex + orderAdjustment < game.players[myPlayer].cards.length
-      ) {
-        newSortOrder.splice(cardIndex, 1);
-        newSortOrder.splice(cardIndex + orderAdjustment, 0, card.id || 0);
+      const newGame = new GameClass(game);
+      const newPlayerCards = [...newGame.players[myPlayer].cards];
+      const cardIndex = newPlayerCards.findIndex((c) => c.id === card.id);
+      const cardToSwap = newPlayerCards[cardIndex + orderAdjustment];
+      if (!cardToSwap) {
+        return;
       }
-
-      setPlayerCardsSortOrder(newSortOrder);
-    }
-  };
-
-  const getPlayerCards = () => {
-    if (game && myPlayer !== null) {
-      // sort player cards by order
-      const playerCards = game.players[myPlayer].cards;
-      const newPlayerCards: Card[] = [];
-
-      playerCardSortOrder.forEach((id) => {
-        const card = playerCards.find((card) => card.id === id);
-        if (card) {
-          newPlayerCards.push(card);
-        }
-      });
-
-      // for all playerCards not in newPlayerCards add to end of newPlayerCards
-      playerCards.forEach((card) => {
-        if (!newPlayerCards.find((c) => c.id === card.id)) {
-          newPlayerCards.push(card);
-        }
-      });
-
-      return newPlayerCards;
+      newPlayerCards[cardIndex + orderAdjustment] = card;
+      newPlayerCards[cardIndex] = cardToSwap;
+      newGame.players[myPlayer].cards = newPlayerCards;
+      setGame(newGame);
     }
   };
 
@@ -334,16 +275,6 @@ export default function Play() {
 
       newGame.players?.forEach((player) => {
         player.cards = newGame.deck.slice(0, getCurrnetRound()?.drawCount);
-
-        // get card ids from player cards
-        const playerCardIds = player.cards.map((card) => card.id);
-
-        if (myPlayer !== null && player.id === myPlayer) {
-          const newPlayerCardSortOrder = playerCardIds;
-          newPlayerCardSortOrder.sort((a, b) => a - b);
-          setPlayerCardsSortOrder(newPlayerCardSortOrder);
-        }
-
         newGame.deck = newGame.deck.slice(getCurrnetRound()?.drawCount);
       });
 
@@ -414,48 +345,96 @@ export default function Play() {
     }
   };
 
-  const parseGameData = (game: any) => {
-    if (game) {
+  const reduceGameData = (gameData: any, playerId?: string | null) => {
+    if (gameData) {
       const parsedGame: Game = {
-        id: game.id,
-        code: game.code,
-        status: game.status as GameStatus,
-        playerTurn: game.playerTurn || 0,
-        deck: game.deck ? JSON.parse(game.deck) : [],
-        discardDeck: game.discardDeck ? JSON.parse(game.discardDeck) : [],
-        players: game.players ? JSON.parse(game.players) : [],
-        rounds: game.rounds ? JSON.parse(game.rounds) : [],
-        currentRound: game.currentRound || 0,
-        gameType: game.gameType || "standard",
+        id: gameData.id,
+        code: gameData.code,
+        status: gameData.status as GameStatus,
+        playerTurn: gameData.playerTurn || 0,
+        deck: gameData.deck ? JSON.parse(gameData.deck) : [],
+        discardDeck: gameData.discardDeck
+          ? JSON.parse(gameData.discardDeck)
+          : [],
+        players: gameData.players ? JSON.parse(gameData.players) : [],
+        rounds: gameData.rounds ? JSON.parse(gameData.rounds) : [],
+        currentRound: gameData.currentRound || 0,
+        gameType: gameData.gameType || "standard",
       };
+
+      // remove null player cards
+      parsedGame.players.forEach((player) => {
+        player.cards = player.cards.filter((card: Card) => card !== null);
+      });
+
       return parsedGame;
     }
 
     return null;
   };
 
-  const subscribeToGameUpdates = async (code: string) => {
+  const subscribeToGameUpdates = (code: string, playerId?: string | null) => {
+    let subscription: any;
     try {
-      const subscription = await client.graphql({
-        query: onUpdateGame,
-        variables: {
-          filter: {
-            id: { eq: code },
+      subscription = client
+        .graphql({
+          query: onUpdateGame,
+          variables: {
+            filter: {
+              id: { eq: code },
+            },
           },
-        },
-      });
-
-      subscription.subscribe({
-        next: (eventData: any) => {
-          if (eventData.data) {
-            setGame(parseGameData(eventData.data.onUpdateGame as GetGameQuery));
-          }
-        },
-      });
+        })
+        .subscribe({
+          next: (eventData: any) => {
+            if (eventData.data) {
+              setGameData(eventData.data.onUpdateGame);
+            }
+          },
+        });
     } catch (err) {
       console.error("error subscribing to game updates", err);
     }
+
+    return subscription;
   };
+
+  const sortPlayerCards = (player: Player) => {
+    let sortedCards = [...player.cards];
+
+    const prevPlayerData = game?.players.find(
+      (prevPlayer) => prevPlayer.id === player.id
+    );
+    const sortingArr = prevPlayerData?.cards.map((card) => card.id);
+
+    if (sortingArr) {
+      sortedCards = sortedCards.sort(function (a, b) {
+        return sortingArr.indexOf(a.id) - sortingArr.indexOf(b.id);
+      });
+    }
+
+    return sortedCards;
+  };
+
+  useEffect(() => {
+    if (gameData) {
+      const parsedGame = reduceGameData(gameData, playerId);
+
+      if (parsedGame) {
+        const player = parsedGame.players.find(
+          (player) => player.name === playerId
+        );
+
+        if (player) {
+          setMyPlayer(player.id);
+          const sortedCards = sortPlayerCards(player);
+          player.cards = sortedCards;
+        }
+      }
+
+      setGame(parsedGame);
+    }
+  }, [gameData, playerId]);
 
   const getCurrentRoundWinner = () => {
     if (game) {
@@ -467,26 +446,17 @@ export default function Play() {
     }
   };
 
-  const getGameByCode = async (code: string) => {
+  const getGameByCode = async (code: string, playerId?: string | null) => {
     try {
-      const game = await client.graphql({
+      const gameData = await client.graphql({
         query: getGame,
         variables: {
           id: code,
         } as GetGameQueryVariables,
       });
 
-      if (game.data) {
-        const parsedGame = parseGameData(game.data.getGame as GetGameQuery);
-        setGame(parsedGame);
-        if (parsedGame) {
-          const player = parsedGame.players.find(
-            (player) => player.name === playerId
-          );
-          if (player) {
-            setMyPlayer(player.id);
-          }
-        }
+      if (gameData.data) {
+        setGameData(gameData.data.getGame);
       } else {
         console.error("no game data available");
       }
@@ -512,7 +482,7 @@ export default function Play() {
 
   const copyCurrentRouteToClipboard = () => {
     let path = window.location.href.split("?")[0];
-    path += `?code=${gameCode}`;
+    path += `?code=${game?.code}`;
     navigator.clipboard.writeText(path);
   };
 
@@ -525,21 +495,22 @@ export default function Play() {
   };
 
   useEffect(() => {
-    if (gameCode) {
-      getGameByCode(gameCode);
-      subscribeToGameUpdates(gameCode);
-    }
-  }, [gameCode]);
-
-  useEffect(() => {
-    const code = searchParams.get("code");
-    setGameCode(code);
-  }, [searchParams]);
-
-  useEffect(() => {
     const playerId = searchParams.get("player");
+    const code = searchParams.get("code");
+
     if (playerId) {
       setPlayerId(playerId);
+    }
+
+    let subscription: any;
+
+    if (code) {
+      getGameByCode(code, playerId);
+      subscription = subscribeToGameUpdates(code);
+    }
+
+    if (subscription) {
+      return () => subscription.unsubscribe();
     }
   }, []);
 
@@ -551,7 +522,7 @@ export default function Play() {
             className="ml-2 flex items-center"
             onClick={copyCurrentRouteToClipboard}
           >
-            {gameCode}
+            {game?.code}
             <FaShareFromSquare className="ml-2" />
           </button>
         </div>
@@ -603,7 +574,7 @@ export default function Play() {
             <Players playerTurn={game.playerTurn} players={game.players} />
           )}
 
-          <div className="flex items-center justify-center grow relative flex-col w-full bg-slate-100">
+          <div className="flex items-center justify-center grow relative flex-col w-full bg-slate-200">
             <NotificationsComponent
               game={game}
               player={getMyPlayer()}
@@ -705,7 +676,7 @@ export default function Play() {
             </div>
           </div>
 
-          <div className="py-4 bg-slate-100 w-full grow-0 border-t-2 border-t-white">
+          <div className="py-4 bg-slate-200 w-full grow-0">
             <div className="flex justify-center">
               {getCurrnetRound()?.status === "complete" && !isLastRound() && (
                 <button
@@ -794,12 +765,16 @@ export default function Play() {
                 </>
               )}
               <HandContainer>
-                {getPlayerCards()?.map((card, index) => {
+                {getMyPlayer()?.cards.map((card, index) => {
                   return (
                     <div
                       key={card.id}
-                      style={{ minWidth: "2rem", maxWidth: "6rem" }}
-                      className="relative w-full h-28 mx-2 first-of-type:ml-auto last-of-type:mr-auto"
+                      style={{
+                        minWidth: "2rem",
+                        maxWidth: "6rem",
+                        zIndex: index,
+                      }}
+                      className="relative w-12 h-14"
                     >
                       <div className="absolute left-0 top-0">
                         <CardComponent

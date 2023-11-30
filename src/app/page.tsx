@@ -7,7 +7,8 @@ import { createGame } from "@/graphql/mutations";
 import { CreateGameInput } from "@/API";
 import { Amplify } from "aws-amplify";
 import amplifyconfig from "../amplifyconfiguration.json";
-import { Round } from "./types";
+import { GameClass } from "./classes/game";
+import { GRANDMA_GAME_TYPE, getGameConfig } from "./data/game-configs";
 Amplify.configure(amplifyconfig);
 
 const client = generateClient();
@@ -16,43 +17,32 @@ export default function Home() {
   const router = useRouter();
   const [playerName, setPlayerName] = useState("");
 
-  const buildDefaultRounds = () => {
-    const rounds: Round[] = [];
-    for (let i = 0; i < 10; i++) {
-      rounds.push({
-        id: i,
-        status: "open",
-        score: {},
-        drawCount: i + 3,
-        roundWinner: -1,
-        dealer: -1,
-      });
-    }
-    return rounds;
-  };
-  const rounds = buildDefaultRounds();
-
   const onCreateGame = async (e: any) => {
     e.preventDefault();
     const code = Math.random().toString(36).substring(2, 6);
+
+    const newGame = new GameClass({
+      id: code,
+      code,
+      players: [{ id: 0, name: playerName, cards: [], type: "host" }],
+      gameType: GRANDMA_GAME_TYPE,
+    });
 
     try {
       await client.graphql({
         query: createGame,
         variables: {
           input: {
-            id: code,
-            code,
-            players: JSON.stringify([
-              { id: 0, name: playerName, cards: [], type: "host" },
-            ]),
-            deck: JSON.stringify([]),
-            discardDeck: JSON.stringify([]),
-            playerTurn: 0,
-            status: "open",
-            rounds: JSON.stringify(rounds),
-            currentRound: 0,
-            gameType: "grandma",
+            id: newGame.code,
+            code: newGame.code,
+            players: JSON.stringify(newGame.players),
+            deck: JSON.stringify(newGame.deck),
+            discardDeck: JSON.stringify(newGame.discardDeck),
+            playerTurn: newGame.playerTurn,
+            status: newGame.status,
+            rounds: JSON.stringify(newGame.rounds),
+            currentRound: newGame.currentRound,
+            gameType: newGame.gameType,
           } as CreateGameInput,
         },
       });

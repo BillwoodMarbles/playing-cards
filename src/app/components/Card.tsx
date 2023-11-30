@@ -48,14 +48,14 @@ const CardComponent: FC<CardProps> = ({
   index,
 }) => {
   const selectedClass = selected ? "ring-2 ring-blue-300 -translate-y-2" : "";
-  const wildClass = wild ? "bg-yellow-300" : "";
+  const wildClass = wild ? "bg-gradient-to-br from-cyan-200 to-violet-200" : "";
   const getBackgroundClass = () => {
     if (!card) {
-      return "bg-gray-100";
+      return "bg-gray-100 border border-gray-400";
     } else if (hidden) {
-      return "bg-red-300";
+      return "bg-gradient-to-br from-red-300 to-red-400";
     } else {
-      return "bg-white";
+      return "bg-gradient-to-br from-white to-slate-100";
     }
   };
   const disabledClass = disabled ? "cursure-default" : "cursor-pointer";

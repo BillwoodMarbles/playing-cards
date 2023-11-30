@@ -7,8 +7,8 @@ import { createGame } from "@/graphql/mutations";
 import { CreateGameInput } from "@/API";
 import { Amplify } from "aws-amplify";
 import amplifyconfig from "../amplifyconfiguration.json";
-import { GameClass } from "./classes/game";
-import { GRANDMA_GAME_TYPE, getGameConfig } from "./data/game-configs";
+import { GameClass } from "./classes/Game";
+import { GRANDMA_GAME_TYPE } from "./data/game-configs";
 Amplify.configure(amplifyconfig);
 
 const client = generateClient();

@@ -16,7 +16,7 @@ import { Card, Game, GameStatus, Player, PlayerAction, Round } from "../types";
 import NotificationsComponent from "../components/Notifications";
 import HandContainer from "../components/HandContainer";
 import Players from "../components/Players";
-import { GameClass } from "../classes/game";
+import { GameClass } from "../classes/Game";
 import { GRANDMA_GAME_TYPE, getGameConfig } from "../data/game-configs";
 
 const client = generateClient();

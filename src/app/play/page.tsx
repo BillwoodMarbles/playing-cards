@@ -570,19 +570,21 @@ export default function Play() {
             </>
           )}
 
-          {game.players.length > 0 && (
-            <Players playerTurn={game.playerTurn} players={game.players} />
-          )}
+          <NotificationsComponent
+            game={game}
+            player={getMyPlayer()}
+            isPlayerTurn={isMyTurn()}
+            currentPlayerAction={getCurrentPlayerAction()}
+            currentRound={getCurrnetRound()}
+          />
 
-          <div className="flex items-center justify-center grow relative flex-col w-full bg-slate-200">
-            <NotificationsComponent
-              game={game}
-              player={getMyPlayer()}
-              isPlayerTurn={isMyTurn()}
-              currentPlayerAction={getCurrentPlayerAction()}
-              currentRound={getCurrnetRound()}
-            />
+          <div className="relative py-4 px-3 bg-slate-100 w-full">
+            {game.players.length > 0 && (
+              <Players playerTurn={game.playerTurn} players={game.players} />
+            )}
+          </div>
 
+          <div className="flex items-center justify-center grow relative flex-col w-full bg-slate-100 py-6">
             <div className="w-full">
               {game.status === "in-progress" && (
                 <>
@@ -598,8 +600,12 @@ export default function Play() {
                               <>
                                 <div
                                   key={card.id}
-                                  style={{ minWidth: "1rem", maxWidth: "6rem" }}
-                                  className="relative w-full h-28 mx-2 first-of-type:ml-auto last-of-type:mr-auto"
+                                  style={{
+                                    minWidth: "2rem",
+                                    maxWidth: "6rem",
+                                    zIndex: index,
+                                  }}
+                                  className="relative w-12 h-14"
                                 >
                                   <div className="absolute left-0 top-0">
                                     <CardComponent
@@ -636,9 +642,7 @@ export default function Play() {
                                     !isMyTurn() ||
                                     currentAction?.type !== "draw"
                                   }
-                                >
-                                  Draw
-                                </CardComponent>
+                                ></CardComponent>
                               </>
                             );
                           })()
@@ -676,11 +680,11 @@ export default function Play() {
             </div>
           </div>
 
-          <div className="py-4 bg-slate-200 w-full grow-0">
-            <div className="flex justify-center">
+          <div className="pb-4 bg-slate-100 w-full grow-0 relative">
+            <div className="flex justify-center absolute left-0 bottom-full w-full">
               {getCurrnetRound()?.status === "complete" && !isLastRound() && (
                 <button
-                  className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md"
+                  className="px-6 py-2 mb-2 mx-1 bg-gradient-to-br from-blue-400 to-blue-500 rounded-md text-white float-right"
                   onClick={onStartNewRound}
                 >
                   Start New Round
@@ -689,7 +693,7 @@ export default function Play() {
 
               {getCurrnetRound()?.status === "complete" && isLastRound() && (
                 <button
-                  className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md"
+                  className="px-6 py-2 mb-2 mx-1 bg-blue-500 rounded-md text-white float-right"
                   onClick={onNewGame}
                 >
                   New Game
@@ -701,7 +705,7 @@ export default function Play() {
                 getMyPlayer()?.type === "host" &&
                 game.players.length >= 2 && (
                   <button
-                    className="px-6 py-2 mb-5 bg-blue-300 rounded-md"
+                    className="px-6 py-2 mb-2 mx-1 bg-blue-500 rounded-md text-white float-right"
                     onClick={onStartGame}
                   >
                     Start Game
@@ -711,7 +715,7 @@ export default function Play() {
               {getCurrnetRound()?.status === "open" &&
                 getCurrnetRound()?.dealer === myPlayer && (
                   <button
-                    className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md"
+                    className="px-6 py-2 mb-2 mx-1 bg-blue-500 rounded-md text-white float-right"
                     onClick={onDealCardsToPlayers}
                   >
                     Deal
@@ -724,14 +728,14 @@ export default function Play() {
                     <>
                       {!getCurrentRoundWinner() && (
                         <button
-                          className="px-6 py-2 mb-2 mr-2 bg-red-300 rounded-md"
+                          className="px-6 py-2 mb-2 mx-1 bg-red-500 rounded-md text-white float-right"
                           onClick={onClaimRound}
                         >
                           GRANDMA!!!
                         </button>
                       )}
                       <button
-                        className="px-6 py-2 mb-2 mr-2 bg-blue-300 rounded-md float-right"
+                        className="px-6 py-2 mb-2 mx-1 bg-blue-500 rounded-md text-white float-right"
                         onClick={onEndTurn}
                       >
                         End Turn
@@ -745,7 +749,7 @@ export default function Play() {
             <div className="relative overflow-hidden">
               {selectedCard && (
                 <>
-                  <div className="absolute -left-4 flex items-center z-10 top-1/2 -translate-y-1/2">
+                  <div className="absolute -left-4 flex items-center z-50 top-1/2 -translate-y-1/2">
                     <button
                       className="px-2 py-1 mx-1 w-12 h-12 bg-blue-300 rounded-full shadow-md flex items-center justify-center"
                       onClick={() => changeCardOrder(selectedCard, -1)}
@@ -754,7 +758,7 @@ export default function Play() {
                     </button>
                   </div>
 
-                  <div className="absolute -right-4 flex items-center z-10 top-1/2 -translate-y-1/2">
+                  <div className="absolute -right-4 flex items-center z-50 top-1/2 -translate-y-1/2">
                     <button
                       className="px-2 py-1 mx-1 w-12 h-12 bg-blue-300 rounded-full shadow-md flex items-center justify-center"
                       onClick={() => changeCardOrder(selectedCard, 1)}

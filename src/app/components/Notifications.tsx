@@ -88,7 +88,7 @@ const NotificationsComponent: FC<NotificationsProps> = ({
   };
 
   return (
-    <div className="flex justify-center px-4 py-2 rounded-md flex-col items-center absolute top-4">
+    <div className="flex w-full justify-center px-4 py-2 flex-col items-center bg-teal-500 text-xs text-white">
       {getNotifcations().map((notification) => notification)}
     </div>
   );

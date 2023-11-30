@@ -48,14 +48,16 @@ const CardComponent: FC<CardProps> = ({
   index,
 }) => {
   const selectedClass = selected ? "ring-2 ring-blue-300 -translate-y-2" : "";
-  const wildClass = wild ? "bg-gradient-to-br from-cyan-200 to-violet-200" : "";
+  const wildClass = wild
+    ? "bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white"
+    : "";
   const getBackgroundClass = () => {
     if (!card) {
-      return "bg-gray-100 border border-gray-400";
+      return "bg-white border border-gray-400";
     } else if (hidden) {
       return "bg-gradient-to-br from-red-300 to-red-400";
     } else {
-      return "bg-gradient-to-br from-white to-slate-100";
+      return "bg-gradient-to-br from-white to-slate-50";
     }
   };
   const disabledClass = disabled ? "cursure-default" : "cursor-pointer";
@@ -90,7 +92,7 @@ const CardComponent: FC<CardProps> = ({
   return (
     <div
       onClick={onCardClick}
-      className={`relative shadow-md transition ease-in-out duration-75 flex items-center h- justify-center ${getSizeClasses()} ${getCardColorClass(
+      className={`relative shadow-[0_4px_5px_-1px_rgba(0,0,0,0.33)] transition ease-in-out duration-75 flex items-center h- justify-center ${getSizeClasses()} ${getCardColorClass(
         card
       )} ${getBackgroundClass()} ${disabledClass} ${wildClass} ${selectedClass}`}
       style={{ zIndex: index }}
@@ -104,13 +106,13 @@ const CardComponent: FC<CardProps> = ({
           </div>
 
           <div className="absolute left-1 top-1 flex justify-center items-center flex-col">
-            <div className="text-sm leading-none">{values[card.value]}</div>
-            <div className="text-sm">{suits[card.suit]}</div>
+            <div className="text-lg leading-none">{values[card.value]}</div>
+            <div className="text-lg leading-none">{suits[card.suit]}</div>
           </div>
 
           <div className="absolute right-1 bottom-1 flex justify-center items-center flex-col">
-            <div className="text-sm leading-none">{suits[card.suit]}</div>
-            <div className="text-sm leading-none">{values[card.value]}</div>
+            <div className="text-lg leading-none">{suits[card.suit]}</div>
+            <div className="text-lg leading-none">{values[card.value]}</div>
           </div>
         </>
       )}

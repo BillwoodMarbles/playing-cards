@@ -13,6 +13,7 @@ export type CreateGameInput = {
   rounds: string,
   currentRound: number,
   gameType: string,
+  lastMove?: string | null,
 };
 
 export type ModelGameConditionInput = {
@@ -25,6 +26,7 @@ export type ModelGameConditionInput = {
   rounds?: ModelStringInput | null,
   currentRound?: ModelIntInput | null,
   gameType?: ModelStringInput | null,
+  lastMove?: ModelStringInput | null,
   and?: Array< ModelGameConditionInput | null > | null,
   or?: Array< ModelGameConditionInput | null > | null,
   not?: ModelGameConditionInput | null,
@@ -94,6 +96,7 @@ export type Game = {
   rounds: string,
   currentRound: number,
   gameType: string,
+  lastMove?: string | null,
   createdAt: string,
   updatedAt: string,
 };
@@ -109,6 +112,7 @@ export type UpdateGameInput = {
   rounds?: string | null,
   currentRound?: number | null,
   gameType?: string | null,
+  lastMove?: string | null,
 };
 
 export type DeleteGameInput = {
@@ -126,6 +130,7 @@ export type ModelGameFilterInput = {
   rounds?: ModelStringInput | null,
   currentRound?: ModelIntInput | null,
   gameType?: ModelStringInput | null,
+  lastMove?: ModelStringInput | null,
   and?: Array< ModelGameFilterInput | null > | null,
   or?: Array< ModelGameFilterInput | null > | null,
   not?: ModelGameFilterInput | null,
@@ -164,6 +169,7 @@ export type ModelSubscriptionGameFilterInput = {
   rounds?: ModelSubscriptionStringInput | null,
   currentRound?: ModelSubscriptionIntInput | null,
   gameType?: ModelSubscriptionStringInput | null,
+  lastMove?: ModelSubscriptionStringInput | null,
   and?: Array< ModelSubscriptionGameFilterInput | null > | null,
   or?: Array< ModelSubscriptionGameFilterInput | null > | null,
 };
@@ -228,6 +234,7 @@ export type CreateGameMutation = {
     rounds: string,
     currentRound: number,
     gameType: string,
+    lastMove?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -251,6 +258,7 @@ export type UpdateGameMutation = {
     rounds: string,
     currentRound: number,
     gameType: string,
+    lastMove?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -274,6 +282,7 @@ export type DeleteGameMutation = {
     rounds: string,
     currentRound: number,
     gameType: string,
+    lastMove?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -296,6 +305,7 @@ export type GetGameQuery = {
     rounds: string,
     currentRound: number,
     gameType: string,
+    lastMove?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -322,6 +332,7 @@ export type ListGamesQuery = {
       rounds: string,
       currentRound: number,
       gameType: string,
+      lastMove?: string | null,
       createdAt: string,
       updatedAt: string,
     } | null >,
@@ -346,6 +357,7 @@ export type OnCreateGameSubscription = {
     rounds: string,
     currentRound: number,
     gameType: string,
+    lastMove?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -368,6 +380,7 @@ export type OnUpdateGameSubscription = {
     rounds: string,
     currentRound: number,
     gameType: string,
+    lastMove?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -390,6 +403,7 @@ export type OnDeleteGameSubscription = {
     rounds: string,
     currentRound: number,
     gameType: string,
+    lastMove?: string | null,
     createdAt: string,
     updatedAt: string,
   } | null,

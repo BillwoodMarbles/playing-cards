@@ -14,5 +14,5 @@ type Game @model {
   rounds: AWSJSON!
   currentRound: Int!
   gameType: String!
-  lastMove: AWSJSON!
+  lastMove: AWSJSON
 }

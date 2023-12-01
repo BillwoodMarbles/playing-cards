@@ -23,6 +23,7 @@ export const createGame = /* GraphQL */ `mutation CreateGame(
     rounds
     currentRound
     gameType
+    lastMove
     createdAt
     updatedAt
     __typename
@@ -47,6 +48,7 @@ export const updateGame = /* GraphQL */ `mutation UpdateGame(
     rounds
     currentRound
     gameType
+    lastMove
     createdAt
     updatedAt
     __typename
@@ -71,6 +73,7 @@ export const deleteGame = /* GraphQL */ `mutation DeleteGame(
     rounds
     currentRound
     gameType
+    lastMove
     createdAt
     updatedAt
     __typename

@@ -20,6 +20,7 @@ export const getGame = /* GraphQL */ `query GetGame($id: ID!) {
     rounds
     currentRound
     gameType
+    lastMove
     createdAt
     updatedAt
     __typename
@@ -43,6 +44,7 @@ export const listGames = /* GraphQL */ `query ListGames(
       rounds
       currentRound
       gameType
+      lastMove
       createdAt
       updatedAt
       __typename

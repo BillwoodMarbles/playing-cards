@@ -20,8 +20,8 @@ const NotificationsComponent: FC<NotificationsProps> = ({
     return game.currentRound === game.rounds.length - 1;
   };
 
-  const getPlayerName = (playerId: number) => {
-    return game.players[playerId]?.name;
+  const getPlayerById = (playerId: string) => {
+    return game.players.find((player) => player.id === playerId);
   };
 
   const getNotifcations = () => {
@@ -61,13 +61,10 @@ const NotificationsComponent: FC<NotificationsProps> = ({
           );
         }
       } else {
-        if (
-          currentRound?.roundWinner !== undefined &&
-          currentRound.roundWinner >= 0
-        ) {
+        if (currentRound?.roundWinner) {
           notifications.push(
             <div className="text-center">
-              GRANDMA!!! - {getPlayerName(currentRound?.roundWinner)}
+              GRANDMA!!! - {getPlayerById(currentRound?.roundWinner)?.name}
             </div>
           );
         }
@@ -77,7 +74,7 @@ const NotificationsComponent: FC<NotificationsProps> = ({
         } else {
           notifications.push(
             <div className="text-center">
-              {game.players[game.playerTurn]?.name}&lsquo;s Turn
+              {getPlayerById(game.playerTurn)?.name}&lsquo;s Turn
             </div>
           );
         }
@@ -88,7 +85,7 @@ const NotificationsComponent: FC<NotificationsProps> = ({
   };
 
   return (
-    <div className="flex w-full justify-center px-4 py-2 flex-col items-center bg-teal-500 text-xs text-white">
+    <div className="flex w-full justify-center px-4 py-2 flex-col items-center bg-teal-300 text-xs ">
       {getNotifcations().map((notification) => notification)}
     </div>
   );

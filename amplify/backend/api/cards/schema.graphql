@@ -7,11 +7,12 @@ type Game @model {
   id: ID!
   code: String!
   players: AWSJSON!
-  playerTurn: Int!
+  playerTurn: String!
   deck: AWSJSON!
   discardDeck: AWSJSON!
   status: String!
   rounds: AWSJSON!
   currentRound: Int!
   gameType: String!
+  lastMove: AWSJSON!
 }

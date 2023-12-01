@@ -20,8 +20,8 @@ const buildGrandmaRounds = () => {
       status: "open",
       score: {},
       drawCount: i + 3,
-      roundWinner: -1,
-      dealer: -1,
+      roundWinner: "",
+      dealer: "",
     });
   }
   return rounds;

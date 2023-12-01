@@ -7,7 +7,7 @@ export class GameClass {
   players: Player[];
   deck: Card[];
   discardDeck: Card[];
-  playerTurn: number;
+  playerTurn: string;
   status: GameStatus;
   rounds: Round[];
   currentRound: number;
@@ -19,7 +19,7 @@ export class GameClass {
     this.players = game?.players || [];
     this.deck = game?.deck || [];
     this.discardDeck = game?.discardDeck || [];
-    this.playerTurn = game?.playerTurn || 0;
+    this.playerTurn = game?.playerTurn || "";
     this.status = game?.status || "open";
 
     if (!game?.rounds && game?.gameType) {
@@ -60,27 +60,26 @@ export class GameClass {
   }
 
   initializeRound() {
-    console.log("initializing round");
     this.initializeDeck();
     this.discardDeck = [];
     this.players?.forEach((player) => {
       player.cards = [];
     });
 
-    console.log("initializing round", this.currentRound, this.rounds);
-
     // set round status to in-progress
     const newRounds = [...this.rounds];
-    console.log("newRounds", newRounds);
     newRounds[this.currentRound].status = "open";
 
-    // if first round set dealer to host player
-    newRounds[this.currentRound].dealer =
-      this.currentRound % this.players.length;
+    // set dealer to player based on current round
+    const dealerIndex = this.currentRound % this.players.length;
+    const currentDealer = this.players[dealerIndex];
+    newRounds[this.currentRound].dealer = currentDealer.id;
 
     this.rounds = newRounds;
 
-    this.playerTurn = (this.currentRound + 1) % this.players.length;
+    const nextPlayerIndex = (dealerIndex + 1) % this.players.length;
+    const nextPlayer = this.players[nextPlayerIndex];
+    this.playerTurn = nextPlayer.id;
   }
 
   shuffleDeck() {

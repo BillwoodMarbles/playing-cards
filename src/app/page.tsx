@@ -9,8 +9,9 @@ import { Amplify } from "aws-amplify";
 import amplifyconfig from "../amplifyconfiguration.json";
 import { GameClass } from "./classes/Game";
 import { GRANDMA_GAME_TYPE } from "./data/game-configs";
-Amplify.configure(amplifyconfig);
+import { v4 as UUID } from "uuid";
 
+Amplify.configure(amplifyconfig);
 const client = generateClient();
 
 export default function Home() {
@@ -24,7 +25,7 @@ export default function Home() {
     const newGame = new GameClass({
       id: code,
       code,
-      players: [{ id: 0, name: playerName, cards: [], type: "host" }],
+      players: [{ id: UUID(), name: playerName, cards: [], type: "host" }],
       gameType: GRANDMA_GAME_TYPE,
     });
 
@@ -47,7 +48,8 @@ export default function Home() {
         },
       });
 
-      router.push(`/play?code=${code}&player=${playerName}`);
+      localStorage.setItem("playerId", newGame.players[0].id);
+      router.push(`/play?code=${code}&playerId=${newGame.players[0].id}`);
     } catch (err) {
       console.log("error creating game");
     }
@@ -76,6 +78,7 @@ export default function Home() {
               </label>
             </div>
             <button
+              disabled={playerName.length === 0}
               type="submit"
               className="px-6 py-2 mb-5 bg-blue-300 rounded-md"
               onClick={onCreateGame}

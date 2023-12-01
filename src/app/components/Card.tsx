@@ -1,4 +1,5 @@
 import { FC, useEffect, useState } from "react";
+import { Card } from "../types";
 
 const suits = ["♠", "♥", "♦", "♣", "🃏"];
 const values = [
@@ -18,14 +19,6 @@ const values = [
   " ",
 ];
 
-type CardAnimation = "none" | "slide" | "flip" | "reveal-hand";
-
-interface Card {
-  id: number;
-  suit: number;
-  value: number;
-}
-
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   card?: Card;
   hidden?: boolean;
@@ -36,7 +29,7 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   selected?: boolean;
   size?: "small" | "medium" | "large";
   index?: number;
-  animation?: CardAnimation;
+  skipAnimation?: boolean;
 }
 
 const CardComponent: FC<CardProps> = ({
@@ -49,9 +42,9 @@ const CardComponent: FC<CardProps> = ({
   selected,
   size,
   index,
-  animation = "none",
+  skipAnimation = false,
 }) => {
-  const [initialLoad, setInitialLoad] = useState(false);
+  const [loadAnimComplete, setLoadAnimComplete] = useState(false);
 
   const selectedClass = selected ? "ring-2 ring-blue-300 -translate-y-2" : "";
 
@@ -59,11 +52,11 @@ const CardComponent: FC<CardProps> = ({
     if (!card) {
       return "bg-white border border-gray-400";
     } else if (hidden) {
-      return "bg-gradient-to-br from-red-300 to-red-400";
+      return "shadow-[0_4px_5px_-1px_rgba(0,0,0,0.33)] bg-gradient-to-br from-red-300 to-red-400";
     } else if (wild) {
-      return "bg-gradient-to-br from-indigo-600 via-purple-500 to-pink-600 text-white";
+      return "shadow-[0_4px_5px_-1px_rgba(0,0,0,0.33)] bg-gradient-to-br from-indigo-500 via-purple-400 to-pink-500 text-white";
     } else {
-      return "bg-gradient-to-br from-white to-slate-50";
+      return "shadow-[0_4px_5px_-1px_rgba(0,0,0,0.33)] bg-gradient-to-br from-white to-slate-50";
     }
   };
   const disabledClass = disabled ? "cursure-default" : "cursor-pointer";
@@ -83,20 +76,27 @@ const CardComponent: FC<CardProps> = ({
   };
 
   const animationClass = () => {
-    switch (animation) {
-      case "slide":
-        return "animate-reveal-hand";
-      case "flip":
-        return "animate-flip";
-      case "reveal-hand":
-        return "animate-reveal-hand";
-      default:
+    if (!card?.status || skipAnimation) {
+      return "";
+    }
+
+    if (card.status === "new-deal") {
+      if (loadAnimComplete) {
         return "";
+      }
+      return "animate-reveal-hand";
+    }
+
+    if (card.status === "drawn") {
+      if (loadAnimComplete) {
+        return "";
+      }
+      return "animate-slide-in";
     }
   };
 
   const getAnimationDelay = () => {
-    if (animation === "slide" || initialLoad) {
+    if (!card?.status || card?.status === "drawn" || loadAnimComplete) {
       return 0;
     } else {
       if (index) {
@@ -121,17 +121,15 @@ const CardComponent: FC<CardProps> = ({
   };
 
   useEffect(() => {
-    if (animation === "reveal-hand") {
-      setTimeout(() => {
-        setInitialLoad(true);
-      }, getAnimationDelay() * 500);
-    }
-  });
+    setTimeout(() => {
+      setLoadAnimComplete(true);
+    }, (getAnimationDelay() || 1) * 500);
+  }, []);
 
   return (
     <div
       onClick={onCardClick}
-      className={`relative shadow-[0_4px_5px_-1px_rgba(0,0,0,0.33)] transition ease-in-out duration-75 flex items-center h- justify-center ${getSizeClasses()} ${getCardColorClass(
+      className={`relative transition ease-in-out duration-75 flex items-center h- justify-center ${getSizeClasses()} ${getCardColorClass(
         card
       )} ${getBackgroundClass()} ${disabledClass} ${selectedClass} ${animationClass()}`}
       style={

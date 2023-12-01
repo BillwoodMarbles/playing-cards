@@ -2,6 +2,7 @@ export interface Card {
   id: number;
   suit: number;
   value: number;
+  status?: "drawn" | "in-hand" | "discarded" | "new-deal" | "none";
 }
 
 export interface Round {
@@ -9,12 +10,12 @@ export interface Round {
   status: "open" | "in-progress" | "complete";
   score: any;
   drawCount: number;
-  roundWinner: number;
-  dealer: number;
+  roundWinner: string;
+  dealer: string;
 }
 
 export interface Player {
-  id: number;
+  id: string;
   name: string;
   cards: Card[];
   type: "host" | "player";
@@ -39,7 +40,7 @@ export interface Game {
   players: Player[];
   deck: Card[];
   discardDeck: Card[];
-  playerTurn: number;
+  playerTurn: string;
   status: GameStatus;
   rounds: Round[];
   currentRound: number;

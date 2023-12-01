@@ -19,7 +19,7 @@ import Players from "../components/Players";
 import { GameClass } from "../classes/Game";
 import { GRANDMA_GAME_TYPE, getGameConfig } from "../data/game-configs";
 import "../components/animations.css";
-
+import { v4 as UUID } from "uuid";
 const client = generateClient();
 Amplify.configure(amplifyconfig);
 function useOutsideAlerter(ref: any) {
@@ -66,9 +66,9 @@ export default function Play() {
   const [playerId, setPlayerId] = useState("");
   const [game, setGame] = useState<Game | null>(null);
   const [gameData, setGameData] = useState<any>(null);
-  const [myPlayer, setMyPlayer] = useState<number | null>(null);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [dealingCards, setDealingCards] = useState(false);
+  const [drawingCard, setDrawingCard] = useState(false);
 
   const currentAction = playerActions.find(
     (action) => action.completed === false
@@ -81,17 +81,17 @@ export default function Play() {
       const newPlayer: Player = {
         name: playerName,
         cards: [],
-        id: game.players.length,
+        id: UUID(),
         type: "player",
       };
 
       const newGame = new GameClass(game);
       newGame.players.push(newPlayer);
       setGame(newGame);
-      setPlayerId(newPlayer.name);
-      setMyPlayer(newPlayer.id);
+      setPlayerId(newPlayer.id);
       onUpdateGameGQL(newGame);
-      router.push(`/play?code=${game?.code}&player=${newPlayer.name}`);
+      localStorage.setItem("playerId", newPlayer.id);
+      router.push(`/play?code=${game?.code}&playerId=${newPlayer.id}`);
     }
   };
 
@@ -129,8 +129,8 @@ export default function Play() {
   };
 
   const isMyTurn = () => {
-    if (game && myPlayer !== null) {
-      return game.playerTurn === myPlayer;
+    if (game && playerId !== null) {
+      return game.playerTurn === playerId;
     }
   };
 
@@ -154,10 +154,7 @@ export default function Play() {
 
   const getMyPlayer = () => {
     if (game && playerId) {
-      const player = game.players.find((player) => player.name === playerId);
-      if (player) {
-        return player;
-      }
+      return getPlayerById(playerId);
     }
   };
 
@@ -182,38 +179,75 @@ export default function Play() {
     }
   };
 
-  const onEndTurn = () => {
+  const getPlayerById = (playerId: string) => {
     if (game) {
-      const newGame = new GameClass(game);
-      const nextPlayer = (newGame.playerTurn + 1) % newGame.players.length;
-      newGame.playerTurn = nextPlayer;
-
-      if (getCurrentRoundWinner()) {
-        if (newGame.players[nextPlayer].name === getCurrentRoundWinner()) {
-          setDealingCards(true);
-          setTimeout(() => {
-            setDealingCards(false);
-          }, 2000);
-          newGame.rounds[newGame.currentRound].status = "complete";
-        }
-      }
-
-      resetPlayerActions();
-      setGame(newGame);
-      onUpdateGameGQL(newGame);
+      return game.players.find((player) => player.id === playerId);
     }
   };
 
-  const onClaimRound = () => {
-    if (game) {
-      const newGame = new GameClass(game);
-      newGame.rounds[newGame.currentRound].roundWinner =
-        myPlayer !== null && myPlayer >= 0 ? myPlayer : -1;
-      newGame.playerTurn = (newGame.playerTurn + 1) % newGame.players.length;
-      resetPlayerActions();
-      setGame(newGame);
-      onUpdateGameGQL(newGame);
+  const getPlayerIndexById = (playerId: string) => {
+    if (!game) {
+      return;
     }
+
+    return game.players.findIndex((player) => player.id === playerId);
+  };
+
+  const getNextPlayer = (): Player | void => {
+    if (!game) {
+      return;
+    }
+
+    const currentPlayerIndex = game.players.findIndex(
+      (player) => player.id === game.playerTurn
+    );
+    const nextPlayerIndex = (currentPlayerIndex + 1) % game.players.length;
+    const nextPlayer = game.players[nextPlayerIndex];
+    return nextPlayer;
+  };
+
+  const onEndTurn = () => {
+    if (!game) {
+      return;
+    }
+
+    const newGame = new GameClass(game);
+
+    const nextPlayer = getNextPlayer();
+
+    // todo: always return a player
+    if (!nextPlayer) {
+      return;
+    }
+    newGame.playerTurn = nextPlayer.id;
+
+    if (getCurrentRoundWinner()) {
+      console.log(getCurrentRoundWinner()?.id, nextPlayer.id);
+      if (nextPlayer.id === getCurrentRoundWinner()?.id) {
+        console.log("wat");
+        setDealingCards(true);
+        setTimeout(() => {
+          setDealingCards(false);
+        }, 2000);
+        newGame.rounds[newGame.currentRound].status = "complete";
+      }
+    }
+
+    resetPlayerActions();
+    setGame(newGame);
+    onUpdateGameGQL(newGame);
+  };
+
+  const onClaimRound = () => {
+    if (!game) {
+      return;
+    }
+
+    const newGame = new GameClass(game);
+    newGame.rounds[newGame.currentRound].roundWinner = newGame.playerTurn;
+    resetPlayerActions();
+    setGame(newGame);
+    onUpdateGameGQL(newGame);
   };
 
   const onStartNewRound = () => {
@@ -242,7 +276,9 @@ export default function Play() {
   const onDiscardPileClick = () => {
     if (isMyTurn()) {
       if (currentAction?.type === "discard" && selectedCard) {
-        onDiscardCard(selectedCard);
+        const newCard = { ...selectedCard };
+        newCard.status = "discarded";
+        onDiscardCard(newCard);
       }
 
       if (currentAction?.type === "draw") {
@@ -259,17 +295,24 @@ export default function Play() {
   };
 
   const changeCardOrder = (card: Card, orderAdjustment: number) => {
-    if (game && myPlayer !== null) {
+    const player = getPlayerById(playerId);
+
+    if (game && player) {
+      card.status = "none";
+      const playerIndex = game.players.findIndex(
+        (player) => player.id === playerId
+      );
       const newGame = new GameClass(game);
-      const newPlayerCards = [...newGame.players[myPlayer].cards];
+      const newPlayerCards = [...player.cards];
       const cardIndex = newPlayerCards.findIndex((c) => c.id === card.id);
       const cardToSwap = newPlayerCards[cardIndex + orderAdjustment];
       if (!cardToSwap) {
         return;
       }
+      cardToSwap.status = "none";
       newPlayerCards[cardIndex + orderAdjustment] = card;
       newPlayerCards[cardIndex] = cardToSwap;
-      newGame.players[myPlayer].cards = newPlayerCards;
+      newGame.players[playerIndex].cards = newPlayerCards;
       setGame(newGame);
     }
   };
@@ -281,6 +324,11 @@ export default function Play() {
 
       newGame.players?.forEach((player) => {
         player.cards = newGame.deck.slice(0, getCurrnetRound()?.drawCount);
+
+        player.cards.forEach((card) => {
+          card.status = "new-deal";
+        });
+
         newGame.deck = newGame.deck.slice(getCurrnetRound()?.drawCount);
       });
 
@@ -308,50 +356,75 @@ export default function Play() {
   };
 
   const onDiscardCard = (card: Card) => {
-    if (isMyTurn()) {
-      if (game && myPlayer !== null) {
-        const newGame = new GameClass(game);
-        const newDiscardDeck = [...newGame.discardDeck, card];
-        newGame.discardDeck = newDiscardDeck;
-        const newPlayerCards = newGame.players[myPlayer!].cards.filter(
-          (c) => c.id !== card.id
-        );
-        newGame.players[myPlayer!].cards = newPlayerCards;
+    if (!game || !isMyTurn()) {
+      return;
+    }
 
-        setSelectedCard(null);
-        onCompleteAction();
-        setGame(newGame);
-        onUpdateGameGQL(newGame);
-      }
+    const player = getPlayerById(playerId);
+    const playerIndex = getPlayerIndexById(playerId);
+
+    if (player && playerIndex !== undefined) {
+      const newGame = new GameClass(game);
+      const newDiscardDeck = [...newGame.discardDeck, card];
+      newGame.discardDeck = newDiscardDeck;
+      const newPlayerCards = player.cards.filter((c) => c.id !== card.id);
+      newGame.players[playerIndex].cards = newPlayerCards;
+
+      setSelectedCard(null);
+      onCompleteAction();
+      setGame(newGame);
+      onUpdateGameGQL(newGame);
     }
   };
 
   const drawCardFromDeck = () => {
-    if (game) {
+    if (!game) {
+      return;
+    }
+
+    const player = getPlayerById(playerId);
+    const playerIndex = getPlayerIndexById(playerId);
+
+    if (player && playerIndex !== undefined) {
       const newGame = new GameClass(game);
       const card = newGame.deck[0];
+      card.status = "drawn";
       const newDeck = newGame.deck.slice(1);
       newGame.deck = newDeck;
 
-      const newPlayerCards = [...newGame.players[myPlayer!].cards, card];
-      newGame.players[myPlayer!].cards = newPlayerCards;
+      const newPlayerCards = [...player.cards, card];
+      newGame.players[playerIndex].cards = newPlayerCards;
+
+      setDrawingCard(true);
+      setTimeout(() => {
+        setDrawingCard(false);
+      }, 2000);
+
       setGame(newGame);
       onUpdateGameGQL(newGame);
     }
   };
 
   const drawCardFromDiscardDeck = () => {
-    if (game) {
+    if (!game) {
+      return;
+    }
+
+    const player = getPlayerById(playerId);
+    const playerIndex = getPlayerIndexById(playerId);
+
+    if (player && playerIndex !== undefined) {
       const newGame = new GameClass(game);
       const card = game.discardDeck[game.discardDeck.length - 1];
+      card.status = "drawn";
       const newDiscardDeck = game.discardDeck.slice(
         0,
         game.discardDeck.length - 1
       );
       newGame.discardDeck = newDiscardDeck;
 
-      const newPlayerCards = [...newGame.players[myPlayer!].cards, card];
-      newGame.players[myPlayer!].cards = newPlayerCards;
+      const newPlayerCards = [...player.cards, card];
+      newGame.players[playerIndex].cards = newPlayerCards;
       setGame(newGame);
       onUpdateGameGQL(newGame);
     }
@@ -377,6 +450,11 @@ export default function Play() {
       // remove null player cards
       parsedGame.players.forEach((player) => {
         player.cards = player.cards.filter((card: Card) => card !== null);
+
+        // set card status to none
+        player.cards.forEach((card: Card) => {
+          card.status = "none";
+        });
       });
 
       return parsedGame;
@@ -438,7 +516,7 @@ export default function Play() {
         );
 
         if (player) {
-          setMyPlayer(player.id);
+          setPlayerId(player.id);
           const sortedCards = sortPlayerCards(player);
           player.cards = sortedCards;
         }
@@ -448,14 +526,19 @@ export default function Play() {
     }
   }, [gameData, playerId]);
 
-  const getCurrentRoundWinner = () => {
+  const getCurrentRoundWinner = (): Player | undefined => {
     if (game) {
       const round = game.rounds[game.currentRound];
 
-      if (round.roundWinner >= 0) {
-        return game.players[round.roundWinner].name;
+      if (round.roundWinner) {
+        const roundWinnderIndex = game.players.findIndex(
+          (player) => player.id === round.roundWinner
+        );
+        return game.players[roundWinnderIndex];
       }
     }
+
+    return;
   };
 
   const getGameByCode = async (code: string, playerId?: string | null) => {
@@ -511,14 +594,14 @@ export default function Play() {
   };
 
   useEffect(() => {
-    const playerId = searchParams.get("player");
+    const playerId = searchParams.get("playerId");
     const code = searchParams.get("code");
+
+    let subscription: any;
 
     if (playerId) {
       setPlayerId(playerId);
     }
-
-    let subscription: any;
 
     if (code) {
       getGameByCode(code, playerId);
@@ -562,11 +645,11 @@ export default function Play() {
 
       {game && (
         <>
-          {game.status === "open" && myPlayer === null && (
+          {game.status === "open" && !playerId && (
             <>
               <form onSubmit={onAddPlayer}>
-                <div>
-                  <label>
+                <div className="flex">
+                  <label className="mr-1">
                     <input
                       className="w-full px-3 py-2 border border-gray-400 rounded-md"
                       type="text"
@@ -576,10 +659,11 @@ export default function Play() {
                     />
                   </label>
                   <button
+                    disabled={playerName.length === 0}
                     className="px-6 py-2 mb-5 bg-blue-300 rounded-md"
                     type="submit"
                   >
-                    Add Player
+                    Join Game
                   </button>
                 </div>
               </form>
@@ -607,37 +691,35 @@ export default function Play() {
                   {getCurrnetRound()?.status === "complete" && (
                     <div>
                       <h2 className="text-center">
-                        Round Winner: {getCurrentRoundWinner()}
+                        Round Winner: {getCurrentRoundWinner()?.name}
                       </h2>
                       <HandContainer>
-                        {game.players[getCurrnetRound()!.roundWinner].cards.map(
-                          (card, index) => {
-                            return (
-                              <>
-                                <div
-                                  key={card.id}
-                                  style={{
-                                    minWidth: "2rem",
-                                    maxWidth: "6rem",
-                                    zIndex: index,
-                                  }}
-                                  className="relative w-12 h-14"
-                                >
-                                  <div className="absolute left-0 top-0">
-                                    <CardComponent
-                                      key={card.id}
-                                      card={card}
-                                      disabled
-                                      size="small"
-                                      index={index}
-                                      animation="reveal-hand"
-                                    />
-                                  </div>
+                        {getCurrentRoundWinner()?.cards.map((card, index) => {
+                          return (
+                            <>
+                              <div
+                                key={card.id}
+                                style={{
+                                  minWidth: "2rem",
+                                  maxWidth: "6rem",
+                                  zIndex: index,
+                                }}
+                                className="relative w-12 h-14"
+                              >
+                                <div className="absolute left-0 top-0">
+                                  <CardComponent
+                                    key={card.id}
+                                    card={card}
+                                    disabled
+                                    size="small"
+                                    index={index}
+                                    animation="reveal-hand"
+                                  />
                                 </div>
-                              </>
-                            );
-                          }
-                        )}
+                              </div>
+                            </>
+                          );
+                        })}
                       </HandContainer>
                     </div>
                   )}
@@ -649,8 +731,15 @@ export default function Play() {
                           (() => {
                             const card = game.deck[0];
                             return (
-                              <>
+                              <div className="relative">
                                 {/* <span>{game.deck.length}</span> */}
+                                {isMyTurn() &&
+                                  currentAction?.type === "draw" && (
+                                    <div className="w-full h-full flex items-center justify-center absolute left-0 top-0 z-0">
+                                      <div className="animate-ping bg-blue-500 w-3/5 h-3/5 rounded-md"></div>
+                                    </div>
+                                  )}
+
                                 <CardComponent
                                   key={card.id}
                                   card={card}
@@ -661,7 +750,7 @@ export default function Play() {
                                     currentAction?.type !== "draw"
                                   }
                                 ></CardComponent>
-                              </>
+                              </div>
                             );
                           })()
                         ) : (
@@ -675,7 +764,16 @@ export default function Play() {
                             const card =
                               game.discardDeck[game.discardDeck.length - 1];
                             return (
-                              <>
+                              <div className="relative">
+                                {isMyTurn() &&
+                                  (currentAction?.type === "draw" ||
+                                    (currentAction?.type === "discard" &&
+                                      selectedCard)) && (
+                                    <div className="w-full h-full flex items-center justify-center absolute left-0 top-0 z-0">
+                                      <div className="animate-ping bg-blue-500 w-3/5 h-3/5 rounded-md"></div>
+                                    </div>
+                                  )}
+
                                 {/* <span>{game.discardDeck.length}</span> */}
                                 <CardComponent
                                   wild={isWildCard(card)}
@@ -684,11 +782,20 @@ export default function Play() {
                                   onClick={onDiscardPileClick}
                                   disabled={!isMyTurn()}
                                 />
-                              </>
+                              </div>
                             );
                           })()
                         ) : (
-                          <CardComponent onClick={onDiscardPileClick} />
+                          <div className="relative">
+                            {isMyTurn() &&
+                              currentAction?.type === "discard" &&
+                              selectedCard && (
+                                <div className="w-full h-full flex items-center justify-center absolute left-0 top-0 z-0">
+                                  <div className="animate-ping bg-blue-500 w-3/5 h-3/5 rounded-md"></div>
+                                </div>
+                              )}
+                            <CardComponent onClick={onDiscardPileClick} />
+                          </div>
                         )}
                       </div>
                     </div>
@@ -702,7 +809,7 @@ export default function Play() {
             <div className="flex justify-center absolute left-0 bottom-full w-full">
               {getCurrnetRound()?.status === "complete" && !isLastRound() && (
                 <button
-                  className="px-6 py-2 mb-2 mx-1 bg-gradient-to-br from-blue-400 to-blue-500 rounded-md text-white float-right"
+                  className="px-6 py-2 mb-2 mx-1 bg-blue-300 rounded-md float-right"
                   onClick={onStartNewRound}
                 >
                   Start New Round
@@ -711,7 +818,7 @@ export default function Play() {
 
               {getCurrnetRound()?.status === "complete" && isLastRound() && (
                 <button
-                  className="px-6 py-2 mb-2 mx-1 bg-blue-500 rounded-md text-white float-right"
+                  className="px-6 py-2 mb-2 mx-1 bg-blue-300 rounded-md float-right"
                   onClick={onNewGame}
                 >
                   New Game
@@ -719,11 +826,10 @@ export default function Play() {
               )}
 
               {game.status === "open" &&
-                getMyPlayer() &&
                 getMyPlayer()?.type === "host" &&
                 game.players.length >= 2 && (
                   <button
-                    className="px-6 py-2 mb-2 mx-1 bg-blue-500 rounded-md text-white float-right"
+                    className="px-6 py-2 mb-2 mx-1 bg-blue-300 rounded-md float-right"
                     onClick={onStartGame}
                   >
                     Start Game
@@ -731,9 +837,9 @@ export default function Play() {
                 )}
 
               {getCurrnetRound()?.status === "open" &&
-                getCurrnetRound()?.dealer === myPlayer && (
+                getCurrnetRound()?.dealer === playerId && (
                   <button
-                    className="px-6 py-2 mb-2 mx-1 bg-blue-500 rounded-md text-white float-right"
+                    className="px-6 py-2 mb-2 mx-1 bg-blue-300 rounded-md float-right"
                     onClick={onDealCardsToPlayers}
                   >
                     Deal
@@ -746,14 +852,14 @@ export default function Play() {
                     <>
                       {!getCurrentRoundWinner() && (
                         <button
-                          className="px-6 py-2 mb-2 mx-1 bg-red-500 rounded-md text-white float-right"
+                          className="px-6 py-2 mb-2 mx-1 bg-red-300 rounded-md float-right"
                           onClick={onClaimRound}
                         >
                           GRANDMA!!!
                         </button>
                       )}
                       <button
-                        className="px-6 py-2 mb-2 mx-1 bg-blue-500 rounded-md text-white float-right"
+                        className="px-6 py-2 mb-2 mx-1 bg-blue-300 rounded-md float-right"
                         onClick={onEndTurn}
                       >
                         End Turn
@@ -806,7 +912,6 @@ export default function Play() {
                           onClick={() => onCardInHandClick(card)}
                           size="small"
                           index={index}
-                          animation={dealingCards ? "reveal-hand" : "none"}
                         />
                       </div>
                     </div>

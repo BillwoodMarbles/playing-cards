@@ -14,7 +14,7 @@ export const GRANDMA_GAME_CONFIG = () => {
 
 const buildGrandmaRounds = () => {
   const rounds: Round[] = [];
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 11; i++) {
     rounds.push({
       id: i,
       status: "open",

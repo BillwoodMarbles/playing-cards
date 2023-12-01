@@ -11,7 +11,12 @@ import { Amplify } from "aws-amplify";
 import amplifyconfig from "../../amplifyconfiguration.json";
 import { updateGame } from "@/graphql/mutations";
 import CardComponent from "../components/Card";
-import { FaAngleLeft, FaAngleRight, FaShareFromSquare } from "react-icons/fa6";
+import {
+  FaAngleLeft,
+  FaAngleRight,
+  FaShareFromSquare,
+  FaShuffle,
+} from "react-icons/fa6";
 import {
   Card,
   CardAnimation,
@@ -108,10 +113,6 @@ export default function Play() {
       action.completed = false;
     });
     localStorage.setItem("playerActions", JSON.stringify(playerActions));
-  };
-
-  const getCurrentPlayerAction = () => {
-    return playerActions.find((action) => action.completed === false);
   };
 
   const onUpdateGameGQL = async (game: Game) => {
@@ -574,6 +575,7 @@ export default function Play() {
 
   const isWildCard = (card: Card) => {
     const roundWildCard = (getCurrnetRound()?.drawCount || 0) - 1;
+
     if (card.value === roundWildCard) {
       return true;
     }
@@ -614,6 +616,26 @@ export default function Play() {
     }
 
     return "none";
+  };
+
+  const sortHand = () => {
+    const player = getMyPlayer();
+
+    if (!game || !player) {
+      return;
+    }
+
+    // sort player cards by value
+    const sortedCards = [...player.cards].sort((a, b) => {
+      return a.value - b.value;
+    });
+
+    const newGame = new GameClass(game);
+    const playerIndex = newGame.players.findIndex(
+      (player) => player.id === playerId
+    );
+    newGame.players[playerIndex].cards = sortedCards;
+    setGame(newGame);
   };
 
   useEffect(() => {
@@ -750,6 +772,7 @@ export default function Play() {
                                     size="small"
                                     index={index}
                                     animation="new-deal"
+                                    wild={isWildCard(card)}
                                   />
                                 </div>
                               </div>
@@ -934,8 +957,6 @@ export default function Play() {
                     <div
                       key={card.id}
                       style={{
-                        minWidth: "2rem",
-                        maxWidth: "6rem",
                         zIndex: index,
                       }}
                       className="relative w-12 h-14"
@@ -957,6 +978,17 @@ export default function Play() {
               </HandContainer>
             </div>
           </div>
+
+          {Boolean(getMyPlayer()?.cards?.length) && (
+            <div className="absolute right-0 flex items-center z-50 -bottom-4 -translate-y-1/2">
+              <button
+                className="px-2 py-1 mx-1 w-12 h-12 bg-blue-300 rounded-full shadow-md flex items-center justify-center"
+                onClick={() => sortHand()}
+              >
+                <FaShuffle />
+              </button>
+            </div>
+          )}
         </>
       )}
     </>

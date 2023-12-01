@@ -44,19 +44,17 @@ const CardComponent: FC<CardProps> = ({
   index,
   animation = "none",
 }) => {
-  const [loadAnimComplete, setLoadAnimComplete] = useState(false);
-
   const selectedClass = selected ? "ring-2 ring-blue-300 -translate-y-2" : "";
 
   const getBackgroundClass = () => {
     if (!card) {
       return "bg-white border border-gray-400";
     } else if (hidden) {
-      return "shadow-[0_4px_5px_-1px_rgba(0,0,0,0.33)] bg-gradient-to-br from-red-300 to-red-400";
+      return "shadow-[0_2px_5px_-1px_rgba(0,0,0,0.33)] bg-gradient-to-br from-red-300 to-red-400";
     } else if (wild) {
-      return "shadow-[0_4px_5px_-1px_rgba(0,0,0,0.33)] bg-gradient-to-br from-indigo-500 via-purple-400 to-pink-500 text-white";
+      return "shadow-[0_2px_5px_-1px_rgba(0,0,0,0.33)] bg-gradient-to-br from-indigo-500 via-purple-400 to-pink-500 text-white";
     } else {
-      return "shadow-[0_4px_5px_-1px_rgba(0,0,0,0.33)] bg-gradient-to-br from-white to-slate-50";
+      return "shadow-[0_2px_5px_-1px_rgba(0,0,0,0.33)] bg-gradient-to-br from-white to-slate-50";
     }
   };
   const disabledClass = disabled ? "cursure-default" : "cursor-pointer";
@@ -100,7 +98,7 @@ const CardComponent: FC<CardProps> = ({
       case "small":
         return "w-24 h-28 rounded-md";
       case "medium":
-        return "w-32";
+        return "w-28 h-32 rounded-md";
       case "large":
         return "w-44";
       default:
@@ -108,16 +106,10 @@ const CardComponent: FC<CardProps> = ({
     }
   };
 
-  useEffect(() => {
-    setTimeout(() => {
-      setLoadAnimComplete(true);
-    }, (getAnimationDelay() || 1) * 500);
-  }, []);
-
   return (
     <div
       onClick={onCardClick}
-      className={`relative transition ease-in-out duration-75 flex items-center h- justify-center ${getSizeClasses()} ${getCardColorClass(
+      className={`relative transition ease-in-out duration-75 flex items-center justify-center ${getSizeClasses()} ${getCardColorClass(
         card
       )} ${getBackgroundClass()} ${disabledClass} ${selectedClass} ${animationClass()}`}
       style={
@@ -132,17 +124,17 @@ const CardComponent: FC<CardProps> = ({
       {!children && !hidden && card && (
         <>
           <div className="flex items-center justify-center h-full w-full">
-            <div className="text-6xl">{suits[card.suit]}</div>
+            <div className="text-5xl">{suits[card.suit]}</div>
           </div>
 
           <div className="absolute left-1 top-1 flex justify-center items-center flex-col">
-            <div className="text-lg leading-none">{values[card.value]}</div>
-            <div className="text-lg leading-none">{suits[card.suit]}</div>
+            <div className="text-2xl leading-none">{values[card.value]}</div>
+            <div className="text-2xl leading-5">{suits[card.suit]}</div>
           </div>
 
           <div className="absolute right-1 bottom-1 flex justify-center items-center flex-col">
-            <div className="text-lg leading-none">{suits[card.suit]}</div>
-            <div className="text-lg leading-none">{values[card.value]}</div>
+            <div className="text-2xl leading-5">{suits[card.suit]}</div>
+            <div className="text-2xl leading-none">{values[card.value]}</div>
           </div>
         </>
       )}

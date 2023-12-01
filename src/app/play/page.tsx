@@ -12,7 +12,15 @@ import amplifyconfig from "../../amplifyconfiguration.json";
 import { updateGame } from "@/graphql/mutations";
 import CardComponent from "../components/Card";
 import { FaAngleLeft, FaAngleRight, FaShareFromSquare } from "react-icons/fa6";
-import { Card, Game, GameStatus, Player, PlayerAction, Round } from "../types";
+import {
+  Card,
+  CardAnimation,
+  Game,
+  GameStatus,
+  Player,
+  PlayerAction,
+  Round,
+} from "../types";
 import NotificationsComponent from "../components/Notifications";
 import HandContainer from "../components/HandContainer";
 import Players from "../components/Players";
@@ -593,6 +601,21 @@ export default function Play() {
     }
   };
 
+  const getCardAnimation = (card: Card): CardAnimation => {
+    const player = getMyPlayer();
+    const lastCardInHand = player?.cards?.[player.cards.length - 1];
+
+    if (drawingCard && lastCardInHand?.id === card.id) {
+      return "draw";
+    }
+
+    if (dealingCards) {
+      return "new-deal";
+    }
+
+    return "none";
+  };
+
   useEffect(() => {
     const playerId = searchParams.get("playerId");
     const code = searchParams.get("code");
@@ -713,7 +736,7 @@ export default function Play() {
                                     disabled
                                     size="small"
                                     index={index}
-                                    animation="reveal-hand"
+                                    animation="new-deal"
                                   />
                                 </div>
                               </div>
@@ -870,7 +893,7 @@ export default function Play() {
               )}
             </div>
 
-            <div className="relative overflow-visible">
+            <div className="relative overflow-y-visible overflow-x-hidden">
               {selectedCard && (
                 <>
                   <div className="absolute -left-4 flex items-center z-50 top-1/2 -translate-y-1/2">
@@ -912,6 +935,7 @@ export default function Play() {
                           onClick={() => onCardInHandClick(card)}
                           size="small"
                           index={index}
+                          animation={getCardAnimation(card)}
                         />
                       </div>
                     </div>

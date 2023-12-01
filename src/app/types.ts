@@ -5,6 +5,8 @@ export interface Card {
   status?: "drawn" | "in-hand" | "discarded" | "new-deal" | "none";
 }
 
+export type CardAnimation = "draw" | "discard" | "none" | "new-deal";
+
 export interface Round {
   id: number;
   status: "open" | "in-progress" | "complete";

@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react";
-import { Card } from "../types";
+import { Card, CardAnimation } from "../types";
 
 const suits = ["♠", "♥", "♦", "♣", "🃏"];
 const values = [
@@ -29,7 +29,7 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   selected?: boolean;
   size?: "small" | "medium" | "large";
   index?: number;
-  skipAnimation?: boolean;
+  animation?: CardAnimation;
 }
 
 const CardComponent: FC<CardProps> = ({
@@ -42,7 +42,7 @@ const CardComponent: FC<CardProps> = ({
   selected,
   size,
   index,
-  skipAnimation = false,
+  animation = "none",
 }) => {
   const [loadAnimComplete, setLoadAnimComplete] = useState(false);
 
@@ -76,34 +76,22 @@ const CardComponent: FC<CardProps> = ({
   };
 
   const animationClass = () => {
-    if (!card?.status || skipAnimation) {
-      return "";
-    }
-
-    if (card.status === "new-deal") {
-      if (loadAnimComplete) {
-        return "";
-      }
+    if (animation === "new-deal") {
       return "animate-reveal-hand";
     }
 
-    if (card.status === "drawn") {
-      if (loadAnimComplete) {
-        return "";
-      }
+    if (animation === "draw") {
       return "animate-slide-in";
     }
+
+    return "";
   };
 
   const getAnimationDelay = () => {
-    if (!card?.status || card?.status === "drawn" || loadAnimComplete) {
-      return 0;
+    if (animation === "new-deal" && index) {
+      return index * 100;
     } else {
-      if (index) {
-        return index * 100;
-      } else {
-        return 0;
-      }
+      return 0;
     }
   };
 

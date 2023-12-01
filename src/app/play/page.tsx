@@ -19,7 +19,6 @@ import {
   GameStatus,
   Player,
   PlayerAction,
-  Round,
 } from "../types";
 import NotificationsComponent from "../components/Notifications";
 import HandContainer from "../components/HandContainer";
@@ -28,6 +27,7 @@ import { GameClass } from "../classes/Game";
 import { GRANDMA_GAME_TYPE, getGameConfig } from "../data/game-configs";
 import "../components/animations.css";
 import { v4 as UUID } from "uuid";
+
 const client = generateClient();
 Amplify.configure(amplifyconfig);
 function useOutsideAlerter(ref: any) {
@@ -107,6 +107,7 @@ export default function Play() {
     playerActions.forEach((action) => {
       action.completed = false;
     });
+    localStorage.setItem("playerActions", JSON.stringify(playerActions));
   };
 
   const getCurrentPlayerAction = () => {
@@ -220,7 +221,6 @@ export default function Play() {
     }
 
     const newGame = new GameClass(game);
-
     const nextPlayer = getNextPlayer();
 
     // todo: always return a player
@@ -230,9 +230,7 @@ export default function Play() {
     newGame.playerTurn = nextPlayer.id;
 
     if (getCurrentRoundWinner()) {
-      console.log(getCurrentRoundWinner()?.id, nextPlayer.id);
       if (nextPlayer.id === getCurrentRoundWinner()?.id) {
-        console.log("wat");
         setDealingCards(true);
         setTimeout(() => {
           setDealingCards(false);
@@ -253,6 +251,7 @@ export default function Play() {
 
     const newGame = new GameClass(game);
     newGame.rounds[newGame.currentRound].roundWinner = newGame.playerTurn;
+    newGame.playerTurn = getNextPlayer()?.id || game.playerTurn;
     resetPlayerActions();
     setGame(newGame);
     onUpdateGameGQL(newGame);
@@ -271,6 +270,7 @@ export default function Play() {
   const onCompleteAction = () => {
     if (currentAction) {
       currentAction.completed = true;
+      localStorage.setItem("playerActions", JSON.stringify(playerActions));
     }
   };
 
@@ -520,7 +520,7 @@ export default function Play() {
 
       if (parsedGame) {
         const player = parsedGame.players.find(
-          (player) => player.name === playerId
+          (player) => player.id === playerId
         );
 
         if (player) {
@@ -617,6 +617,19 @@ export default function Play() {
   };
 
   useEffect(() => {
+    const storedPlayerActions = localStorage.getItem("playerActions");
+    if (storedPlayerActions) {
+      const parsedPlayerActions = JSON.parse(storedPlayerActions);
+      playerActions.forEach((action) => {
+        const storedAction = parsedPlayerActions.find(
+          (a: PlayerAction) => a.type === action.type
+        );
+        if (storedAction) {
+          action.completed = storedAction.completed;
+        }
+      });
+    }
+
     const playerId = searchParams.get("playerId");
     const code = searchParams.get("code");
 
@@ -697,7 +710,7 @@ export default function Play() {
             game={game}
             player={getMyPlayer()}
             isPlayerTurn={isMyTurn()}
-            currentPlayerAction={getCurrentPlayerAction()}
+            currentPlayerAction={currentAction}
             currentRound={getCurrnetRound()}
           />
 

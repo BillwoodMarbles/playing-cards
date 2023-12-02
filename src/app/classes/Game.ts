@@ -1,4 +1,4 @@
-import { getGameConfig } from "../data/game-configs";
+import { GameTypes, getGameConfig } from "../data/game-configs";
 import { Card, Game, GameStatus, Player, PlayerMove, Round } from "../types";
 
 export class GameClass {
@@ -11,7 +11,7 @@ export class GameClass {
   status: GameStatus;
   rounds: Round[];
   currentRound: number;
-  gameType: string;
+  gameType: GameTypes;
   lastMove: PlayerMove | null;
 
   constructor(game?: Partial<Game>) {
@@ -32,13 +32,14 @@ export class GameClass {
     }
 
     this.currentRound = game?.currentRound || 0;
-    this.gameType = game?.gameType || "";
+    this.gameType = game?.gameType || GameTypes.GRANDMA;
   }
 
   getNewDeck() {
     const cardsPerDeck = 52;
-    const deckCount = 2;
     const newDeck = [];
+    const { deckCount, deckType } = getGameConfig(this.gameType);
+
     for (let i = 0; i < deckCount; i++) {
       for (let j = 0; j < cardsPerDeck; j++) {
         newDeck.push({
@@ -49,8 +50,10 @@ export class GameClass {
       }
     }
 
-    for (let i = 0; i < deckCount * 2; i++) {
-      newDeck.push({ id: deckCount * cardsPerDeck + i, suit: 4, value: 13 });
+    if (deckType === "standard-with-jokers") {
+      for (let i = 0; i < deckCount * 2; i++) {
+        newDeck.push({ id: deckCount * cardsPerDeck + i, suit: 4, value: 13 });
+      }
     }
 
     return newDeck;

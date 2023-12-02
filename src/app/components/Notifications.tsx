@@ -3,7 +3,7 @@ import { Game, Player, PlayerAction, Round } from "../types";
 
 interface NotificationsProps {
   game: Game;
-  player?: Player;
+  player: Player | null;
   isPlayerTurn?: boolean;
   currentRound?: Round;
   currentPlayerAction?: PlayerAction;
@@ -47,9 +47,7 @@ const NotificationsComponent: FC<NotificationsProps> = ({
           notifications.push(<div className="text-center">Game Over</div>);
         } else {
           notifications.push(
-            <div className="text-center">
-              Round Over. Waiting for host to start new round
-            </div>
+            <div className="text-center">Round Over: Report your score.</div>
           );
         }
       } else if (currentRound?.status === "open") {
@@ -57,7 +55,11 @@ const NotificationsComponent: FC<NotificationsProps> = ({
           notifications.push(<div className="text-center">Ready to deal</div>);
         } else {
           notifications.push(
-            <div className="text-center">Waiting for dealer</div>
+            <div className="text-center">
+              Waiting for{" "}
+              <strong>{getPlayerById(currentRound.dealer)?.name}</strong> to
+              deal
+            </div>
           );
         }
       } else {
@@ -85,7 +87,10 @@ const NotificationsComponent: FC<NotificationsProps> = ({
   };
 
   return (
-    <div className="flex w-full justify-center px-4 py-1 h-10 flex-col items-center bg-slate-200 text-xs ">
+    <div
+      className="flex w-full grow-0 justify-center px-4 py-1 h-10 flex-col items-center bg-slate-200 text-xs"
+      style={{ minHeight: "2.5rem" }}
+    >
       {getNotifcations().map((notification) => notification)}
     </div>
   );

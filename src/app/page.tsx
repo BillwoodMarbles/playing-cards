@@ -8,7 +8,7 @@ import { CreateGameInput } from "@/API";
 import { Amplify } from "aws-amplify";
 import amplifyconfig from "../amplifyconfiguration.json";
 import { GameClass } from "./classes/Game";
-import { GRANDMA_GAME_TYPE, getGameConfig } from "./data/game-configs";
+import { GameTypes, getGameConfig } from "./data/game-configs";
 import { v4 as UUID } from "uuid";
 
 Amplify.configure(amplifyconfig);
@@ -17,8 +17,9 @@ const client = generateClient();
 export default function Home() {
   const router = useRouter();
   const [playerName, setPlayerName] = useState("");
+  const [gameType, setGameType] = useState<GameTypes>(GameTypes.GRANDMA);
   const [roundCount, setRoundCount] = useState(
-    getGameConfig(GRANDMA_GAME_TYPE).rounds.length.toString()
+    getGameConfig(gameType).rounds.length.toString()
   );
 
   const onCreateGame = async (e: any) => {
@@ -31,11 +32,11 @@ export default function Home() {
       players: [
         { id: UUID(), name: playerName, cards: [], type: "host", score: 0 },
       ],
-      gameType: GRANDMA_GAME_TYPE,
+      gameType,
     });
 
     if (roundCount) {
-      newGame.rounds = getGameConfig(GRANDMA_GAME_TYPE).rounds.slice(
+      newGame.rounds = getGameConfig(gameType).rounds.slice(
         0,
         parseInt(roundCount)
       );
@@ -67,6 +68,12 @@ export default function Home() {
     }
   };
 
+  const changeGameType = (gameTypeValue: string) => {
+    const gameType = gameTypeValue as GameTypes;
+    setGameType(gameType);
+    setRoundCount(getGameConfig(gameType).rounds.length.toString());
+  };
+
   return (
     <>
       <header className="w-full flex justify-center items-center py-2">
@@ -87,6 +94,19 @@ export default function Home() {
                   placeholder="Player Name"
                   onChange={(e) => setPlayerName(e.target.value)}
                 />
+              </label>
+            </div>
+            <div className="mb-4">
+              <label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-400 rounded-md"
+                  value={gameType}
+                  placeholder="Game Type"
+                  onChange={(e) => changeGameType(e.target.value)}
+                >
+                  <option value={GameTypes.GRANDMA}>Grandma</option>
+                  <option value={GameTypes.MINI_GOLF}>Mini Golf</option>
+                </select>
               </label>
             </div>
             <div className="mb-4">

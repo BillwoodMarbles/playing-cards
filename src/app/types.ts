@@ -1,8 +1,10 @@
+import { GameTypes } from "./data/game-configs";
+
 export interface Card {
   id: number;
   suit: number;
   value: number;
-  status?: "drawn" | "in-hand" | "discarded" | "new-deal" | "none";
+  status?: "visible" | "hidden" | "none";
 }
 
 export type CardAnimation =
@@ -17,11 +19,13 @@ export type CardAnimation =
 
 export interface Round {
   id: number;
-  status: "open" | "in-progress" | "complete";
+  status: "open" | "in-progress" | "complete" | "last-turn";
   score: any;
   drawCount: number;
   roundWinner: string;
   dealer: string;
+  turnCount: number;
+  maxTurns?: number;
 }
 
 export interface Player {
@@ -43,6 +47,11 @@ export interface GameConfig {
   rounds: Round[];
   minPlayers: number;
   maxPlayers: number;
+  type: string;
+  name: string;
+  deckCount: number;
+  deckType: string;
+  pointCount?: number;
 }
 
 export interface PlayerMove {
@@ -74,7 +83,7 @@ export interface Game {
   status: GameStatus;
   rounds: Round[];
   currentRound: number;
-  gameType: string;
+  gameType: GameTypes;
   lastMove: PlayerMove | null;
 }
 

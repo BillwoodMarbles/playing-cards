@@ -785,7 +785,7 @@ export default function Play() {
         return b.score - a.score;
       });
 
-      return players[0];
+      return players[players.length - 1];
     }
   };
 

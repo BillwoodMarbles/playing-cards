@@ -8,7 +8,7 @@ import { CreateGameInput } from "@/API";
 import { Amplify } from "aws-amplify";
 import amplifyconfig from "../amplifyconfiguration.json";
 import { GameClass } from "./classes/Game";
-import { GRANDMA_GAME_TYPE } from "./data/game-configs";
+import { GRANDMA_GAME_TYPE, getGameConfig } from "./data/game-configs";
 import { v4 as UUID } from "uuid";
 
 Amplify.configure(amplifyconfig);
@@ -17,6 +17,9 @@ const client = generateClient();
 export default function Home() {
   const router = useRouter();
   const [playerName, setPlayerName] = useState("");
+  const [roundCount, setRoundCount] = useState(
+    getGameConfig(GRANDMA_GAME_TYPE).rounds.length.toString()
+  );
 
   const onCreateGame = async (e: any) => {
     e.preventDefault();
@@ -30,6 +33,13 @@ export default function Home() {
       ],
       gameType: GRANDMA_GAME_TYPE,
     });
+
+    if (roundCount) {
+      newGame.rounds = getGameConfig(GRANDMA_GAME_TYPE).rounds.slice(
+        0,
+        parseInt(roundCount)
+      );
+    }
 
     try {
       await client.graphql({
@@ -76,6 +86,17 @@ export default function Home() {
                   value={playerName}
                   placeholder="Player Name"
                   onChange={(e) => setPlayerName(e.target.value)}
+                />
+              </label>
+            </div>
+            <div className="mb-4">
+              <label>
+                <input
+                  className="w-full px-3 py-2 border border-gray-400 rounded-md"
+                  type="number"
+                  value={roundCount}
+                  placeholder="Rounds"
+                  onChange={(e) => setRoundCount(e.target.value)}
                 />
               </label>
             </div>

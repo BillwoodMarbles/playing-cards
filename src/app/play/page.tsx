@@ -170,6 +170,7 @@ export default function Play() {
       });
       newGame.players?.forEach((player) => {
         player.cards = [];
+        player.score = 0;
       });
       newGame.lastMove = {
         playerId: getMyPlayer()?.id || "",
@@ -1102,7 +1103,7 @@ export default function Play() {
                           <button
                             className="px-2 py-1 mx-1 w-12 h-12 bg-red-300 rounded-full shadow-md flex items-center justify-center"
                             onClick={() =>
-                              setScoreToAdd((prevValue) => prevValue - 1)
+                              setScoreToAdd((prevValue) => prevValue - 5)
                             }
                           >
                             <FaMinus />
@@ -1113,7 +1114,7 @@ export default function Play() {
                           <button
                             className="px-2 py-1 mx-1 w-12 h-12 bg-violet-300 rounded-full shadow-md flex items-center justify-center"
                             onClick={() =>
-                              setScoreToAdd((prevValue) => prevValue + 1)
+                              setScoreToAdd((prevValue) => prevValue + 5)
                             }
                           >
                             <FaPlus />

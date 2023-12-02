@@ -78,8 +78,24 @@ const CardComponent: FC<CardProps> = ({
       return "animate-reveal-hand";
     }
 
-    if (animation === "draw") {
-      return "animate-slide-in";
+    if (animation === "draw-from") {
+      return "animate-slide-out";
+    }
+
+    if (animation === "draw-to") {
+      return "animate-slide-in-up";
+    }
+
+    if (animation === "draw-from-reverse") {
+      return "animate-slide-up-out";
+    }
+
+    if (animation === "discard") {
+      return "animate-slide-in-down";
+    }
+
+    if (animation === "discard-reverse") {
+      return "animate-slide-in-up";
     }
 
     return "";
@@ -100,7 +116,7 @@ const CardComponent: FC<CardProps> = ({
       case "medium":
         return "w-28 h-32 rounded-md";
       case "large":
-        return "w-44";
+        return "w-44  rounded-lg";
       default:
         return "w-32 h-40 rounded-lg";
     }
@@ -120,6 +136,12 @@ const CardComponent: FC<CardProps> = ({
       }
     >
       {children && children}
+
+      {hidden && (
+        <div className="rounded-md border  border-white h-full w-full p-2 ">
+          <div className="rounded-md border border-white h-full w-full opacity-50"></div>
+        </div>
+      )}
 
       {!children && !hidden && card && (
         <>

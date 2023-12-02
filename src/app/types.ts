@@ -5,7 +5,15 @@ export interface Card {
   status?: "drawn" | "in-hand" | "discarded" | "new-deal" | "none";
 }
 
-export type CardAnimation = "draw" | "discard" | "none" | "new-deal";
+export type CardAnimation =
+  | "draw-from"
+  | "draw-from-reverse"
+  | "draw-to"
+  | "draw-reverse"
+  | "discard"
+  | "discard-reverse"
+  | "none"
+  | "new-deal";
 
 export interface Round {
   id: number;
@@ -36,6 +44,24 @@ export interface GameConfig {
   maxPlayers: number;
 }
 
+export interface PlayerMove {
+  playerId: string;
+  action:
+    | "draw-from-deck"
+    | "draw-from-discard"
+    | "discard"
+    | "claim-round"
+    | "player-join"
+    | "new-deal"
+    | "new-game"
+    | "start-round"
+    | "end-round"
+    | "end-turn"
+    | "end-game"
+    | "none";
+  card: Card | null;
+}
+
 export interface Game {
   id: string;
   code: string;
@@ -47,6 +73,7 @@ export interface Game {
   rounds: Round[];
   currentRound: number;
   gameType: string;
+  lastMove: PlayerMove | null;
 }
 
 export type GameStatus = "open" | "in-progress" | "complete";

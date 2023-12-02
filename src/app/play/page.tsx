@@ -56,19 +56,6 @@ function useOutsideAlerter(ref: any) {
 
 const gameConfig = getGameConfig(GRANDMA_GAME_TYPE);
 
-const playerActions: PlayerAction[] = [
-  {
-    type: "draw",
-    completed: false,
-    description: "Draw a card from the deck or discard pile",
-  },
-  {
-    type: "discard",
-    completed: false,
-    description: "Discard a card",
-  },
-];
-
 export default function Play() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -82,10 +69,25 @@ export default function Play() {
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [dealingCards, setDealingCards] = useState(false);
   const [drawingCard, setDrawingCard] = useState(false);
+  const [showWinnerAlert, setShowWinnerAlert] = useState(false);
+  const [playerActions, setPlayerActions] = useState<PlayerAction[]>([
+    {
+      type: "draw",
+      completed: false,
+      description: "Draw a card from the deck or discard pile",
+    },
+    {
+      type: "discard",
+      completed: false,
+      description: "Discard a card",
+    },
+  ]);
 
-  const currentAction = playerActions.find(
-    (action) => action.completed === false
-  );
+  const getCurrentAction = () => {
+    if (playerActions) {
+      return playerActions.find((action) => !action.completed);
+    }
+  };
 
   const onAddPlayer = (e: any) => {
     e.preventDefault();
@@ -100,6 +102,12 @@ export default function Play() {
 
       const newGame = new GameClass(game);
       newGame.players.push(newPlayer);
+
+      newGame.lastMove = {
+        playerId: newPlayer.id,
+        action: "player-join",
+        card: null,
+      };
       setGame(newGame);
       setPlayerId(newPlayer.id);
       onUpdateGameGQL(newGame);
@@ -109,10 +117,11 @@ export default function Play() {
   };
 
   const resetPlayerActions = () => {
-    playerActions.forEach((action) => {
+    const newPlayerActions = [...playerActions];
+    newPlayerActions.forEach((action) => {
       action.completed = false;
     });
-    localStorage.setItem("playerActions", JSON.stringify(playerActions));
+    localStorage.setItem("playerActions", JSON.stringify(newPlayerActions));
   };
 
   const onUpdateGameGQL = async (game: Game) => {
@@ -130,6 +139,7 @@ export default function Play() {
             status: game.status,
             rounds: JSON.stringify(game.rounds),
             currentRound: game.currentRound,
+            lastMove: JSON.stringify(game.lastMove),
           },
         },
       });
@@ -157,6 +167,11 @@ export default function Play() {
       newGame.players?.forEach((player) => {
         player.cards = [];
       });
+      newGame.lastMove = {
+        playerId: getMyPlayer()?.id || "",
+        action: "new-game",
+        card: null,
+      };
       setGame(newGame);
       onUpdateGameGQL(newGame);
     }
@@ -184,6 +199,11 @@ export default function Play() {
       newGame.status = "in-progress";
       newGame.initializeRound();
 
+      newGame.lastMove = {
+        playerId: getMyPlayer()?.id || "",
+        action: "new-game",
+        card: null,
+      };
       setGame(newGame);
       onUpdateGameGQL(newGame);
     }
@@ -241,6 +261,12 @@ export default function Play() {
     }
 
     resetPlayerActions();
+
+    newGame.lastMove = {
+      playerId: getMyPlayer()?.id || "",
+      action: "end-turn",
+      card: null,
+    };
     setGame(newGame);
     onUpdateGameGQL(newGame);
   };
@@ -254,6 +280,13 @@ export default function Play() {
     newGame.rounds[newGame.currentRound].roundWinner = newGame.playerTurn;
     newGame.playerTurn = getNextPlayer()?.id || game.playerTurn;
     resetPlayerActions();
+    const player = getMyPlayer();
+
+    newGame.lastMove = {
+      playerId: player?.id || "",
+      action: "claim-round",
+      card: null,
+    };
     setGame(newGame);
     onUpdateGameGQL(newGame);
   };
@@ -263,15 +296,30 @@ export default function Play() {
       let newGame = new GameClass(game);
       newGame.currentRound = (newGame.currentRound + 1) % newGame.rounds.length;
       newGame.initializeRound();
+      const player = getMyPlayer();
+
+      newGame.lastMove = {
+        playerId: player?.id || "",
+        action: "new-deal",
+        card: null,
+      };
       setGame(newGame);
       onUpdateGameGQL(newGame);
     }
   };
 
   const onCompleteAction = () => {
+    const currentAction = getCurrentAction();
+
     if (currentAction) {
-      currentAction.completed = true;
-      localStorage.setItem("playerActions", JSON.stringify(playerActions));
+      const newPlayerActions = [...playerActions];
+      newPlayerActions.forEach((action) => {
+        if (action.type === currentAction?.type) {
+          action.completed = true;
+        }
+      });
+      setPlayerActions(newPlayerActions);
+      localStorage.setItem("playerActions", JSON.stringify(newPlayerActions));
     }
   };
 
@@ -284,13 +332,13 @@ export default function Play() {
 
   const onDiscardPileClick = () => {
     if (isMyTurn()) {
-      if (currentAction?.type === "discard" && selectedCard) {
+      if (getCurrentAction()?.type === "discard" && selectedCard) {
         const newCard = { ...selectedCard };
         newCard.status = "discarded";
         onDiscardCard(newCard);
       }
 
-      if (currentAction?.type === "draw") {
+      if (getCurrentAction()?.type === "draw") {
         drawCardFromDiscardDeck();
         onCompleteAction();
       }
@@ -353,6 +401,11 @@ export default function Play() {
       newRounds[newGame.currentRound].status = "in-progress";
       newGame.rounds = newRounds;
 
+      newGame.lastMove = {
+        playerId: getMyPlayer()?.id || "",
+        action: "new-deal",
+        card: card,
+      };
       setGame(newGame);
       setDealingCards(true);
 
@@ -381,6 +434,12 @@ export default function Play() {
 
       setSelectedCard(null);
       onCompleteAction();
+
+      newGame.lastMove = {
+        playerId: player.id,
+        action: "discard",
+        card: card,
+      };
       setGame(newGame);
       onUpdateGameGQL(newGame);
     }
@@ -409,6 +468,11 @@ export default function Play() {
         setDrawingCard(false);
       }, 2000);
 
+      newGame.lastMove = {
+        playerId: player.id,
+        action: "draw-from-deck",
+        card: card,
+      };
       setGame(newGame);
       onUpdateGameGQL(newGame);
     }
@@ -434,6 +498,11 @@ export default function Play() {
 
       const newPlayerCards = [...player.cards, card];
       newGame.players[playerIndex].cards = newPlayerCards;
+      newGame.lastMove = {
+        playerId: player.id,
+        action: "draw-from-discard",
+        card: card,
+      };
       setGame(newGame);
       onUpdateGameGQL(newGame);
     }
@@ -454,6 +523,13 @@ export default function Play() {
         rounds: gameData.rounds ? JSON.parse(gameData.rounds) : [],
         currentRound: gameData.currentRound || 0,
         gameType: gameData.gameType || "standard",
+        lastMove: gameData.lastMove
+          ? JSON.parse(gameData.lastMove)
+          : {
+              playerId: "",
+              action: "",
+              card: null,
+            },
       };
 
       // remove null player cards
@@ -607,8 +683,13 @@ export default function Play() {
     const player = getMyPlayer();
     const lastCardInHand = player?.cards?.[player.cards.length - 1];
 
-    if (drawingCard && lastCardInHand?.id === card.id) {
-      return "draw";
+    if (
+      (game?.lastMove?.action === "draw-from-deck" ||
+        game?.lastMove?.action === "draw-from-discard") &&
+      game.lastMove.playerId === playerId &&
+      card.id === lastCardInHand?.id
+    ) {
+      return "draw-to";
     }
 
     if (dealingCards) {
@@ -638,11 +719,69 @@ export default function Play() {
     setGame(newGame);
   };
 
+  const getDrawCardAnimation = (deckType: string) => {
+    if (!game) {
+      return;
+    }
+
+    if (deckType === "discard" && game.lastMove?.action === "discard") {
+      if (game.lastMove.playerId === playerId) {
+        return "discard";
+      } else {
+        return "discard-reverse";
+      }
+    }
+
+    if (
+      deckType === "discard-bg" &&
+      game.lastMove?.action === "draw-from-discard"
+    ) {
+      if (game.lastMove.playerId === playerId) {
+        return "draw-from";
+      } else {
+        return "draw-from-reverse";
+      }
+    }
+
+    if (deckType === "deck" && game.lastMove?.action === "draw-from-deck") {
+      if (game.lastMove.playerId === playerId) {
+        return "draw-from";
+      } else {
+        return "draw-from-reverse";
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (game) {
+      if (game.lastMove) {
+        if (game.lastMove.playerId !== playerId) {
+          resetPlayerActions();
+        }
+
+        if (game.lastMove.action === "new-deal") {
+          setDealingCards(true);
+          setTimeout(() => {
+            setDealingCards(false);
+          }, 2000);
+        }
+
+        if (game.lastMove.action === "claim-round") {
+          setShowWinnerAlert(true);
+          setTimeout(() => {
+            setShowWinnerAlert(false);
+          }, 3000);
+        }
+      }
+    }
+  }, [game]);
+
   useEffect(() => {
     const storedPlayerActions = localStorage.getItem("playerActions");
     if (storedPlayerActions) {
+      const newPlayerActions = [...playerActions];
       const parsedPlayerActions = JSON.parse(storedPlayerActions);
-      playerActions.forEach((action) => {
+      newPlayerActions.forEach((action) => {
         const storedAction = parsedPlayerActions.find(
           (a: PlayerAction) => a.type === action.type
         );
@@ -650,6 +789,7 @@ export default function Play() {
           action.completed = storedAction.completed;
         }
       });
+      setPlayerActions(newPlayerActions);
     }
 
     const playerId = searchParams.get("playerId");
@@ -728,11 +868,13 @@ export default function Play() {
             </>
           )}
 
+          {game.lastMove?.action}
+
           <NotificationsComponent
             game={game}
             player={getMyPlayer()}
             isPlayerTurn={isMyTurn()}
-            currentPlayerAction={currentAction}
+            currentPlayerAction={getCurrentAction()}
             currentRound={getCurrnetRound()}
           />
 
@@ -744,12 +886,21 @@ export default function Play() {
 
           <div className="flex items-center justify-center grow relative flex-col w-full bg-slate-100 py-6">
             <div className="w-full">
+              {showWinnerAlert && (
+                <div className="absolute top-0 left-0 w-full h-full winner-alert justify-center flex items-center z-30">
+                  <strong className="text-5xl text-violet-600 text-sh">
+                    GRANDMA!
+                  </strong>
+                </div>
+              )}
+
               {game.status === "in-progress" && (
                 <>
                   {getCurrnetRound()?.status === "complete" && (
                     <div>
-                      <h2 className="text-center">
-                        Round Winner: {getCurrentRoundWinner()?.name}
+                      <h2 className="text-center text-lg">
+                        {getCurrentRoundWinner()?.name} clapped grannie's
+                        cheeks!
                       </h2>
                       <HandContainer>
                         {getCurrentRoundWinner()?.cards.map((card, index) => {
@@ -793,22 +944,29 @@ export default function Play() {
                               <div className="relative">
                                 {/* <span>{game.deck.length}</span> */}
                                 {isMyTurn() &&
-                                  currentAction?.type === "draw" && (
+                                  getCurrentAction()?.type === "draw" && (
                                     <div className="w-full h-full flex items-center justify-center absolute left-0 top-0 z-0">
                                       <div className="animate-ping bg-blue-500 w-3/5 h-3/5 rounded-md"></div>
                                     </div>
                                   )}
 
-                                <CardComponent
-                                  key={card.id}
-                                  card={card}
-                                  onClick={() => onDrawCard()}
-                                  hidden
-                                  disabled={
-                                    !isMyTurn() ||
-                                    currentAction?.type !== "draw"
-                                  }
-                                ></CardComponent>
+                                <div className="absolute left-0 top-0">
+                                  <CardComponent card={card} hidden disabled />
+                                </div>
+
+                                <div className="relative z-10">
+                                  <CardComponent
+                                    key={card.id}
+                                    card={card}
+                                    onClick={() => onDrawCard()}
+                                    hidden
+                                    disabled={
+                                      !isMyTurn() ||
+                                      getCurrentAction()?.type !== "draw"
+                                    }
+                                    animation={getDrawCardAnimation("deck")}
+                                  ></CardComponent>
+                                </div>
                               </div>
                             );
                           })()
@@ -825,29 +983,61 @@ export default function Play() {
                             return (
                               <div className="relative">
                                 {isMyTurn() &&
-                                  (currentAction?.type === "draw" ||
-                                    (currentAction?.type === "discard" &&
+                                  (getCurrentAction()?.type === "draw" ||
+                                    (getCurrentAction()?.type === "discard" &&
                                       selectedCard)) && (
                                     <div className="w-full h-full flex items-center justify-center absolute left-0 top-0 z-0">
                                       <div className="animate-ping bg-blue-500 w-3/5 h-3/5 rounded-md"></div>
                                     </div>
                                   )}
 
-                                {/* <span>{game.discardDeck.length}</span> */}
-                                <CardComponent
-                                  wild={isWildCard(card)}
-                                  key={card.id}
-                                  card={card}
-                                  onClick={onDiscardPileClick}
-                                  disabled={!isMyTurn()}
-                                />
+                                {game?.lastMove?.card?.id &&
+                                  (game.lastMove.action ===
+                                    "draw-from-discard" ||
+                                    game.lastMove.action === "discard") && (
+                                    <div
+                                      className={`absolute left-0 top-0 ${
+                                        game.lastMove.action === "discard"
+                                          ? "z-0"
+                                          : "z-20"
+                                      }`}
+                                    >
+                                      <CardComponent
+                                        card={
+                                          game.lastMove.action ===
+                                          "draw-from-discard"
+                                            ? card
+                                            : game.discardDeck[
+                                                game.discardDeck.length - 2
+                                              ]
+                                        }
+                                        disabled={!isMyTurn()}
+                                        onClick={onDiscardPileClick}
+                                        animation={getDrawCardAnimation(
+                                          "discard-bg"
+                                        )}
+                                      />
+                                    </div>
+                                  )}
+
+                                <div className="relative z-10">
+                                  {/* <span>{game.discardDeck.length}</span> */}
+                                  <CardComponent
+                                    wild={isWildCard(card)}
+                                    key={card.id}
+                                    card={card}
+                                    onClick={onDiscardPileClick}
+                                    disabled={!isMyTurn()}
+                                    animation={getDrawCardAnimation("discard")}
+                                  />
+                                </div>
                               </div>
                             );
                           })()
                         ) : (
                           <div className="relative">
                             {isMyTurn() &&
-                              currentAction?.type === "discard" &&
+                              getCurrentAction()?.type === "discard" &&
                               selectedCard && (
                                 <div className="w-full h-full flex items-center justify-center absolute left-0 top-0 z-0">
                                   <div className="animate-ping bg-blue-500 w-3/5 h-3/5 rounded-md"></div>
@@ -907,7 +1097,7 @@ export default function Play() {
 
               {game.status === "in-progress" && isMyTurn() && (
                 <div className="flex justify-center">
-                  {!currentAction && (
+                  {!getCurrentAction() && (
                     <>
                       {!getCurrentRoundWinner() && (
                         <button

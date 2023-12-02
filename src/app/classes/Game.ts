@@ -1,5 +1,5 @@
 import { getGameConfig } from "../data/game-configs";
-import { Card, Game, GameStatus, Player, Round } from "../types";
+import { Card, Game, GameStatus, Player, PlayerMove, Round } from "../types";
 
 export class GameClass {
   id: string;
@@ -12,6 +12,7 @@ export class GameClass {
   rounds: Round[];
   currentRound: number;
   gameType: string;
+  lastMove: PlayerMove | null;
 
   constructor(game?: Partial<Game>) {
     this.id = game?.id || "";
@@ -21,6 +22,7 @@ export class GameClass {
     this.discardDeck = game?.discardDeck || [];
     this.playerTurn = game?.playerTurn || "";
     this.status = game?.status || "open";
+    this.lastMove = game?.lastMove || null;
 
     if (!game?.rounds && game?.gameType) {
       const config = getGameConfig(game.gameType);

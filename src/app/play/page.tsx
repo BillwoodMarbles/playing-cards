@@ -898,9 +898,9 @@ export default function Play() {
                 <>
                   {getCurrnetRound()?.status === "complete" && (
                     <div>
-                      <h2 className="text-center text-lg font-medium text-violet-600">
-                        {getCurrentRoundWinner()?.name} clapped grannie&lsquo;s
-                        cheeks!
+                      <h2 className="text-center text-lg text-violet-600">
+                        <strong>{getCurrentRoundWinner()?.name}</strong> clapped
+                        grannie&lsquo;s cheeks!
                       </h2>
                       <HandContainer>
                         {getCurrentRoundWinner()?.cards.map((card, index) => {
@@ -1086,6 +1086,7 @@ export default function Play() {
                 )}
 
               {getCurrnetRound()?.status === "open" &&
+                playerId &&
                 getCurrnetRound()?.dealer === playerId && (
                   <button
                     className="px-6 py-2 mb-2 mx-1 bg-blue-300 rounded-md float-right"

@@ -898,8 +898,8 @@ export default function Play() {
                 <>
                   {getCurrnetRound()?.status === "complete" && (
                     <div>
-                      <h2 className="text-center text-lg">
-                        {getCurrentRoundWinner()?.name} clapped grannie's
+                      <h2 className="text-center text-lg font-medium text-violet-600">
+                        {getCurrentRoundWinner()?.name} clapped grannie&lsquo;s
                         cheeks!
                       </h2>
                       <HandContainer>

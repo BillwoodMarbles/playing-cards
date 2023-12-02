@@ -942,7 +942,7 @@ export default function Play() {
                         ) : (
                           <>
                             <strong>{getGameWinner()?.name}</strong> clapped
-                            Grannie's cheeks!
+                            Grannie&apos;s cheeks!
                           </>
                         )}
                       </h2>

@@ -868,8 +868,6 @@ export default function Play() {
             </>
           )}
 
-          {game.lastMove?.action}
-
           <NotificationsComponent
             game={game}
             player={getMyPlayer()}
@@ -898,7 +896,7 @@ export default function Play() {
                 <>
                   {getCurrnetRound()?.status === "complete" && (
                     <div>
-                      <h2 className="text-center text-lg text-violet-600">
+                      <h2 className="text-center text-base text-violet-600">
                         <strong>{getCurrentRoundWinner()?.name}</strong> clapped
                         grannie&lsquo;s cheeks!
                       </h2>
@@ -1170,7 +1168,7 @@ export default function Play() {
             </div>
           </div>
 
-          {Boolean(getMyPlayer()?.cards?.length) && (
+          {Boolean(getMyPlayer()?.cards?.length) && !selectedCard && (
             <div className="absolute right-0 flex items-center z-50 -bottom-4 -translate-y-1/2">
               <button
                 className="px-2 py-1 mx-1 w-12 h-12 bg-blue-300 rounded-full shadow-md flex items-center justify-center"

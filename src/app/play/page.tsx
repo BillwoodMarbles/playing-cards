@@ -14,6 +14,8 @@ import CardComponent from "../components/Card";
 import {
   FaAngleLeft,
   FaAngleRight,
+  FaMinus,
+  FaPlus,
   FaShareFromSquare,
   FaShuffle,
 } from "react-icons/fa6";
@@ -70,6 +72,7 @@ export default function Play() {
   const [dealingCards, setDealingCards] = useState(false);
   const [drawingCard, setDrawingCard] = useState(false);
   const [showWinnerAlert, setShowWinnerAlert] = useState(false);
+  const [scoreToAdd, setScoreToAdd] = useState(0);
   const [playerActions, setPlayerActions] = useState<PlayerAction[]>([
     {
       type: "draw",
@@ -94,6 +97,7 @@ export default function Play() {
 
     if (game) {
       const newPlayer: Player = {
+        score: 0,
         name: playerName,
         cards: [],
         id: UUID(),
@@ -752,6 +756,39 @@ export default function Play() {
     }
   };
 
+  const onReportScore = () => {
+    if (game) {
+      const newGame = new GameClass(game);
+
+      newGame.players.forEach((player) => {
+        if (player.id === playerId) {
+          player.score += scoreToAdd;
+        }
+      });
+
+      setScoreToAdd(0);
+
+      newGame.lastMove = {
+        playerId: getMyPlayer()?.id || "",
+        action: "report-score",
+        card: null,
+      };
+      setGame(newGame);
+      onUpdateGameGQL(newGame);
+    }
+  };
+
+  const getGameWinner = () => {
+    if (game) {
+      const players = [...game.players];
+      players.sort((a, b) => {
+        return b.score - a.score;
+      });
+
+      return players[0];
+    }
+  };
+
   useEffect(() => {
     if (game) {
       if (game.lastMove) {
@@ -897,9 +934,19 @@ export default function Play() {
                   {getCurrnetRound()?.status === "complete" && (
                     <div>
                       <h2 className="text-center text-base text-violet-600">
-                        <strong>{getCurrentRoundWinner()?.name}</strong> clapped
-                        grannie&lsquo;s cheeks!
+                        {!isLastRound() ? (
+                          <>
+                            <strong>{getCurrentRoundWinner()?.name}</strong> won
+                            the round!
+                          </>
+                        ) : (
+                          <>
+                            <strong>{getGameWinner()?.name}</strong> clapped
+                            Grannie's cheeks!
+                          </>
+                        )}
                       </h2>
+
                       <HandContainer>
                         {getCurrentRoundWinner()?.cards.map((card, index) => {
                           return (
@@ -1047,6 +1094,54 @@ export default function Play() {
                       </div>
                     </div>
                   )}
+
+                  {getCurrnetRound()?.status === "complete" && (
+                    <>
+                      <div className="w-full py-3 mb-4 mt-4 border border-white bg-slate-50">
+                        <div className="flex items-center justify-center mb-4">
+                          <button
+                            className="px-2 py-1 mx-1 w-12 h-12 bg-red-300 rounded-full shadow-md flex items-center justify-center"
+                            onClick={() =>
+                              setScoreToAdd((prevValue) => prevValue - 1)
+                            }
+                          >
+                            <FaMinus />
+                          </button>
+                          <div className="font-bold text-lg w-8 text-center">
+                            {scoreToAdd}
+                          </div>
+                          <button
+                            className="px-2 py-1 mx-1 w-12 h-12 bg-violet-300 rounded-full shadow-md flex items-center justify-center"
+                            onClick={() =>
+                              setScoreToAdd((prevValue) => prevValue + 1)
+                            }
+                          >
+                            <FaPlus />
+                          </button>
+                        </div>
+
+                        <div className="text-center">
+                          <button
+                            className="px-6 py-2 mx-1 bg-blue-300 rounded-md"
+                            onClick={onReportScore}
+                          >
+                            Add Points
+                          </button>
+                        </div>
+                      </div>
+
+                      {!isLastRound() && getMyPlayer()?.type === "host" && (
+                        <div className="flex justify-center">
+                          <button
+                            className="px-6 py-2 mx-1 bg-blue-300 rounded-md float-right"
+                            onClick={onStartNewRound}
+                          >
+                            Start New Round
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </>
               )}
             </div>
@@ -1054,15 +1149,6 @@ export default function Play() {
 
           <div className="pb-4 bg-slate-100 w-full grow-0 relative z-20">
             <div className="flex justify-center absolute left-0 bottom-full w-full">
-              {getCurrnetRound()?.status === "complete" && !isLastRound() && (
-                <button
-                  className="px-6 py-2 mb-2 mx-1 bg-blue-300 rounded-md float-right"
-                  onClick={onStartNewRound}
-                >
-                  Start New Round
-                </button>
-              )}
-
               {getCurrnetRound()?.status === "complete" && isLastRound() && (
                 <button
                   className="px-6 py-2 mb-2 mx-1 bg-blue-300 rounded-md float-right"

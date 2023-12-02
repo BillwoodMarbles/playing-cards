@@ -52,6 +52,10 @@ const Players: FC<PlayersProps> = ({ players, playerTurn }) => {
               >
                 {getPlayerInitials(player.name)}
               </div>
+
+              <div className="border-2 rounded-full w-6 h-6 absolute -bottom-2 -right-2 text-xs text-center leading-none flex items-center justify-center bg-white">
+                {player.score || 0}
+              </div>
             </div>
           </li>
         );

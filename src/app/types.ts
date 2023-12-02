@@ -29,6 +29,7 @@ export interface Player {
   name: string;
   cards: Card[];
   type: "host" | "player";
+  score: number;
 }
 
 export interface PlayerAction {
@@ -58,6 +59,7 @@ export interface PlayerMove {
     | "end-round"
     | "end-turn"
     | "end-game"
+    | "report-score"
     | "none";
   card: Card | null;
 }

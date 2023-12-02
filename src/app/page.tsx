@@ -25,7 +25,9 @@ export default function Home() {
     const newGame = new GameClass({
       id: code,
       code,
-      players: [{ id: UUID(), name: playerName, cards: [], type: "host" }],
+      players: [
+        { id: UUID(), name: playerName, cards: [], type: "host", score: 0 },
+      ],
       gameType: GRANDMA_GAME_TYPE,
     });
 

@@ -1,4 +1,27 @@
-import { GameConfig, Round } from "../types";
+import { GameConfig, PlayerActions, Round } from "../types";
+
+export const PLAYER_ACTIONS: { [key in PlayerActions]: any } = {
+  [PlayerActions.DRAW]: {
+    type: PlayerActions.DRAW,
+    completed: false,
+    description: "Draw a card from the deck or discard pile",
+  },
+  [PlayerActions.DISCARD]: {
+    type: PlayerActions.DISCARD,
+    completed: false,
+    description: "Discard a card",
+  },
+  [PlayerActions.REVEAL_CARD]: {
+    type: PlayerActions.REVEAL_CARD,
+    completed: false,
+    description: "Reveal a card",
+  },
+  [PlayerActions.PEEK]: {
+    type: PlayerActions.PEEK,
+    completed: false,
+    description: "Peek at card",
+  },
+};
 
 export enum GameTypes {
   FREE_PLAY = "free-play",
@@ -37,6 +60,15 @@ export const MINI_GOLF_GAME_CONFIG = (): GameConfig => {
 const buildMiniGolfRounds = () => {
   const rounds: Round[] = [];
   for (let i = 0; i < 9; i++) {
+    const playerActions = [];
+
+    playerActions.push({
+      ...PLAYER_ACTIONS[PlayerActions.PEEK],
+      preRound: true,
+    });
+    playerActions.push(PLAYER_ACTIONS[PlayerActions.DRAW]);
+    playerActions.push(PLAYER_ACTIONS[PlayerActions.DISCARD]);
+
     rounds.push({
       id: i,
       status: "open",
@@ -46,6 +78,7 @@ const buildMiniGolfRounds = () => {
       dealer: "",
       maxTurns: 4,
       turnCount: 0,
+      playerActions,
     });
   }
   return rounds;
@@ -62,6 +95,10 @@ const buildGrandmaRounds = () => {
       roundWinner: "",
       dealer: "",
       turnCount: 0,
+      playerActions: [
+        PLAYER_ACTIONS[PlayerActions.DRAW],
+        PLAYER_ACTIONS[PlayerActions.DISCARD],
+      ],
     });
   }
   return rounds;

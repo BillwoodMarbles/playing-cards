@@ -26,12 +26,13 @@ import {
   GameStatus,
   Player,
   PlayerAction,
+  PlayerActions,
 } from "../types";
 import NotificationsComponent from "../components/Notifications";
 import HandContainer from "../components/HandContainer";
 import Players from "../components/Players";
 import { GameClass } from "../classes/Game";
-import { GameTypes, getGameConfig } from "../data/game-configs";
+import { GameTypes, PLAYER_ACTIONS, getGameConfig } from "../data/game-configs";
 import "../styles/animations.css";
 import useAnimations from "../hooks/useAnimations";
 import {
@@ -70,17 +71,10 @@ export default function Play() {
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [showWinnerAlert, setShowWinnerAlert] = useState(false);
   const [scoreToAdd, setScoreToAdd] = useState(0);
+  const [peekedCards, setPeekedCards] = useState<Card[]>([]);
   const [playerActions, setPlayerActions] = useState<PlayerAction[]>([
-    {
-      type: "draw",
-      completed: false,
-      description: "Draw a card from the deck or discard pile",
-    },
-    {
-      type: "discard",
-      completed: false,
-      description: "Discard a card",
-    },
+    PLAYER_ACTIONS[PlayerActions.DRAW],
+    PLAYER_ACTIONS[PlayerActions.DISCARD],
   ]);
 
   const getCurrnetRound = () => {
@@ -98,11 +92,12 @@ export default function Play() {
   };
 
   const resetPlayerActions = () => {
-    const newPlayerActions = [...playerActions];
-    newPlayerActions.forEach((action) => {
-      action.completed = false;
-    });
-    localStorage.setItem("playerActions", JSON.stringify(newPlayerActions));
+    const currentRound = getCurrnetRound();
+    if (currentRound) {
+      const newPlayerActions = [...currentRound.playerActions];
+      localStorage.setItem("playerActions", JSON.stringify(newPlayerActions));
+      setPlayerActions(newPlayerActions);
+    }
   };
 
   const onUpdateGameGQL = async (game: Game) => {
@@ -170,11 +165,18 @@ export default function Play() {
       newGame.status = "in-progress";
       newGame.initializeRound();
 
+      const currentRound = newGame.rounds[0];
+      const newPlayerActions = [...currentRound.playerActions];
+      console.log("newPlayerActions", newPlayerActions);
+      setPlayerActions(newPlayerActions);
+      localStorage.setItem("playerActions", JSON.stringify(newPlayerActions));
+
       newGame.lastMove = {
         playerId: myPlayer?.id || "",
         action: "new-game",
         card: null,
       };
+
       setGame(newGame);
       onUpdateGameGQL(newGame);
     }
@@ -257,7 +259,6 @@ export default function Play() {
 
   const claimRound = () => {
     const gameData = gameHook.claimRound();
-    resetPlayerActions();
     setGame(gameData); // todo: remove this
     onUpdateGameGQL(gameData);
   };
@@ -267,6 +268,15 @@ export default function Play() {
       let newGame = new GameClass(game);
       newGame.currentRound = (newGame.currentRound + 1) % newGame.rounds.length;
       newGame.initializeRound();
+
+      const currentRound = newGame.rounds[newGame.currentRound];
+      const newPlayerActions = [...currentRound.playerActions];
+      console.log(
+        "setting player actions from start new round",
+        newPlayerActions
+      );
+      setPlayerActions(newPlayerActions);
+      localStorage.setItem("playerActions", JSON.stringify(newPlayerActions));
 
       newGame.lastMove = {
         playerId: myPlayer?.id || "",
@@ -279,15 +289,21 @@ export default function Play() {
   };
 
   const onCompleteAction = () => {
-    const currentAction = getCurrentAction(playerActions);
+    const currentAction = getCurrentAction(playerActions, game);
 
     if (currentAction) {
       const newPlayerActions = [...playerActions];
       newPlayerActions.forEach((action) => {
         if (action.type === currentAction?.type) {
           action.completed = true;
+          return;
         }
       });
+      console.log(
+        "setting player actions from complete action",
+        newPlayerActions
+      );
+
       setPlayerActions(newPlayerActions);
       localStorage.setItem("playerActions", JSON.stringify(newPlayerActions));
     }
@@ -300,12 +316,15 @@ export default function Play() {
 
   const onDiscardPileClick = () => {
     if (isMyTurn()) {
-      if (getCurrentAction(playerActions)?.type === "discard" && selectedCard) {
+      if (
+        getCurrentAction(playerActions, game)?.type === "discard" &&
+        selectedCard
+      ) {
         const newCard = { ...selectedCard };
         onDiscardCard(newCard);
       }
 
-      if (getCurrentAction(playerActions)?.type === "draw") {
+      if (getCurrentAction(playerActions, game)?.type === "draw") {
         drawCardFromDiscardDeck();
         onCompleteAction();
       }
@@ -324,7 +343,6 @@ export default function Play() {
       if (!cardToSwap) {
         return;
       }
-      cardToSwap.status = "none";
       newPlayerCards[cardIndex + orderAdjustment] = card;
       newPlayerCards[cardIndex] = cardToSwap;
       newGame.players[playerIndex].cards = newPlayerCards;
@@ -374,8 +392,17 @@ export default function Play() {
     }
   };
 
+  const onStartTurn = () => {
+    setPeekedCards([]);
+    onCompleteAction();
+  };
+
   const onDiscardCard = (card: Card) => {
     if (!game || !isMyTurn()) {
+      return;
+    }
+
+    if (GameTypes.MINI_GOLF === game.gameType && card.status !== "hidden") {
       return;
     }
 
@@ -406,7 +433,7 @@ export default function Play() {
       game &&
       game.status === "in-progress" &&
       isMyTurn() &&
-      !getCurrentAction(playerActions)
+      !getCurrentAction(playerActions, game)
     );
   };
 
@@ -461,6 +488,7 @@ export default function Play() {
       );
       newGame.discardDeck = newDiscardDeck;
 
+      card.status = "visible";
       const newPlayerCards = [...myPlayer.cards, card];
       newGame.players[playerIndex].cards = newPlayerCards;
       newGame.lastMove = {
@@ -496,6 +524,16 @@ export default function Play() {
               card: null,
             },
       };
+
+      if (
+        parsedGame.lastMove?.action === "new-game" ||
+        parsedGame.lastMove?.action === "start-round" ||
+        parsedGame.lastMove?.action === "new-deal" ||
+        parsedGame.lastMove?.action === "end-turn"
+      ) {
+        console.log("RESETTING FROM DATA UPDATE");
+        resetPlayerActions();
+      }
 
       // remove null player cards
       parsedGame.players.forEach((player) => {
@@ -593,6 +631,49 @@ export default function Play() {
     }
   };
 
+  const onRevealCard = (card: Card) => {
+    if (game) {
+      const newGame = new GameClass(game);
+      const playerIndex = getPlayerIndexById(newGame, playerId);
+
+      if (playerIndex === null || playerIndex === undefined) {
+        return;
+      }
+
+      const cardIndex = newGame.players[playerIndex].cards.findIndex(
+        (c) => c.id === card.id
+      );
+
+      if (cardIndex >= 0) {
+        newGame.players[playerIndex].cards[cardIndex].status = "visible";
+        newGame.lastMove = {
+          playerId: myPlayer?.id || "",
+          action: "reveal-card",
+          card: card,
+        };
+        onCompleteAction();
+        setGame(newGame);
+        onUpdateGameGQL(newGame);
+      }
+    }
+  };
+
+  const onPeekCard = (card: Card) => {
+    if (!game) {
+      return;
+    }
+
+    if (peekedCards.length >= 2) {
+      return;
+    }
+
+    if (peekedCards.find((c) => c.id === card.id)) {
+      return;
+    }
+
+    setPeekedCards((prevValue) => [...prevValue, card]);
+  };
+
   const sortHand = () => {
     if (!game || !myPlayer) {
       return;
@@ -656,10 +737,6 @@ export default function Play() {
 
   useEffect(() => {
     if (game?.lastMove) {
-      if (game.lastMove.playerId !== playerId) {
-        resetPlayerActions();
-      }
-
       if (game.lastMove.action === "claim-round") {
         setShowWinnerAlert(true);
         setTimeout(() => {
@@ -673,17 +750,10 @@ export default function Play() {
     const storedPlayerActions = localStorage.getItem("playerActions");
 
     if (storedPlayerActions) {
-      const newPlayerActions = [...playerActions];
       const parsedPlayerActions = JSON.parse(storedPlayerActions);
-      newPlayerActions.forEach((action) => {
-        const storedAction = parsedPlayerActions.find(
-          (a: PlayerAction) => a.type === action.type
-        );
-        if (storedAction) {
-          action.completed = storedAction.completed;
-        }
-      });
-      setPlayerActions(newPlayerActions);
+      if (parsedPlayerActions) {
+        setPlayerActions(parsedPlayerActions);
+      }
     }
 
     const playerId = searchParams.get("playerId");
@@ -764,7 +834,7 @@ export default function Play() {
             game={game}
             player={myPlayer}
             isPlayerTurn={isMyTurn()}
-            currentPlayerAction={getCurrentAction(playerActions)}
+            currentPlayerAction={getCurrentAction(playerActions, game)}
             currentRound={getCurrnetRound()}
           />
 
@@ -847,7 +917,8 @@ export default function Play() {
                           cards={game.deck}
                           enabled={Boolean(
                             isMyTurn() &&
-                              getCurrentAction(playerActions)?.type === "draw"
+                              getCurrentAction(playerActions, game)?.type ===
+                                "draw"
                           )}
                           onClick={drawCard}
                           animation={getDeckAnimation("deck")}
@@ -863,10 +934,10 @@ export default function Play() {
                             return (
                               <div className="relative">
                                 {isMyTurn() &&
-                                  (getCurrentAction(playerActions)?.type ===
-                                    "draw" ||
-                                    (getCurrentAction(playerActions)?.type ===
-                                      "discard" &&
+                                  (getCurrentAction(playerActions, game)
+                                    ?.type === "draw" ||
+                                    (getCurrentAction(playerActions, game)
+                                      ?.type === "discard" &&
                                       selectedCard)) && (
                                     <div className="w-full h-full flex items-center justify-center absolute left-0 top-0 z-0">
                                       <div className="animate-ping bg-blue-500 w-3/5 h-3/5 rounded-md"></div>
@@ -920,7 +991,7 @@ export default function Play() {
                         ) : (
                           <div className="relative">
                             {isMyTurn() &&
-                              getCurrentAction(playerActions)?.type ===
+                              getCurrentAction(playerActions, game)?.type ===
                                 "discard" &&
                               selectedCard && (
                                 <div className="w-full h-full flex items-center justify-center absolute left-0 top-0 z-0">
@@ -997,7 +1068,6 @@ export default function Play() {
                   New Game
                 </button>
               )}
-
               {game.status === "open" &&
                 myPlayer?.type === "host" &&
                 game.players.length >= 2 && (
@@ -1008,7 +1078,6 @@ export default function Play() {
                     Start Game
                   </button>
                 )}
-
               {getCurrnetRound()?.status === "open" &&
                 playerId &&
                 getCurrnetRound()?.dealer === playerId && (
@@ -1018,6 +1087,41 @@ export default function Play() {
                   >
                     Deal
                   </button>
+                )}
+
+              {getCurrentAction(playerActions, game)?.type ===
+                PlayerActions.REVEAL_CARD &&
+                selectedCard && (
+                  <button
+                    className="px-6 py-2 mb-2 mx-1 bg-blue-300 rounded-md shadow-md"
+                    onClick={() => onRevealCard(selectedCard)}
+                  >
+                    Reveal Card
+                  </button>
+                )}
+
+              {getCurrentAction(playerActions, game)?.type ===
+                PlayerActions.PEEK &&
+                isMyTurn() && (
+                  <>
+                    {peekedCards.length < 2 && selectedCard && (
+                      <button
+                        className="px-6 py-2 mb-2 mx-1 bg-blue-300 rounded-md shadow-md"
+                        onClick={() => onPeekCard(selectedCard)}
+                      >
+                        Peek at Card
+                      </button>
+                    )}
+
+                    {peekedCards.length >= 2 && (
+                      <button
+                        className="px-6 py-2 mb-2 mx-1 bg-blue-300 rounded-md shadow-md"
+                        onClick={() => onStartTurn()}
+                      >
+                        Start Turn
+                      </button>
+                    )}
+                  </>
                 )}
 
               {showEndOfTurnCTAs() && (
@@ -1030,7 +1134,7 @@ export default function Play() {
             </div>
 
             <div className="relative">
-              {selectedCard && (
+              {selectedCard && game.gameType !== GameTypes.MINI_GOLF && (
                 <>
                   <div className="absolute -left-4 flex items-center z-50 top-1/2 -translate-y-1/2">
                     <button
@@ -1053,6 +1157,7 @@ export default function Play() {
               )}
               <Hand
                 game={game}
+                peekedCards={peekedCards}
                 player={myPlayer}
                 cards={myPlayer?.cards || []}
                 selectedCard={selectedCard}
@@ -1061,16 +1166,19 @@ export default function Play() {
             </div>
           </div>
 
-          {Boolean(myPlayer?.cards?.length) && !selectedCard && (
-            <div className="absolute right-0 flex items-center z-50 -bottom-4 -translate-y-1/2">
-              <button
-                className="px-2 py-1 mx-1 w-12 h-12 bg-blue-300 rounded-full shadow-md flex items-center justify-center"
-                onClick={() => sortHand()}
-              >
-                <FaShuffle />
-              </button>
-            </div>
-          )}
+          {Boolean(myPlayer?.cards?.length) &&
+            !selectedCard &&
+            (game.gameType !== GameTypes.MINI_GOLF ||
+              getCurrnetRound()?.status === "complete") && (
+              <div className="absolute right-0 flex items-center z-50 -bottom-4 -translate-y-1/2">
+                <button
+                  className="px-2 py-1 mx-1 w-12 h-12 bg-blue-300 rounded-full shadow-md flex items-center justify-center"
+                  onClick={() => sortHand()}
+                >
+                  <FaShuffle />
+                </button>
+              </div>
+            )}
         </>
       )}
     </>

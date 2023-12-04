@@ -1,3 +1,4 @@
+import { GameTypes } from "../data/game-configs";
 import { Card, Game, Player } from "../types";
 
 export const getCurrnetRound = (game: Game) => {
@@ -36,10 +37,12 @@ export const getNextPlayer = (game: Game): Player | void => {
 };
 
 export const isWildCard = (game: Game, card: Card) => {
-  const roundWildCard = (getCurrnetRound(game)?.drawCount || 0) - 1;
+  if (game.gameType === GameTypes.GRANDMA) {
+    const roundWildCard = (getCurrnetRound(game)?.drawCount || 0) - 1;
 
-  if (card.value === roundWildCard) {
-    return true;
+    if (card.value === roundWildCard) {
+      return true;
+    }
   }
 
   return card.value === 13;

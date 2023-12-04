@@ -6,7 +6,7 @@ interface NotificationsProps {
   player: Player | null;
   isPlayerTurn?: boolean;
   currentRound?: Round;
-  currentPlayerAction?: PlayerAction;
+  currentPlayerAction?: PlayerAction | null;
 }
 
 const NotificationsComponent: FC<NotificationsProps> = ({

@@ -10,9 +10,25 @@ export const getPlayerIndexById = (game: Game | null, playerId: string) => {
   return game.players.findIndex((player) => player.id === playerId);
 };
 
-export const getCurrentAction = (playerActions: PlayerAction[]) => {
+export const getCurrentAction = (
+  playerActions: PlayerAction[],
+  game: Game | null
+) => {
+  if (!game) return null;
+
+  const currentRound = game.rounds[game.currentRound];
+
   if (playerActions) {
-    return playerActions.find((action) => !action.completed);
+    for (let i = 0; i < playerActions.length; i++) {
+      if (!playerActions[i].completed) {
+        if (playerActions[i].preRound && currentRound.turnCount === 0) {
+          return playerActions[i];
+        } else if (!playerActions[i].preRound) {
+          return playerActions[i];
+        }
+      }
+    }
+    return null;
   }
 };
 

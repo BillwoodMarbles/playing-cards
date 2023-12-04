@@ -12,6 +12,7 @@ interface HandProps {
   player: Player | null;
   selectedCard?: Card | null;
   animation?: CardAnimation;
+  peekedCards?: Card[];
   onClick?: (card: Card) => void;
 }
 
@@ -19,6 +20,7 @@ const Hand: FC<HandProps> = ({
   game,
   cards,
   player,
+  peekedCards,
   selectedCard,
   onClick,
 }) => {
@@ -26,7 +28,10 @@ const Hand: FC<HandProps> = ({
 
   const isCardHidden = (card: Card) => {
     if (game.gameType === GameTypes.MINI_GOLF) {
-      return card.status === "hidden";
+      const isCardPeeked = peekedCards?.find(
+        (peekedCard) => peekedCard.id === card.id
+      );
+      return card.status === "hidden" && isCardPeeked === undefined;
     }
     return false;
   };

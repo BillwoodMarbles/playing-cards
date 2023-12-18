@@ -51,7 +51,6 @@ export const PlayerContext: FC<PlayerContextProps> = ({
 
   useEffect(() => {
     const _currentAction = getNextAction(game, playerActions, playerId);
-    console.log("Setting current action", _currentAction);
     setCurrentAction(_currentAction);
   }, [playerActions, game]);
 

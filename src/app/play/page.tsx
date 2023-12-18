@@ -168,7 +168,7 @@ export default function Play() {
 
   return (
     <GameContext playerId={playerId} initialGame={game}>
-      <PlayerContext game={game} playerId={playerId}>
+      <PlayerContext playerId={playerId}>
         <GamePage />
       </PlayerContext>
     </GameContext>

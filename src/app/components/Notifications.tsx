@@ -1,21 +1,14 @@
 import { FC } from "react";
-import { Game, Player, PlayerAction, Round } from "../types";
+import { useGame } from "../contexts/GameContext";
+import { usePlayer } from "../contexts/PlayerContext";
+import { GameTypes, getGameConfig } from "../data/game-configs";
 
-interface NotificationsProps {
-  game: Game;
-  player: Player | null;
-  isPlayerTurn?: boolean;
-  currentRound?: Round;
-  currentPlayerAction?: PlayerAction | null;
-}
+interface GameNotificationsProps {}
 
-const NotificationsComponent: FC<NotificationsProps> = ({
-  game,
-  player,
-  isPlayerTurn,
-  currentRound,
-  currentPlayerAction,
-}) => {
+const GameNotifications: FC<GameNotificationsProps> = ({}) => {
+  const { currentRound, game, myPlayer, isMyTurn } = useGame();
+  const { currentAction } = usePlayer();
+
   const isLastRound = () => {
     return game.currentRound === game.rounds.length - 1;
   };
@@ -26,14 +19,15 @@ const NotificationsComponent: FC<NotificationsProps> = ({
 
   const getNotifcations = () => {
     const notifications = [];
+    const gameConfig = getGameConfig(game.gameType);
 
     if (game?.status === "open") {
-      if (game.players.length < 2) {
+      if (game.players.length < gameConfig.minPlayers) {
         notifications.push(
           <div className="text-center">Waiting for players...</div>
         );
       } else {
-        if (player?.type === "host") {
+        if (myPlayer?.type === "host") {
           notifications.push(<div className="text-center">Ready to start</div>);
         } else {
           notifications.push(
@@ -50,8 +44,11 @@ const NotificationsComponent: FC<NotificationsProps> = ({
             <div className="text-center">Round Over: Report your score.</div>
           );
         }
-      } else if (currentRound?.status === "open") {
-        if (currentRound?.dealer === player?.id) {
+      } else if (
+        currentRound?.status === "open" &&
+        game.gameType !== GameTypes.CARD_PARTY
+      ) {
+        if (currentRound?.dealer === myPlayer?.id) {
           notifications.push(<div className="text-center">Ready to deal</div>);
         } else {
           notifications.push(
@@ -71,8 +68,8 @@ const NotificationsComponent: FC<NotificationsProps> = ({
           );
         }
 
-        if (isPlayerTurn) {
-          notifications.push(currentPlayerAction?.description);
+        if (isMyTurn()) {
+          notifications.push(currentAction?.description);
         } else {
           notifications.push(
             <div className="text-center">
@@ -91,9 +88,11 @@ const NotificationsComponent: FC<NotificationsProps> = ({
       className="flex w-full grow-0 justify-center px-4 py-1 h-10 flex-col items-center bg-slate-200 text-xs"
       style={{ minHeight: "2.5rem" }}
     >
-      {getNotifcations().map((notification) => notification)}
+      {getNotifcations().map((notification) => {
+        return <div key="">{notification}</div>;
+      })}
     </div>
   );
 };
 
-export default NotificationsComponent;
+export default GameNotifications;

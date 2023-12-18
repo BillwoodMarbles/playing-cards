@@ -7,14 +7,14 @@ import { onUpdateGame } from "@/graphql/subscriptions";
 import { getGame } from "@/graphql/queries";
 import { GetGameQueryVariables } from "@/API";
 import { Amplify } from "aws-amplify";
-import amplifyconfig from "../../amplifyconfiguration.json";
-import { Card, Game, GameStatus } from "../types";
-import "../styles/animations.css";
-import { sortPlayerCards } from "../utils/player";
-import { GameContext } from "../contexts/GameContext";
-import GamePage from "./Game";
-import { PlayerContext } from "../contexts/PlayerContext";
-import { GameTypes } from "../data/game-configs";
+import amplifyconfig from "../../../amplifyconfiguration.json";
+import { Card, Game, GameStatus } from "../../types";
+import "../../styles/animations.css";
+import { sortPlayerCards } from "../../utils/player";
+import { GameContext } from "../../contexts/GameContext";
+import PartyBoard from "./Board";
+import { PlayerContext } from "../../contexts/PlayerContext";
+import { GameTypes } from "../../data/game-configs";
 
 const client = generateClient();
 Amplify.configure(amplifyconfig);
@@ -168,8 +168,8 @@ export default function Play() {
 
   return (
     <GameContext playerId={playerId} initialGame={game}>
-      <PlayerContext game={game} playerId={playerId}>
-        <GamePage />
+      <PlayerContext playerId={playerId}>
+        <PartyBoard />
       </PlayerContext>
     </GameContext>
   );

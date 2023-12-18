@@ -1,0 +1,11 @@
+.deck-party {
+  background-image: url("/deck-party.png"),
+    radial-gradient(
+      circle,
+      rgba(255, 255, 255, 1) 4%,
+      rgba(0, 136, 255, 1) 100%
+    );
+  background-size: 80%, 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+}

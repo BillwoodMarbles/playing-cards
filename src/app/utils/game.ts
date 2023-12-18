@@ -1,14 +1,14 @@
 import { GameTypes } from "../data/game-configs";
 import { Card, Game, Player } from "../types";
 
-export const getCurrnetRound = (game: Game) => {
+export const getCurrentRound = (game: Game) => {
   return game.rounds[game.currentRound];
 };
 
 export const getCurrentRoundWinner = (game: Game): Player | undefined => {
   const round = game.rounds[game.currentRound];
 
-  if (round.roundWinner) {
+  if (round?.roundWinner) {
     const roundWinnderIndex = game.players.findIndex(
       (player) => player.id === round.roundWinner
     );
@@ -38,7 +38,7 @@ export const getNextPlayer = (game: Game): Player | void => {
 
 export const isWildCard = (game: Game, card: Card) => {
   if (game.gameType === GameTypes.GRANDMA) {
-    const roundWildCard = (getCurrnetRound(game)?.drawCount || 0) - 1;
+    const roundWildCard = (getCurrentRound(game)?.drawCount || 0) - 1;
 
     if (card.value === roundWildCard) {
       return true;

@@ -11,7 +11,7 @@ type Game @model {
   deck: AWSJSON!
   discardDeck: AWSJSON!
   status: String!
-  rounds: AWSJSON!
+  rounds: AWSJSON
   currentRound: Int!
   gameType: String!
   lastMove: AWSJSON

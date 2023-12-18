@@ -10,28 +10,6 @@ export const getPlayerIndexById = (game: Game | null, playerId: string) => {
   return game.players.findIndex((player) => player.id === playerId);
 };
 
-export const getCurrentAction = (
-  playerActions: PlayerAction[],
-  game: Game | null
-) => {
-  if (!game) return null;
-
-  const currentRound = game.rounds[game.currentRound];
-
-  if (playerActions) {
-    for (let i = 0; i < playerActions.length; i++) {
-      if (!playerActions[i].completed) {
-        if (playerActions[i].preRound && currentRound.turnCount === 0) {
-          return playerActions[i];
-        } else if (!playerActions[i].preRound) {
-          return playerActions[i];
-        }
-      }
-    }
-    return null;
-  }
-};
-
 export const sortPlayerCards = (game: Game | null, player: Player) => {
   let sortedCards = [...player.cards];
 
@@ -42,7 +20,13 @@ export const sortPlayerCards = (game: Game | null, player: Player) => {
 
   if (sortingArr) {
     sortedCards = sortedCards.sort(function (a, b) {
-      return sortingArr.indexOf(a.id) - sortingArr.indexOf(b.id);
+      const indexA = sortingArr.indexOf(a.id);
+      const indexB = sortingArr.indexOf(b.id);
+
+      if (indexA === -1) return 1; // a is not found, sort it to the end
+      if (indexB === -1) return -1; // b is not found, sort it to the end
+
+      return indexA - indexB; // both are found, sort them based on their indices
     });
   }
 

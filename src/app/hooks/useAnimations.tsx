@@ -10,7 +10,11 @@ const useAnimations = (game: Game | null, player: Player | null) => {
       return "none";
     }
 
-    if (deckType === "discard" && game.lastMove?.action === "discard") {
+    if (
+      deckType === "discard" &&
+      (game.lastMove?.action === "discard" ||
+        game.lastMove?.action === "burn-from-deck")
+    ) {
       if (game.lastMove.playerId === player?.id) {
         return "discard";
       } else {

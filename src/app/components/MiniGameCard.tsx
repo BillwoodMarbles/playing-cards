@@ -84,8 +84,6 @@ const MiniGameCard: FC<MiniGameCardProps> = ({
         return <CgCardSpades />;
       case "coins":
         return <FaCoins />;
-      case "spinner":
-        return <CgSpinner />;
       case "shot-glass":
         return <GiGlassShot />;
       case "standing":

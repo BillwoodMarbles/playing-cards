@@ -1,10 +1,10 @@
-import { GiBattleAxe, GiCoins } from "react-icons/gi";
+import { GiBattleAxe, GiCoins, GiDeerTrack, GiNinjaHead } from "react-icons/gi";
 import { GiClown } from "react-icons/gi";
 import { MdContentCopy } from "react-icons/md";
 import { MdLocalMovies } from "react-icons/md";
 import { GiCardJackClubs } from "react-icons/gi";
 import { GiGlassShot } from "react-icons/gi";
-import { FaFireAlt } from "react-icons/fa";
+import { FaFireAlt, FaGlassCheers } from "react-icons/fa";
 import { PiDetectiveBold } from "react-icons/pi";
 import { PiHandCoins } from "react-icons/pi";
 import { GoNumber } from "react-icons/go";
@@ -36,7 +36,7 @@ export enum MiniGameType {
   BLACK_JACK = "Black Jack",
   MINI_GOLF = "Mini Golf",
   QUARTER_RACE = "Quarter Race",
-  SPINNER_ROULETTE = "Spinner Roulette",
+  DICE_ROULETTE = "Dice Roulette",
   QUARTER_ATTACK = "Quarter Attack",
   IM_THE_JOKER_BABY = "I'm the Joker, Baby",
   THE_PERFECT_MATCH = "The Perfect Match",
@@ -49,13 +49,27 @@ export enum MiniGameType {
   ONE_IN_THE_CHAMBER = "One in the Chamber",
   A_COIN_IN_THE_HAND = "A Coin in the Hand",
   LOSING_COUNT = "Losing Count",
+  NINJA = "Ninja",
+  MOOSE = "Moose",
+  SOCIAL = "Social",
 }
+
+export type MiniGameRequirements =
+  | "none"
+  | "cards"
+  | "coins"
+  | "dice"
+  | "shot-glass"
+  | "standing"
+  | "drinking";
 
 export interface MiniGame {
   description: string[];
   title: MiniGameType;
   reward?: string;
   icon: ElementType;
+  requirements?: MiniGameRequirements[];
+  minPlayers?: number;
 }
 
 export const getMiniGameByTitle = (title: MiniGameType) => {
@@ -71,6 +85,23 @@ export const getPartyCardDeck = (): Card[] => {
       status: "none",
     };
   });
+};
+
+export const getPartyCardDeckWithConfig = (config: {
+  [key in MiniGameType]?: boolean;
+}): Card[] => {
+  return partyCards.reduce((acc, card) => {
+    if (config[card.title]) {
+      acc.push({
+        id: acc.length,
+        name: card.title,
+        type: "non-standard",
+        status: "none",
+      });
+    }
+
+    return acc;
+  }, [] as Card[]);
 };
 
 export const partyCards: MiniGame[] = [
@@ -117,6 +148,7 @@ export const partyCards: MiniGame[] = [
     title: MiniGameType.HOUSE_OF_CARDS,
     reward: "5 coins",
     icon: FaHouse,
+    requirements: ["cards"],
   },
   {
     description: [
@@ -148,6 +180,7 @@ export const partyCards: MiniGame[] = [
     ],
     reward: "5 coins",
     icon: GiTwister,
+    requirements: ["coins"],
   },
   {
     title: MiniGameType.BLACK_JACK,
@@ -158,6 +191,7 @@ export const partyCards: MiniGame[] = [
     ],
     reward: "5 coins",
     icon: CgCardSpades,
+    requirements: ["cards"],
   },
   {
     title: MiniGameType.MINI_GOLF,
@@ -170,6 +204,7 @@ export const partyCards: MiniGame[] = [
     ],
     reward: "5 coins",
     icon: FaGolfBallTee,
+    requirements: ["cards"],
   },
   {
     title: MiniGameType.QUARTER_RACE,
@@ -181,17 +216,18 @@ export const partyCards: MiniGame[] = [
     ],
     reward: "10 / 5 coins",
     icon: FaFlagCheckered,
+    requirements: ["coins", "shot-glass"],
   },
   {
-    title: MiniGameType.SPINNER_ROULETTE,
+    title: MiniGameType.DICE_ROULETTE,
     description: [
-      "Each player chooses a number on the spinner",
-      "Spin the spinner",
-      "If the spinner lands on your number, you are out",
+      "Each player chooses a number on a die",
+      "Roll the die. If it lands on your number, you are out. Keep rolling until one player is left",
       "The last player standing wins",
     ],
     reward: "5 coins",
     icon: GiChaingun,
+    requirements: ["dice"],
   },
   {
     title: MiniGameType.QUARTER_ATTACK,
@@ -203,6 +239,7 @@ export const partyCards: MiniGame[] = [
     ],
     reward: "5 coins",
     icon: GiBattleAxe,
+    requirements: ["coins", "shot-glass"],
   },
   {
     title: MiniGameType.IM_THE_JOKER_BABY,
@@ -215,6 +252,7 @@ export const partyCards: MiniGame[] = [
     ],
     reward: "5 coins",
     icon: GiClown,
+    requirements: ["cards"],
   },
   {
     title: MiniGameType.THE_PERFECT_MATCH,
@@ -227,6 +265,7 @@ export const partyCards: MiniGame[] = [
     ],
     reward: "5 coins",
     icon: MdContentCopy,
+    requirements: ["cards"],
   },
   {
     title: MiniGameType.TIPPY_SHOT,
@@ -238,6 +277,7 @@ export const partyCards: MiniGame[] = [
     ],
     reward: "10 coins",
     icon: GiGlassShot,
+    requirements: ["shot-glass"],
   },
   {
     title: MiniGameType.YOU_CAN_QUOTE_ME,
@@ -259,6 +299,7 @@ export const partyCards: MiniGame[] = [
     ],
     reward: "5 coins",
     icon: GiCardJackClubs,
+    requirements: ["cards"],
   },
   {
     title: MiniGameType.PENNIES,
@@ -273,6 +314,7 @@ export const partyCards: MiniGame[] = [
     ],
     reward: "5 coins per quarter in hand",
     icon: GiCoins,
+    requirements: ["coins", "dice"],
   },
   {
     title: MiniGameType.SMOKE_OR_FIRE,
@@ -283,6 +325,7 @@ export const partyCards: MiniGame[] = [
     ],
     reward: "Remaining coins in hand",
     icon: FaFireAlt,
+    requirements: ["cards"],
   },
   {
     title: MiniGameType.WHAT_AM_I,
@@ -295,6 +338,7 @@ export const partyCards: MiniGame[] = [
     ],
     reward: "5 coins",
     icon: PiDetectiveBold,
+    requirements: ["cards"],
   },
   {
     title: MiniGameType.ONE_IN_THE_CHAMBER,
@@ -307,6 +351,7 @@ export const partyCards: MiniGame[] = [
     ],
     reward: "10 coins",
     icon: GiSilverBullet,
+    requirements: ["coins", "shot-glass"],
   },
   {
     title: MiniGameType.A_COIN_IN_THE_HAND,
@@ -320,6 +365,7 @@ export const partyCards: MiniGame[] = [
     ],
     reward: "10 coins",
     icon: PiHandCoins,
+    requirements: ["coins"],
   },
   {
     title: MiniGameType.LOSING_COUNT,
@@ -329,5 +375,30 @@ export const partyCards: MiniGame[] = [
     ],
     reward: "10 coins",
     icon: GoNumber,
+  },
+  {
+    title: MiniGameType.NINJA,
+    description: ["Play a game of ninja"],
+    reward: "1 point",
+    icon: GiNinjaHead,
+    requirements: ["standing"],
+  },
+  {
+    title: MiniGameType.MOOSE,
+    description: [
+      "You are now the Moose!",
+      "Once per round, you can place your hands on your head like antlers",
+      "The last player to do the same takes a drink",
+    ],
+    reward: "1 drink",
+    icon: GiDeerTrack,
+    requirements: ["drinking"],
+  },
+  {
+    title: MiniGameType.SOCIAL,
+    description: ["Everyone takes a drink!"],
+    reward: "1 drink",
+    icon: FaGlassCheers,
+    requirements: ["drinking"],
   },
 ];

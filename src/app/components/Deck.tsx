@@ -1,6 +1,7 @@
 import { FC, useEffect } from "react";
 import CardComponent from "./Card";
 import { Card, CardAnimation, Game } from "../types";
+import CardFactory from "./CardFactory";
 
 interface DeckProps {
   cards: Card[];
@@ -57,11 +58,11 @@ const Deck: FC<DeckProps> = ({
               )}
 
               <div className="absolute left-0 top-0">
-                <CardComponent size={size} card={card} hidden disabled />
+                <CardFactory size={size} card={card} hidden disabled />
               </div>
 
               <div className="relative z-10">
-                <CardComponent
+                <CardFactory
                   key={card.id}
                   card={card}
                   onClick={() => onClick(card)}
@@ -69,7 +70,7 @@ const Deck: FC<DeckProps> = ({
                   disabled={!enabled}
                   animation={animation}
                   size={size}
-                ></CardComponent>
+                ></CardFactory>
               </div>
             </div>
           );

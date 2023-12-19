@@ -114,7 +114,7 @@ const MiniGameCard: FC<MiniGameCardProps> = ({
       <svg
         xmlns="http://www.w3.org/2000/svg"
         height="420"
-        width="350"
+        width="340"
         className="w-full h-auto"
       />
       {hidden && (
@@ -158,7 +158,7 @@ const MiniGameCard: FC<MiniGameCardProps> = ({
                 <strong>{miniGame.reward}</strong>
               </p>
 
-              <div className="h-full flex items-center px-4">
+              <div className="h-full flex items-center px-4 absolute top-0 right-0">
                 {miniGame.requirements?.map((line, index) => {
                   return (
                     <div

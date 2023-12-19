@@ -11,6 +11,7 @@ import { MdLocalMovies } from "react-icons/md";
 import { GiCardJackClubs } from "react-icons/gi";
 import { GiGlassShot } from "react-icons/gi";
 import {
+  FaBookDead,
   FaFireAlt,
   FaGlassCheers,
   FaHandHoldingHeart,
@@ -75,6 +76,7 @@ export enum MiniGameType {
   HANG_MAN = "Hangman",
   THAT_WORD_GAME = "That Word Game",
   LAND_MINES = "Land Mines",
+  STORY_TIME = "Story Time",
 }
 
 export type MiniGameRequirements =
@@ -520,5 +522,16 @@ export const partyCards: MiniGame[] = [
     reward: "1 point",
     icon: FaExplosion,
     requirements: ["coins"],
+  },
+  {
+    title: MiniGameType.STORY_TIME,
+    description: [
+      "One player starts a story with one word",
+      "Each player takes turns repeating the story and adding one word at the end",
+      "If a player messes up, they are out",
+      "The last player standing wins",
+    ],
+    reward: "1 point",
+    icon: FaBookDead,
   },
 ];

@@ -1,14 +1,29 @@
-import { GiBattleAxe, GiCoins, GiDeerTrack, GiNinjaHead } from "react-icons/gi";
+import {
+  GiBattleAxe,
+  GiCoins,
+  GiDeerTrack,
+  GiNinjaHead,
+  GiPerspectiveDiceThree,
+} from "react-icons/gi";
 import { GiClown } from "react-icons/gi";
 import { MdContentCopy } from "react-icons/md";
 import { MdLocalMovies } from "react-icons/md";
 import { GiCardJackClubs } from "react-icons/gi";
 import { GiGlassShot } from "react-icons/gi";
-import { FaFireAlt, FaGlassCheers } from "react-icons/fa";
-import { PiDetectiveBold } from "react-icons/pi";
+import {
+  FaFireAlt,
+  FaGlassCheers,
+  FaHandHoldingHeart,
+  FaMask,
+  FaPhone,
+  FaSkull,
+} from "react-icons/fa";
+import { TbCircleLetterW } from "react-icons/tb";
+import { PiDetectiveBold, PiDiceSixBold } from "react-icons/pi";
 import { PiHandCoins } from "react-icons/pi";
 import { GoNumber } from "react-icons/go";
 import {
+  FaExplosion,
   FaFlagCheckered,
   FaGolfBallTee,
   FaHandScissors,
@@ -32,7 +47,7 @@ export enum MiniGameType {
   HOUSE_OF_CARDS = "House of Cards",
   CATEGORIES = "Categories",
   RHYME_TIME = "Rhyme Time",
-  QUARTER_SPIN = "Quarter Spin",
+  QUARTER_SPIN = "Tornado Alley",
   BLACK_JACK = "Black Jack",
   MINI_GOLF = "Mini Golf",
   QUARTER_RACE = "Quarter Race",
@@ -52,6 +67,14 @@ export enum MiniGameType {
   NINJA = "Ninja",
   MOOSE = "Moose",
   SOCIAL = "Social",
+  ROLL_CALL = "Roll Call",
+  ITS_A_DATE = "It's a Date",
+  IMPOSTER = "Imposter Syndrome",
+  I_CAN_COUNT_TO_SIX = "I Can Count to Six",
+  TELESKETCH = "Tele-Sketch",
+  HANG_MAN = "Hangman",
+  THAT_WORD_GAME = "That Word Game",
+  LAND_MINES = "Land Mines",
 }
 
 export type MiniGameRequirements =
@@ -61,6 +84,7 @@ export type MiniGameRequirements =
   | "dice"
   | "shot-glass"
   | "standing"
+  | "drawing"
   | "drinking";
 
 export interface MiniGame {
@@ -400,5 +424,101 @@ export const partyCards: MiniGame[] = [
     reward: "1 drink",
     icon: FaGlassCheers,
     requirements: ["drinking"],
+  },
+  {
+    title: MiniGameType.ROLL_CALL,
+    description: [
+      "Everyone rolls a single die to determine how many drinks they take",
+    ],
+    reward: "Drink dice value",
+    icon: GiPerspectiveDiceThree,
+    requirements: ["drinking", "dice"],
+  },
+  {
+    title: MiniGameType.ITS_A_DATE,
+    description: ["Choose one person to take a drink with you"],
+    reward: "1 drink each",
+    icon: FaHandHoldingHeart,
+    requirements: ["drinking"],
+  },
+  {
+    title: MiniGameType.IMPOSTER,
+    description: [
+      "Including exactly one joker card, deal a card to each player. The player with the joker is the imposter",
+      "The goal is to figure out who the imposter is",
+      "At the start of the round, each player can state their case for why they are not the imposter. Each player then votes for who they think the imposter is. The player with the most votes is out and reveals their card",
+      "Repeat until there are two players left. If the imposter is not out by the time there are only two players left, the imposter wins",
+    ],
+    reward: "1 point",
+    icon: FaMask,
+    requirements: ["cards"],
+    minPlayers: 4,
+  },
+  {
+    title: MiniGameType.I_CAN_COUNT_TO_SIX,
+    description: [
+      "The goal is to roll 1 - 6 in order",
+      "Each player takes turns rolling a die",
+      "Start by trying to roll a 1, then a 2, then a 3, etc.",
+      "Do not move on to the next number until you roll the current number",
+      "If you roll your current number, you get to roll again",
+      "Whoever gets to 6 first wins",
+    ],
+    reward: "1 point",
+    icon: PiDiceSixBold,
+    requirements: ["dice"],
+  },
+  {
+    title: MiniGameType.TELESKETCH,
+    description: [
+      "The first player writes a phrase or word on a piece of paper",
+      "The next player draws a picture of the phrase",
+      "The next player writes a phrase based on the picture",
+      "Repeat until each player has had a turn",
+      "If the round ends on the drawing phase, then the first person to draw writes down the final phrase",
+      "For how many words are correct, each player gets a point",
+    ],
+    reward: "1 point/word",
+    icon: FaPhone,
+    requirements: ["drawing"],
+  },
+  {
+    title: MiniGameType.HANG_MAN,
+    description: [
+      "One player picks a word or phrase",
+      "Other players take turns guessing letters",
+      "If a player guesses a letter correctly, the player who picked the word/phrase writes the letter in the correct spot",
+      "After 6 incorrect guesses, the player who picked the word/phrase wins",
+      "If the word/phrase is guessed correctly, the player who guessed it wins",
+    ],
+    reward: "1 point",
+    icon: FaSkull,
+    requirements: ["drawing"],
+  },
+  {
+    title: MiniGameType.THAT_WORD_GAME,
+    description: [
+      "One player picks a word and draws as many blanks as there are letters in the word",
+      "Other players take turns guessing a word. The host writes the word in the blanks",
+      "If a letter is correct but in the wrong spot, the host puts an / over the letter",
+      "If a letter is correct and in the right spot, the host puts a O over the letter",
+      "Repeat until 6 guesses are made",
+      "If the word is guessed correctly, the crew wins. If not, the host wins",
+    ],
+    reward: "1 point",
+    icon: TbCircleLetterW,
+    requirements: ["drawing"],
+  },
+  {
+    title: MiniGameType.LAND_MINES,
+    description: [
+      "Start by spinning a quarter on the table",
+      "Each player takes turns trying flicking the quarter to keep it spinning",
+      "If a player knocks over the quarter, they are out, but they get to place their quarter anywhere on the table as an obstacle",
+      "Last player standing wins",
+    ],
+    reward: "1 point",
+    icon: FaExplosion,
+    requirements: ["coins"],
   },
 ];

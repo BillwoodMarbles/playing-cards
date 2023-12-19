@@ -17,7 +17,7 @@ import { Card, PLAYER_ACTION, Round } from "@/app/types";
 import { shuffleCards } from "@/app/utils/cards";
 import { FC, useState } from "react";
 import { CgCardSpades } from "react-icons/cg";
-import { FaCoins, FaDice, FaRunning } from "react-icons/fa";
+import { FaCoins, FaDice, FaPencilAlt, FaRunning } from "react-icons/fa";
 import { GiGlassShot } from "react-icons/gi";
 import { IoBeer } from "react-icons/io5";
 
@@ -41,6 +41,7 @@ const PartyBoard: FC = () => {
     { requirement: "shot-glass", toggled: true },
     { requirement: "standing", toggled: true },
     { requirement: "drinking", toggled: true },
+    { requirement: "drawing", toggled: true },
   ]);
 
   const buildCardList = () => {
@@ -168,6 +169,8 @@ const PartyBoard: FC = () => {
         return <FaRunning className={item.toggled ? "text-white" : ""} />;
       case "drinking":
         return <IoBeer className={item.toggled ? "text-white" : ""} />;
+      case "drawing":
+        return <FaPencilAlt className={item.toggled ? "text-white" : ""} />;
       default:
         return null;
     }
@@ -290,7 +293,9 @@ const PartyBoard: FC = () => {
 
       {game.status === "open" && (
         <div className="w-full py-6 px-4 pb-14">
-          <h2 className="text-lg font-bold">Games List</h2>
+          <h2 className="text-lg font-bold">
+            Games List ({Object.keys(cardList).length})
+          </h2>
 
           <div className="flex justify-between items-center py-2">
             {requirementToggles.map((line, index) => {

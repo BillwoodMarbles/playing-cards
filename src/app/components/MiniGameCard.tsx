@@ -2,7 +2,7 @@ import React, { FC } from "react";
 import { Card, CardAnimation } from "../types";
 import "../styles/decks.css";
 import { MiniGameRequirements, getMiniGameByTitle } from "../data/party-cards";
-import { FaCoins, FaDice, FaRunning } from "react-icons/fa";
+import { FaCoins, FaDice, FaPencilAlt, FaRunning } from "react-icons/fa";
 import { CgCardSpades, CgSpinner } from "react-icons/cg";
 import { GiGlassShot } from "react-icons/gi";
 import { IoBeer } from "react-icons/io5";
@@ -90,6 +90,8 @@ const MiniGameCard: FC<MiniGameCardProps> = ({
         return <FaRunning />;
       case "drinking":
         return <IoBeer />;
+      case "drawing":
+        return <FaPencilAlt />;
       default:
         return null;
     }

@@ -46,7 +46,7 @@ import {
   FaSpaghettiMonsterFlying,
 } from "react-icons/fa6";
 import { CgCardSpades } from "react-icons/cg";
-import { LuBrain } from "react-icons/lu";
+import { LuBrain, LuSprout } from "react-icons/lu";
 import { FaHand } from "react-icons/fa6";
 import { SiAudiomack } from "react-icons/si";
 import { GiTwister } from "react-icons/gi";
@@ -99,6 +99,8 @@ export enum MiniGameType {
   BOSS_BATTLE = "Boss Battle",
   MONSTER_CLOSET = "Monster Closet",
   FIRST_TO_THREE = "Grandma!",
+  SPROUT = "Sprout",
+  TREAT_YO_SELF = "Treat Yo Self",
 }
 
 export type MiniGameRequirements =
@@ -523,6 +525,16 @@ export const partyCards: MiniGame[] = [
     requirements: ["drinking"],
   },
   {
+    title: MiniGameType.TREAT_YO_SELF,
+    description: [
+      "You deserve it! Take a drink! (or two, or three...)",
+      "Draw another card",
+    ],
+    reward: "1 drink",
+    icon: IoBeer,
+    requirements: ["drinking"],
+  },
+  {
     title: MiniGameType.IMPOSTER,
     description: [
       "Including exactly one joker card, deal a card to each player. The player with the joker is the imposter.",
@@ -683,5 +695,21 @@ export const partyCards: MiniGame[] = [
     reward: "1 point each",
     icon: PiNumberCircleThreeBold,
     requirements: ["cards"],
+  },
+  {
+    title: MiniGameType.SPROUT,
+    description: [
+      "Draw 4 dots anywhere on a piece of paper.",
+      "Take turns drawing a line between any two dots or from one dot back to itself.",
+      "After drawing a line, place a new dot on the line you just drew.",
+      "Contraints:",
+      "- You cannot draw a line that crosses another line.",
+      "- You cannot draw a line that goes through an existing dot.",
+      "- No more than 3 lines can sprout from a single dot.",
+      "Last player to draw a line wins!",
+    ],
+    reward: "1 point",
+    icon: LuSprout,
+    requirements: ["drawing"],
   },
 ];

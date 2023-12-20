@@ -29,7 +29,11 @@ import {
   FaSkull,
 } from "react-icons/fa";
 import { TbCircleLetterW } from "react-icons/tb";
-import { PiDetectiveBold, PiDiceSixBold } from "react-icons/pi";
+import {
+  PiDetectiveBold,
+  PiDiceSixBold,
+  PiNumberCircleThreeBold,
+} from "react-icons/pi";
 import { PiHandCoins } from "react-icons/pi";
 import { GoNumber } from "react-icons/go";
 import {
@@ -94,6 +98,7 @@ export enum MiniGameType {
   DOTS_AND_BOXES = "Dots and Boxes",
   BOSS_BATTLE = "Boss Battle",
   MONSTER_CLOSET = "Monster Closet",
+  FIRST_TO_THREE = "Grandma!",
 }
 
 export type MiniGameRequirements =
@@ -665,5 +670,18 @@ export const partyCards: MiniGame[] = [
     reward: "1 point",
     icon: FaSpaghettiMonsterFlying,
     requirements: ["dice", "drawing"],
+  },
+  {
+    title: MiniGameType.FIRST_TO_THREE,
+    description: [
+      "Threes and Jokers are wild!",
+      "Deal 3 cards to each player.",
+      "Take turns drawing a card from the deck or the discard pile.",
+      "First player to get three of a kind yells 'Grandma!'. Once \"Grandma\" is called, Everone else gets one more turn.",
+      "All players with three of a kind win!",
+    ],
+    reward: "1 point each",
+    icon: PiNumberCircleThreeBold,
+    requirements: ["cards"],
   },
 ];

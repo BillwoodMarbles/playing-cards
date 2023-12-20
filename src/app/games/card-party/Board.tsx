@@ -66,6 +66,10 @@ const PartyBoard: FC = () => {
     completeAction(PLAYER_ACTION.REVEAL_CARD);
   };
 
+  const getCountOfAllToggledGames = () => {
+    return Object.values(cardList).filter((item) => item).length;
+  };
+
   const burdCard = () => {
     const newGame = burnCardFromPrimaryDeck();
     updateGameState(newGame);
@@ -294,7 +298,7 @@ const PartyBoard: FC = () => {
       {game.status === "open" && (
         <div className="w-full py-6 px-4 pb-14">
           <h2 className="text-lg font-bold">
-            Games List ({Object.keys(cardList).length})
+            Games List ({getCountOfAllToggledGames()})
           </h2>
 
           <div className="flex justify-between items-center py-2">

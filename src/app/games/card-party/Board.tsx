@@ -17,10 +17,6 @@ import useGame from "@/app/hooks/useGame";
 import { Card, PLAYER_ACTION, Round } from "@/app/types";
 import { shuffleCards } from "@/app/utils/cards";
 import { FC, useState } from "react";
-import { CgCardSpades } from "react-icons/cg";
-import { FaCoins, FaDice, FaPencilAlt, FaRunning } from "react-icons/fa";
-import { GiGlassShot } from "react-icons/gi";
-import { IoBeer } from "react-icons/io5";
 
 const PartyBoard: FC = () => {
   const { game, gameConfig, myPlayer, updateGameState } = GameContext();
@@ -338,6 +334,7 @@ const PartyBoard: FC = () => {
               )}
               onClick={revealCard}
               animation={getDeckAnimation("deck")}
+              disabledPulse
             />
           </div>
         </div>

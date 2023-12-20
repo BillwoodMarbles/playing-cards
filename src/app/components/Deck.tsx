@@ -8,6 +8,7 @@ interface DeckProps {
   enabled: boolean;
   animation?: CardAnimation;
   size?: "small" | "medium" | "large" | "full";
+  disabledPulse?: boolean;
   onClick: (card: Card) => void;
   onEmpty?: () => void;
 }
@@ -16,6 +17,7 @@ const Deck: FC<DeckProps> = ({
   cards,
   enabled,
   animation,
+  disabledPulse,
   onClick,
   onEmpty,
   size,
@@ -49,7 +51,7 @@ const Deck: FC<DeckProps> = ({
           return (
             <div className="relative">
               {/* <span>{game.deck.length}</span> */}
-              {enabled && (
+              {enabled && !disabledPulse && (
                 <div className="w-full h-full flex items-center justify-center absolute left-0 top-0 z-0">
                   <div
                     className={`animate-ping bg-blue-500 w-3/5 h-3/5 ${getSizeClasses()}`}

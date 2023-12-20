@@ -1,6 +1,5 @@
 import Deck from "@/app/components/Deck";
 import Header from "@/app/components/Header";
-import GameNotifications from "@/app/components/Notifications";
 import { useGame as GameContext } from "@/app/contexts/GameContext";
 import { usePlayer } from "@/app/contexts/PlayerContext";
 import { getGameConfig } from "@/app/data/game-configs";
@@ -20,11 +19,10 @@ import { FC, useState } from "react";
 
 const PartyBoard: FC = () => {
   const { game, gameConfig, myPlayer, updateGameState } = GameContext();
-  const {
-    burnCardFromPrimaryDeck,
-    revealCard: RevealCard,
-    startGame: StartGame,
-  } = useGame(game, myPlayer);
+  const { burnCardFromPrimaryDeck, revealCard: RevealCard } = useGame(
+    game,
+    myPlayer
+  );
 
   const { currentAction, completeAction } = usePlayer();
   const { getDeckAnimation } = useAnimations(game, myPlayer);
@@ -79,18 +77,12 @@ const PartyBoard: FC = () => {
       const gameConfig = getGameConfig(newGame.gameType);
 
       // validate
-      if (game.players.length < gameConfig.minPlayers) {
-        alert(
-          `You need at least ${gameConfig.minPlayers} players to start a game`
-        );
-        throw new Error("Not enough players to start game");
-      }
-      if (game.players.length > gameConfig.maxPlayers) {
-        alert(
-          `You can only have ${gameConfig.maxPlayers} players to start a game`
-        );
-        throw new Error("Too many players to start game");
-      }
+      // if (game.players.length > gameConfig.maxPlayers) {
+      //   alert(
+      //     `You can only have ${gameConfig.maxPlayers} players to start a game`
+      //   );
+      //   throw new Error("Too many players to start game");
+      // }
 
       // start game
       if (!newGame.rounds.length) {
@@ -117,16 +109,6 @@ const PartyBoard: FC = () => {
       const newRounds = [...newGame.rounds];
       newRounds[newGame.currentRound].status = "open";
 
-      // set dealer to player based on current round
-      const dealerIndex = newGame.currentRound % newGame.players.length;
-      const currentDealer = newGame.players[dealerIndex];
-      newRounds[newGame.currentRound].dealer = currentDealer.id;
-      newGame.rounds = newRounds;
-
-      // update current player turn to next player in line
-      const nextPlayerIndex = (dealerIndex + 1) % newGame.players.length;
-      const nextPlayer = newGame.players[nextPlayerIndex];
-      newGame.playerTurn = nextPlayer.id;
       newGame.status = "in-progress";
 
       newGame.lastMove = {
@@ -146,11 +128,7 @@ const PartyBoard: FC = () => {
   };
 
   const showStartGameCTA = () => {
-    return (
-      game.status === "open" &&
-      myPlayer?.type === "host" &&
-      game.players.length >= gameConfig.minPlayers
-    );
+    return !game.deck.length;
   };
 
   const getRequirementIconComponent = (item: {
@@ -276,8 +254,6 @@ const PartyBoard: FC = () => {
   return (
     <>
       <Header game={game} gameConfig={gameConfig} />
-
-      <GameNotifications />
 
       {game.status === "open" && (
         <div className="w-full py-6 px-4 pb-14">

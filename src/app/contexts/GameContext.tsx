@@ -31,7 +31,7 @@ const initialContext: {
     status: "open",
     currentRound: 0,
     lastMove: null,
-    mode: "online",
+    mode: "local",
   },
   gameConfig: getGameConfig(),
   myPlayer: null,

@@ -230,11 +230,6 @@ const getNextCardPartyAction = (
   _playerActions: PlayerAction[],
   playerId?: string
 ): PlayerAction | null => {
-  // not player turn
-  if (game.playerTurn !== playerId) {
-    return null;
-  }
-
   // first action
   return {
     availableActions: [PLAYER_ACTION.REVEAL_CARD],

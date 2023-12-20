@@ -185,15 +185,6 @@ const useGame = (game: Game, player: Player | null) => {
     // remove top card from deck
     newGame.deck = newGame.deck.slice(0, newGame.deck.length - 1);
 
-    // if deck is empty, add discard pule back to deck and re-shuffle
-    if (newGame.deck.length === 0) {
-      newGame.deck = [...newGame.discardDeck.slice(0, -1)];
-      newGame.deck = shuffleCards(newGame.deck);
-      newGame.discardDeck = [
-        newGame.discardDeck[newGame.discardDeck.length - 1],
-      ];
-    }
-
     // add card to discard deck
     newGame.discardDeck = [...newGame.discardDeck, topCard];
 

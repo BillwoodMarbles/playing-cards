@@ -78,7 +78,7 @@ const Deck: FC<DeckProps> = ({
           );
         })()
       ) : (
-        <CardComponent size={size} disabled />
+        <CardFactory size={size} disabled />
       )}
     </>
   );

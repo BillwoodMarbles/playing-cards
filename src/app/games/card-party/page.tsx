@@ -33,7 +33,7 @@ export default function Play() {
     status: "open",
     currentRound: 0,
     lastMove: null,
-    mode: "online",
+    mode: "local",
   });
   const searchParams = useSearchParams();
   const [gameData, setGameData] = useState<any>(null);

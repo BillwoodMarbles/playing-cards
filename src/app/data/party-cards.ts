@@ -1,9 +1,11 @@
 import {
+  GiAngelOutfit,
   GiBattleAxe,
   GiCoins,
   GiDeerTrack,
   GiNinjaHead,
   GiPerspectiveDiceThree,
+  GiPig,
 } from "react-icons/gi";
 import { GiClown } from "react-icons/gi";
 import { MdContentCopy } from "react-icons/md";
@@ -12,6 +14,9 @@ import { GiCardJackClubs } from "react-icons/gi";
 import { GiGlassShot } from "react-icons/gi";
 import {
   FaBookDead,
+  FaBoxOpen,
+  FaCrown,
+  FaDungeon,
   FaFireAlt,
   FaGlassCheers,
   FaHandHoldingHeart,
@@ -77,6 +82,11 @@ export enum MiniGameType {
   THAT_WORD_GAME = "That Word Game",
   LAND_MINES = "Land Mines",
   STORY_TIME = "Story Time",
+  PIG = "Pig",
+  RULE = "Rule",
+  HEAVEN = "Heaven",
+  DOTS_AND_BOXES = "Dots and Boxes",
+  BOSS_BATTLE = "Boss Battle",
 }
 
 export type MiniGameRequirements =
@@ -236,11 +246,10 @@ export const partyCards: MiniGame[] = [
     title: MiniGameType.QUARTER_RACE,
     description: [
       "All players race to bounce a quarter into a shot glass",
-      "The first player to make it wins 10 coins",
-      "All other players who make it win 5 coins",
-      "Last player to make it gets nothing",
+      "Last player to make it is out",
+      "Repeat until one player is left",
     ],
-    reward: "10 / 5 coins",
+    reward: "5 coins",
     icon: FaFlagCheckered,
     requirements: ["coins", "shot-glass"],
   },
@@ -300,6 +309,7 @@ export const partyCards: MiniGame[] = [
       "At the same time, each players tries to flip the shot glass so it lands upside down on the table",
       "Last player to flip the shot glass is out",
       "Repeat until one player is left",
+      "Word of advice: only play with plastic shot glasses...",
     ],
     reward: "10 coins",
     icon: GiGlassShot,
@@ -428,6 +438,13 @@ export const partyCards: MiniGame[] = [
     requirements: ["drinking"],
   },
   {
+    title: MiniGameType.HEAVEN,
+    description: ["Point to the sky! Last player to do the same takes a drink"],
+    reward: "1 drink",
+    icon: GiAngelOutfit,
+    requirements: ["drinking"],
+  },
+  {
     title: MiniGameType.ROLL_CALL,
     description: [
       "Everyone rolls a single die to determine how many drinks they take",
@@ -441,6 +458,16 @@ export const partyCards: MiniGame[] = [
     description: ["Choose one person to take a drink with you"],
     reward: "1 drink each",
     icon: FaHandHoldingHeart,
+    requirements: ["drinking"],
+  },
+  {
+    title: MiniGameType.RULE,
+    description: [
+      "Can make up any rule you want",
+      "ex: no pointing, no saying names, no swearing, etc.",
+    ],
+    reward: "1 drink each",
+    icon: FaCrown,
     requirements: ["drinking"],
   },
   {
@@ -512,6 +539,18 @@ export const partyCards: MiniGame[] = [
     requirements: ["drawing"],
   },
   {
+    title: MiniGameType.DOTS_AND_BOXES,
+    description: [
+      "Draw a 10 x 10 grid of dots",
+      "Take turns drawing a line between two dots",
+      "If you complete a box, write your initial in the box",
+      "The player with the most boxes wins",
+    ],
+    reward: "1 point",
+    icon: FaBoxOpen,
+    requirements: ["drawing"],
+  },
+  {
     title: MiniGameType.LAND_MINES,
     description: [
       "Start by spinning a quarter on the table",
@@ -533,5 +572,30 @@ export const partyCards: MiniGame[] = [
     ],
     reward: "1 point",
     icon: FaBookDead,
+  },
+  {
+    title: MiniGameType.PIG,
+    description: [
+      "Each player takes turns rolling a die",
+      "If you roll a 1, you get 0 points and your turn is over",
+      "If you roll a 2 - 6, you add that number to your score and may choose to roll again",
+      "Highest score wins",
+    ],
+    reward: "1 point",
+    icon: GiPig,
+    requirements: ["dice"],
+  },
+  {
+    title: MiniGameType.BOSS_BATTLE,
+    description: [
+      "Role-playing time!",
+      "One player is the boss and the other players are the adventurers",
+      "The boss rolls a die as many times as there are other players. The sum of the rolls is the boss's health",
+      "Each adventurer gets one roll. The sum of all of the adventurers' rolls is their attack",
+      "If the adventurers' attack is greater than the boss's health, the adventurers win",
+    ],
+    reward: "1 point",
+    icon: FaDungeon,
+    requirements: ["dice"],
   },
 ];

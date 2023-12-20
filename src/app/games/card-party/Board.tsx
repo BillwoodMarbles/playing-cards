@@ -9,6 +9,7 @@ import {
   MiniGameType,
   getMiniGameByTitle,
   getPartyCardDeckWithConfig,
+  getRequirementIcon,
   partyCards,
 } from "@/app/data/party-cards";
 import useAnimations from "@/app/hooks/useAnimations";
@@ -156,28 +157,15 @@ const PartyBoard: FC = () => {
     );
   };
 
-  const getRequirementIcon = (item: {
+  const getRequirementIconComponent = (item: {
     requirement: MiniGameRequirements;
     toggled?: boolean;
   }) => {
-    switch (item.requirement) {
-      case "dice":
-        return <FaDice className={item.toggled ? "text-white" : ""} />;
-      case "cards":
-        return <CgCardSpades className={item.toggled ? "text-white" : ""} />;
-      case "coins":
-        return <FaCoins className={item.toggled ? "text-white" : ""} />;
-      case "shot-glass":
-        return <GiGlassShot className={item.toggled ? "text-white" : ""} />;
-      case "standing":
-        return <FaRunning className={item.toggled ? "text-white" : ""} />;
-      case "drinking":
-        return <IoBeer className={item.toggled ? "text-white" : ""} />;
-      case "drawing":
-        return <FaPencilAlt className={item.toggled ? "text-white" : ""} />;
-      default:
-        return null;
+    const IconComponent = getRequirementIcon(item.requirement);
+    if (!IconComponent) {
+      return null;
     }
+    return <IconComponent className={item.toggled ? "text-white" : ""} />;
   };
 
   const getGamesList = () => {
@@ -240,7 +228,7 @@ const PartyBoard: FC = () => {
                       key={index}
                       className="rounded-full border-2 border-gray-400 h-8 w-8 text-lg ml-1 flex items-center justify-center"
                     >
-                      {getRequirementIcon({ requirement: line })}
+                      {getRequirementIconComponent({ requirement: line })}
                     </div>
                   ))}
                 </div>
@@ -328,7 +316,7 @@ const PartyBoard: FC = () => {
                     line.toggled ? "bg-sky-500 border-sky-100 text-white" : ""
                   }}`}
                 >
-                  {getRequirementIcon(line)}
+                  {getRequirementIconComponent(line)}
                 </div>
               );
             })}

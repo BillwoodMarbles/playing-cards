@@ -877,7 +877,7 @@ export const partyCards: MiniGame[] = [
   {
     title: MiniGameType.BRIDGE,
     description: [
-      "Place two shot glasses upside down on the table, about 2 inches apart.",
+      "Place two shot glasses upside down on the table, right next to eachother.",
       "Place a card between the two shot glasses, creating a bridge.",
       "Starting with the drawing player and moving clockwise, players take turns trying to bounce a quarter onto the bridge.",
       "If you land the quarter on the bridge, each player gets one attempt to join the player on the bridge or knock them off.",

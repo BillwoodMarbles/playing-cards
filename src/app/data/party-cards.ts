@@ -8,6 +8,7 @@ import {
   GiPerspectiveDiceThree,
   GiPig,
   GiPouringChalice,
+  GiRopeBridge,
 } from "react-icons/gi";
 import { GiClown } from "react-icons/gi";
 import { MdContentCopy } from "react-icons/md";
@@ -62,6 +63,7 @@ import { GiSilverBullet } from "react-icons/gi";
 import { ElementType } from "react";
 import { Card } from "../types";
 import { IoBeer } from "react-icons/io5";
+import { CiCoinInsert } from "react-icons/ci";
 
 export enum MiniGameType {
   MIND_MELD = "Mind Meld",
@@ -115,6 +117,8 @@ export enum MiniGameType {
   LOOKS = "If Looks Could Kill",
   RIDE_THE_BUS = "Ride the Bus",
   CONNECTIONS = "Connections",
+  COIN_HOLE = "Coin Hole",
+  BRIDGE = "Suspension Bridge",
 }
 
 export type MiniGameRequirements =
@@ -855,5 +859,33 @@ export const partyCards: MiniGame[] = [
     reward: "1 point",
     icon: GiBreakingChain,
     requirements: ["drinking", "cards"],
+  },
+  {
+    title: MiniGameType.COIN_HOLE,
+    description: [
+      '"Coin Hole" is a game of skill and precision.',
+      "Place a shot glass in the center of the table. Each player places a card wherever they want near the shot glass.",
+      "Starting with the drawing player and moving clockwise, players take turns trying to bounce a quarter into the shot glass.",
+      "If you make it, you get 3 points and you get to go again.",
+      "If you miss, but the quarter lands on a card, you get 1 point and get to go again. (quarter does not need to be fully on the card)",
+      "First player to 11 points wins!",
+    ],
+    reward: "1 point",
+    icon: CiCoinInsert,
+    requirements: ["coins", "cards", "shot-glass"],
+  },
+  {
+    title: MiniGameType.BRIDGE,
+    description: [
+      "Place two shot glasses upside down on the table, about 4 inches apart.",
+      "Place a card between the two shot glasses, creating a bridge.",
+      "Starting with the drawing player and moving clockwise, players take turns trying to bounce a quarter onto the bridge.",
+      "If you land the quarter on the bridge, each player gets one attempt to join the player on the bridge or knock them off.",
+      "If a quarter stays on after all players have had a turn, the player who landed the quarter first wins!",
+      "Any other player who are also on the bridge at the end win a point.",
+    ],
+    reward: "1 point",
+    icon: GiRopeBridge,
+    requirements: ["coins", "cards", "shot-glass"],
   },
 ];

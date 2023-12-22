@@ -6,6 +6,7 @@ import {
   GiNinjaHead,
   GiPerspectiveDiceThree,
   GiPig,
+  GiPouringChalice,
 } from "react-icons/gi";
 import { GiClown } from "react-icons/gi";
 import { MdContentCopy } from "react-icons/md";
@@ -22,7 +23,9 @@ import {
   FaFireAlt,
   FaGlassCheers,
   FaHandHoldingHeart,
+  FaHashtag,
   FaMask,
+  FaPaintBrush,
   FaPencilAlt,
   FaPhone,
   FaRunning,
@@ -37,6 +40,7 @@ import {
 import { PiHandCoins } from "react-icons/pi";
 import { GoNumber } from "react-icons/go";
 import {
+  FaArrowsSpin,
   FaExplosion,
   FaFlagCheckered,
   FaGolfBallTee,
@@ -101,6 +105,10 @@ export enum MiniGameType {
   FIRST_TO_THREE = "Grandma!",
   SPROUT = "Sprout",
   TREAT_YO_SELF = "Treat Yo Self",
+  POUR_ONE_FOR_A_HOMIE = "Pour One for a Homie",
+  HASHCRONYMS = "Hash-cronyms",
+  SHOT_FOR_SHOT = "Shot for Shot",
+  FAKE_IT_TILL = "Fake it 'Till You Make it",
 }
 
 export type MiniGameRequirements =
@@ -501,7 +509,7 @@ export const partyCards: MiniGame[] = [
   },
   {
     title: MiniGameType.SOCIAL,
-    description: ["Cheers! Everyone takes a drink!", "Draw another card."],
+    description: ["Cheers! Everyone takes a drink!"],
     reward: "1 drink",
     icon: FaGlassCheers,
     requirements: ["drinking"],
@@ -528,10 +536,7 @@ export const partyCards: MiniGame[] = [
   },
   {
     title: MiniGameType.ITS_A_DATE,
-    description: [
-      "Choose one person to take a drink with you. Cheers!",
-      "Draw another card.",
-    ],
+    description: ["Choose one person to take a drink with you. Cheers!"],
     reward: "1 drink each",
     icon: FaHandHoldingHeart,
     requirements: ["drinking"],
@@ -541,7 +546,6 @@ export const partyCards: MiniGame[] = [
     description: [
       "You get to make up any rule you want!",
       "ex: no pointing, no saying names, no swearing, etc.",
-      "Draw another card.",
     ],
     reward: "1 drink each",
     icon: FaCrown,
@@ -549,10 +553,7 @@ export const partyCards: MiniGame[] = [
   },
   {
     title: MiniGameType.TREAT_YO_SELF,
-    description: [
-      "You deserve it! Take a drink! (or two, or three...)",
-      "Draw another card.",
-    ],
+    description: ["You deserve it! Take a drink! (or two, or three...)"],
     reward: "1 drink",
     icon: IoBeer,
     requirements: ["drinking"],
@@ -742,6 +743,68 @@ export const partyCards: MiniGame[] = [
     ],
     reward: "1 point",
     icon: LuSprout,
+    requirements: ["drawing"],
+  },
+  {
+    title: MiniGameType.FIRST_TO_THREE,
+    description: [
+      "Threes and Jokers are wild!",
+      "Deal 3 cards to each player.",
+      "Take turns drawing a card from the deck or the discard pile.",
+      "First player to get three of a kind or a straight flush yells 'Grandma!'. Once \"Grandma\" is called, Everone else gets one more turn.",
+      "All players with three of a kind or a straight flush win!",
+    ],
+    reward: "1 point each",
+    icon: PiNumberCircleThreeBold,
+    requirements: ["cards"],
+  },
+  {
+    title: MiniGameType.POUR_ONE_FOR_A_HOMIE,
+    description: ["Give a drink to a player of your choice!"],
+    reward: "1 drink",
+    icon: GiPouringChalice,
+    requirements: ["drinking"],
+  },
+  {
+    title: MiniGameType.HASHCRONYMS,
+    description: [
+      "The drawing player comes up with a one sentence social media status about anything they want.",
+      "The status must end with a hashtag using a made up acronym related to the status.",
+      'ex: "This new jacket is tight, son! #RTSB"',
+      'Players must try to figure out what the acronym stands for. ex: "Run That Shit Bitch!"',
+      "First player to correctly guess the acronym wins a point!",
+      "Repeat until each player has had a turn creating a fake status.",
+    ],
+    reward: "1 point",
+    icon: FaHashtag,
+  },
+  {
+    title: MiniGameType.SHOT_FOR_SHOT,
+    description: [
+      "Two players on opposite sides of the table place a shot glass right-side up on the edge of the table.",
+      "The two players race to flip the shot glass so it lands upside down on the table.",
+      "If you have a shot glass in front of you, you must successfully flip the shot glass before you can pass it.",
+      "If the person to your immediate right also has a shot glass in front of them, you must land your glass before they do.",
+      "If the person to your right lands their glass before you, you are out!",
+      "The last player standing wins!",
+    ],
+    reward: "1 point",
+    icon: FaArrowsSpin,
+    requirements: ["shot-glass"],
+  },
+  {
+    title: MiniGameType.FAKE_IT_TILL,
+    description: [
+      "The goal is to find out who the fake artist is.",
+      "The player who drew the card comes up with a picture that everyone will work together to draw. They then write down the picture's subject on as many pieces of paper as there are other players, but leaving one blank.",
+      "All players, except for the dealer, draw a paper from a hat.",
+      "Moving clockwise, players take turns drawing one shape or line at a time.",
+      "If you are the fake artist, you do not know what the word is and must try to blend in.",
+      "If you are not the fake artist, you must try to find out who the fake artist is.",
+      "After each player has drawn twice, everyone votes on who they think the fake artist is.",
+    ],
+    reward: "1 point",
+    icon: FaPaintBrush,
     requirements: ["drawing"],
   },
 ];

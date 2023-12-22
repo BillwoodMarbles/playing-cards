@@ -877,12 +877,13 @@ export const partyCards: MiniGame[] = [
   {
     title: MiniGameType.BRIDGE,
     description: [
-      "Place two shot glasses upside down on the table, right next to eachother.",
-      "Place a card between the two shot glasses, creating a bridge.",
+      "Place two shot glasses right-side-up on the table, right next to eachother.",
+      "Place a card on top of the two shot glasses, creating a bridge.",
       "Starting with the drawing player and moving clockwise, players take turns trying to bounce a quarter onto the bridge.",
-      "If you land the quarter on the bridge, each player gets one attempt to join the player on the bridge or knock them off.",
-      "If a quarter stays on after all players have had a turn, the player who landed the quarter first wins!",
-      "Any other player who are also on the bridge at the end win a point.",
+      "If you land the quarter on the bridge or into a shot glass, the final round begins.",
+      "In the final round, all other players get one attempt to bounce a quarter onto the bridge or into a shot glass.",
+      "All players with a quarter on the bridge or in a shot glass wins a point!",
+      "If the original quarter gets knocked off the bridge and there are no quarters in the shot glasses, the first person to make it onto the bridge or into a shot glass wins!",
     ],
     reward: "1 point",
     icon: GiRopeBridge,

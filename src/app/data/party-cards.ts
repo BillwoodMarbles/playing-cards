@@ -906,7 +906,7 @@ export const partyCards: MiniGame[] = [
       "6 or 8: 6 blanks",
       "7: 7 blanks",
       "Starting with the drawing player and moving clockwise, players take turns rolling two dice.",
-      "If it lands on a horses speed, fill in a blank and roll again.",
+      "If it lands on a horses speed, fill in a blank for each horse with that speed and roll again.",
       "If it lands on a different number, the player's turn is over.",
       "First horse to have all blanks filled in wins!",
     ],

@@ -1,6 +1,7 @@
 import {
   GiAngelOutfit,
   GiBattleAxe,
+  GiBreakingChain,
   GiCoins,
   GiDeerTrack,
   GiNinjaHead,
@@ -16,10 +17,12 @@ import { GiGlassShot } from "react-icons/gi";
 import {
   FaBookDead,
   FaBoxOpen,
+  FaBusAlt,
   FaCoins,
   FaCrown,
   FaDice,
   FaDungeon,
+  FaEye,
   FaFireAlt,
   FaGlassCheers,
   FaHandHoldingHeart,
@@ -109,6 +112,9 @@ export enum MiniGameType {
   HASHCRONYMS = "Hash-cronyms",
   SHOT_FOR_SHOT = "Shot for Shot",
   FAKE_IT_TILL = "Fake it 'Till You Make it",
+  LOOKS = "If Looks Could Kill",
+  RIDE_THE_BUS = "Ride the Bus",
+  CONNECTIONS = "Connections",
 }
 
 export type MiniGameRequirements =
@@ -806,5 +812,48 @@ export const partyCards: MiniGame[] = [
     reward: "1 point",
     icon: FaPaintBrush,
     requirements: ["drawing"],
+  },
+  {
+    title: MiniGameType.LOOKS,
+    description: [
+      "Including exactly one joker card, deal a card to each player. The player with the joker is the assassin.",
+      "The goal is to figure out who the assassin is.",
+      "The assassin must wink at another player without being caught.",
+      "If you are winked at, you are dead.",
+      "If you think you know who the assassin is, you can call them out. If you are wrong, you are dead.",
+      "Do not talk during the game unless you are calling out the assassin.",
+      "If the assassin is not out by the time there are only two players left, the assassin wins!",
+    ],
+    reward: "1 point",
+    icon: FaEye,
+    requirements: ["cards"],
+  },
+  {
+    title: MiniGameType.RIDE_THE_BUS,
+    description: [
+      "The drawing player deals 9 cards to each player, face down.",
+      "Players arrange their cards in a diamond shape. rows: 1 - 2 - 3 - 2 - 1",
+      "Moving clockwise, players take turns flipping over a card from their first row.",
+      "If the card is not a face card, the player moves on to the next row on thier next turn.",
+      "If the card is a face card, the player replaces all of their flipped cards with new ones face down. The player then starts over at the first row on their next turn.",
+      "Once a player successfully flips the card in the last row, everyone else gets one more turn.",
+      "The players who make it to the last row win!",
+    ],
+    reward: "1 point",
+    icon: FaBusAlt,
+    requirements: ["cards"],
+  },
+  {
+    title: MiniGameType.CONNECTIONS,
+    description: [
+      "Starting with the drawing player, take turns drawing a card from the deck and placing it face up in front of them.",
+      "Moving clockwise, players take turns drawing a card from the deck and placing it face up in front of them.",
+      "If the card you draw matches the suit or number of a card of the player to their left or right, a connection is made and all connecting players take a drink.",
+      "Connections are not limited to 3 players. If a connected player connects with another player next to them, all players in the chain take a drink.",
+      "Repeat for 5 rounds.",
+    ],
+    reward: "1 point",
+    icon: GiBreakingChain,
+    requirements: ["drinking", "cards"],
   },
 ];

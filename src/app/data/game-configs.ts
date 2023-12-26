@@ -66,7 +66,6 @@ const buildMiniGolfRounds = () => {
     rounds.push({
       id: i,
       status: 'open',
-      score: {},
       drawCount: 4,
       roundWinner: '',
       dealer: '',
@@ -83,7 +82,6 @@ const buildGrandmaRounds = () => {
     rounds.push({
       id: i,
       status: 'open',
-      score: {},
       drawCount: i + 3,
       roundWinner: '',
       dealer: '',

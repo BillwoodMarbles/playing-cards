@@ -1,19 +1,19 @@
-import { FC } from "react";
-import CardComponent from "./Card";
-import { Card, CardAnimation, Game, Player } from "../types";
-import HandContainer from "./HandContainer";
-import { isWildCard } from "../utils/game";
-import useAnimations from "../hooks/useAnimations";
-import { GameTypes } from "../data/game-configs";
+import React, { FC } from 'react'
+import CardComponent from './Card'
+import { Card, CardAnimation, Game, Player } from '../types'
+import HandContainer from './HandContainer'
+import { isWildCard } from '../utils/game'
+import useAnimations from '../hooks/useAnimations'
+import { GameTypes } from '../data/game-configs'
 
 interface HandProps {
-  game: Game;
-  cards: Card[];
-  player: Player | null;
-  selectedCard?: Card | null;
-  animation?: CardAnimation;
-  peekedCards?: Card[];
-  onClick?: (card: Card) => void;
+  game: Game
+  cards: Card[]
+  player: Player | null
+  selectedCard?: Card | null
+  animation?: CardAnimation
+  peekedCards?: Card[]
+  onClick?: (card: Card) => void
 }
 
 const Hand: FC<HandProps> = ({
@@ -24,27 +24,27 @@ const Hand: FC<HandProps> = ({
   selectedCard,
   onClick,
 }) => {
-  const { getCardAnimation } = useAnimations(game, player);
+  const { getCardAnimation } = useAnimations(game, player)
 
   const isCardHidden = (card: Card) => {
     if (game.gameType === GameTypes.MINI_GOLF) {
       const isCardPeeked = peekedCards?.find(
         (peekedCard) => peekedCard.id === card.id
-      );
-      return card.status === "hidden" && isCardPeeked === undefined;
+      )
+      return card.status === 'hidden' && isCardPeeked === undefined
     }
-    return false;
-  };
+    return false
+  }
 
   const onCardClick = (card: Card) => {
     if (onClick) {
-      onClick(card);
+      onClick(card)
     }
-  };
+  }
 
   return (
     <>
-      <div className="relative overflow-y-visible overflow-x-hidden">
+      <div className="relative overflow-x-hidden overflow-y-visible">
         <HandContainer>
           {cards?.map((card, index) => {
             return (
@@ -53,7 +53,7 @@ const Hand: FC<HandProps> = ({
                 style={{
                   zIndex: index,
                 }}
-                className="relative w-12 h-14"
+                className="relative h-14 w-12"
               >
                 <div className="absolute left-0 top-0">
                   <CardComponent
@@ -68,12 +68,12 @@ const Hand: FC<HandProps> = ({
                   />
                 </div>
               </div>
-            );
+            )
           })}
         </HandContainer>
       </div>
     </>
-  );
-};
+  )
+}
 
-export default Hand;
+export default Hand

@@ -1,51 +1,61 @@
-import { FC, createContext, useContext, useEffect, useState } from "react";
-import { Game, GameConfig, Player, Round } from "../types";
-import { v4 as UUID } from "uuid";
-import { getCurrentRound } from "../utils/game";
-import { generateClient } from "aws-amplify/api";
-import { updateGame } from "@/graphql/mutations";
-import { GameTypes, getGameConfig } from "../data/game-configs";
-import { getPlayerById } from "../utils/player";
+import React, {
+  FC,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from 'react'
+import { Game, GameConfig, Player, Round } from '../types'
+import { getCurrentRound } from '../utils/game'
+import { generateClient } from 'aws-amplify/api'
+import { updateGame } from '@/graphql/mutations'
+import { GameTypes, getGameConfig } from '../data/game-configs'
+import { v4 as UUID } from 'uuid'
+import { getPlayerById } from '../utils/player'
 
-const client = generateClient();
+const client = generateClient()
 
 const initialContext: {
-  currentRound: Round | null;
-  game: Game;
-  gameConfig: GameConfig;
-  myPlayer: Player | null;
-  isMyTurn: () => boolean;
-  addPlayer: (playerName: string) => Player | void;
-  updateGameState: (game: Game, skipDataSync?: boolean) => void;
+  currentRound: Round | null
+  game: Game
+  gameConfig: GameConfig
+  myPlayer: Player | null
+  isMyTurn: () => boolean
+  addPlayer: (playerName: string) => Player | void
+  updateGameState: (game: Game, skipDataSync?: boolean) => void
 } = {
   currentRound: null,
   game: {
-    id: "",
-    code: "",
+    id: '',
+    code: '',
     players: [],
     gameType: GameTypes.GRANDMA,
     rounds: [],
     deck: [],
     discardDeck: [],
-    playerTurn: "",
-    status: "open",
+    playerTurn: '',
+    status: 'open',
     currentRound: 0,
     lastMove: null,
-    mode: "local",
+    mode: 'local',
   },
   gameConfig: getGameConfig(),
   myPlayer: null,
   isMyTurn: () => false,
-  addPlayer: (playerName: string) => {},
-  updateGameState: (game: Game) => {},
-};
+  addPlayer: (playerName: string) => {
+    console.log(playerName)
+  },
+  updateGameState: (game: Game) => {
+    console.log(game)
+  },
+}
 
-const MyGameContext = createContext(initialContext);
+const MyGameContext = createContext(initialContext)
 
 interface GameContextProps {
-  initialGame: Game;
-  playerId?: string;
-  children: React.ReactNode;
+  initialGame: Game
+  playerId?: string
+  children: React.ReactNode
 }
 
 export const GameContext: FC<GameContextProps> = ({
@@ -53,19 +63,19 @@ export const GameContext: FC<GameContextProps> = ({
   playerId,
   initialGame,
 }) => {
-  const [myPlayer, setMyPlayer] = useState<Player | null>(null);
-  const [game, setGame] = useState<Game>(initialGame);
-  const [gameConfig, setGameConfig] = useState<GameConfig>(getGameConfig());
+  const [myPlayer, setMyPlayer] = useState<Player | null>(null)
+  const [game, setGame] = useState<Game>(initialGame)
+  const [gameConfig, setGameConfig] = useState<GameConfig>(getGameConfig())
 
-  const currentRound = getCurrentRound(game);
+  const currentRound = getCurrentRound(game)
 
   const isMyTurn = () => {
     if (game && playerId !== null) {
-      return game.playerTurn === playerId;
+      return game.playerTurn === playerId
     }
 
-    return false;
-  };
+    return false
+  }
 
   const updateGameGQL = async (game: Game) => {
     try {
@@ -85,31 +95,31 @@ export const GameContext: FC<GameContextProps> = ({
             lastMove: JSON.stringify(game.lastMove),
           },
         },
-      });
+      })
     } catch (err) {
-      console.error("error updating game", err);
+      console.error('error updating game', err)
     }
-  };
+  }
 
   const updateGameState = (
     updatedData: Partial<Game>,
     skipDataSync?: boolean
   ) => {
-    const newGame = { ...game, ...updatedData };
+    const newGame = { ...game, ...updatedData }
 
-    if (newGame.mode === "online" && !skipDataSync) {
-      updateGameGQL(newGame);
+    if (newGame.mode === 'online' && !skipDataSync) {
+      updateGameGQL(newGame)
     }
 
-    localStorage.setItem("game", JSON.stringify(newGame));
-    setGame(newGame);
-  };
+    localStorage.setItem('game', JSON.stringify(newGame))
+    setGame(newGame)
+  }
 
   const addPlayer = (
     playerName: string,
-    type: "host" | "player" = "player"
+    type: 'host' | 'player' = 'player'
   ) => {
-    const newGame = { ...game };
+    const newGame = { ...game }
 
     const newPlayer: Player = {
       score: 0,
@@ -117,37 +127,37 @@ export const GameContext: FC<GameContextProps> = ({
       cards: [],
       id: UUID(),
       type,
-    };
-    newGame.players.push(newPlayer);
+    }
+    newGame.players.push(newPlayer)
 
     newGame.lastMove = {
       playerId: newPlayer.id,
-      action: "player-join",
+      action: 'player-join',
       card: null,
-    };
+    }
 
-    updateGameState(newGame);
+    updateGameState(newGame)
 
-    return newPlayer;
-  };
+    return newPlayer
+  }
 
   useEffect(() => {
     if (initialGame) {
-      setGame(initialGame);
+      setGame(initialGame)
     }
-  }, [initialGame]);
+  }, [initialGame])
 
   useEffect(() => {
     if (playerId) {
-      setMyPlayer(getPlayerById(game, playerId));
+      setMyPlayer(getPlayerById(game, playerId))
     }
-  }, [game, playerId]);
+  }, [game, playerId])
 
   useEffect(() => {
     if (game) {
-      setGameConfig(getGameConfig(game.gameType));
+      setGameConfig(getGameConfig(game.gameType))
     }
-  }, [game]);
+  }, [game])
 
   return (
     <MyGameContext.Provider
@@ -163,7 +173,7 @@ export const GameContext: FC<GameContextProps> = ({
     >
       {children}
     </MyGameContext.Provider>
-  );
-};
+  )
+}
 
-export const useGame = () => useContext(MyGameContext);
+export const useGame = () => useContext(MyGameContext)

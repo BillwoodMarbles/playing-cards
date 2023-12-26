@@ -1,16 +1,16 @@
-import { FC } from "react";
-import { Card, CardAnimation } from "../types";
-import CardComponent from "./Card";
-import MiniGameCard from "./MiniGameCard";
+import React, { FC } from 'react'
+import { Card, CardAnimation } from '../types'
+import CardComponent from './Card'
+import MiniGameCard from './MiniGameCard'
 
 interface CardFactoryProps {
-  card?: Card;
-  onClick?: () => void;
-  disabled?: boolean;
-  selected?: boolean;
-  size?: "small" | "medium" | "large" | "full";
-  hidden?: boolean;
-  animation?: CardAnimation;
+  card?: Card
+  onClick?: () => void
+  disabled?: boolean
+  selected?: boolean
+  size?: 'small' | 'medium' | 'large' | 'full'
+  hidden?: boolean
+  animation?: CardAnimation
 }
 
 const CardFactory: FC<CardFactoryProps> = ({
@@ -22,7 +22,7 @@ const CardFactory: FC<CardFactoryProps> = ({
   onClick,
 }) => {
   switch (card?.type) {
-    case "standard":
+    case 'standard':
       return (
         <CardComponent
           card={card}
@@ -32,8 +32,8 @@ const CardFactory: FC<CardFactoryProps> = ({
           animation={animation}
           onClick={onClick}
         />
-      );
-    case "non-standard":
+      )
+    case 'non-standard':
       return (
         <MiniGameCard
           card={card}
@@ -42,24 +42,24 @@ const CardFactory: FC<CardFactoryProps> = ({
           hidden={hidden}
           disabled={disabled}
         />
-      );
+      )
     default:
       return (
         <div
-          className={`bg-gray-100 border border-gray-300 relative rounded-lg transition ease-in-out duration-75 flex items-center justify-center  
+          className={`relative flex items-center justify-center rounded-lg border border-gray-300 bg-gray-100 transition duration-75 ease-in-out  
 `}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             height="420"
             width="340"
-            className="w-full h-auto"
+            className="h-auto w-full"
           />
         </div>
-      );
+      )
   }
 
-  return <div></div>;
-};
+  return <div></div>
+}
 
-export default CardFactory;
+export default CardFactory

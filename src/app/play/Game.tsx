@@ -1,44 +1,41 @@
-"use client";
+'use client'
 
-import { FC, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { Amplify } from "aws-amplify";
-import amplifyconfig from "../../amplifyconfiguration.json";
-import CardComponent from "../components/Card";
+import { FC, useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { Amplify } from 'aws-amplify'
+import amplifyconfig from '../../amplifyconfiguration.json'
+import CardComponent from '../components/Card'
 import {
   FaAngleLeft,
   FaAngleRight,
   FaMinus,
   FaPlus,
   FaShuffle,
-} from "react-icons/fa6";
-import { Card, PLAYER_ACTION } from "../types";
-import GameNotifications from "../components/Notifications";
-import HandContainer from "../components/HandContainer";
-import Players from "../components/Players";
-import { GameTypes, getGameConfig } from "../data/game-configs";
-import "../styles/animations.css";
-import useAnimations from "../hooks/useAnimations";
-import { getPlayerIndexById } from "../utils/player";
-import Deck from "../components/Deck";
-import Hand from "../components/Hand";
-import {
-  getCurrentRoundWinner,
-  getGameWinner,
-  isWildCard,
-} from "../utils/game";
-import PlayerCTAs from "../components/PlayerCTAs";
-import Header from "../components/Header";
-import JoinGameForm from "../components/JoinGameForm";
-import { useGame as useGameContext } from "../contexts/GameContext";
-import { usePlayer as usePlayerContext } from "../contexts/PlayerContext";
-import useGame from "../hooks/useGame";
+} from 'react-icons/fa6'
+import { Card, PLAYER_ACTION } from '../types'
+import GameNotifications from '../components/Notifications'
+import HandContainer from '../components/HandContainer'
+import Players from '../components/Players'
+import { GameTypes, getGameConfig } from '../data/game-configs'
+import '../styles/animations.css'
+import useAnimations from '../hooks/useAnimations'
+import { getPlayerIndexById } from '../utils/player'
+import Deck from '../components/Deck'
+import Hand from '../components/Hand'
+import { getCurrentRoundWinner, getGameWinner, isWildCard } from '../utils/game'
+import PlayerCTAs from '../components/PlayerCTAs'
+import Header from '../components/Header'
+import JoinGameForm from '../components/JoinGameForm'
+import { useGame as useGameContext } from '../contexts/GameContext'
+import { usePlayer as usePlayerContext } from '../contexts/PlayerContext'
+import useGame from '../hooks/useGame'
+import React from 'react'
 
-Amplify.configure(amplifyconfig);
+Amplify.configure(amplifyconfig)
 
 const GamePage: FC = () => {
-  const { currentRound, game, myPlayer, updateGameState } = useGameContext();
-  const { currentAction, completeAction, resetActions } = usePlayerContext();
+  const { currentRound, game, myPlayer, updateGameState } = useGameContext()
+  const { currentAction, completeAction, resetActions } = usePlayerContext()
 
   const {
     burnCardFromPrimaryDeck,
@@ -48,318 +45,318 @@ const GamePage: FC = () => {
     initializeRound,
     newGame: NewGame,
     startGame: StartGame,
-  } = useGame(game, myPlayer);
-  const { getDeckAnimation } = useAnimations(game, myPlayer);
-  const searchParams = useSearchParams();
+  } = useGame(game, myPlayer)
+  const { getDeckAnimation } = useAnimations(game, myPlayer)
+  const searchParams = useSearchParams()
 
-  const [playerId, setPlayerId] = useState("");
-  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
-  const [showWinnerAlert, setShowWinnerAlert] = useState(false);
-  const [scoreToAdd, setScoreToAdd] = useState(0);
-  const [peekedCards, setPeekedCards] = useState<Card[]>([]);
+  const [playerId, setPlayerId] = useState('')
+  const [selectedCard, setSelectedCard] = useState<Card | null>(null)
+  const [showWinnerAlert, setShowWinnerAlert] = useState(false)
+  const [scoreToAdd, setScoreToAdd] = useState(0)
+  const [peekedCards, setPeekedCards] = useState<Card[]>([])
 
-  const gameConfig = getGameConfig(game.gameType);
+  const gameConfig = getGameConfig(game.gameType)
 
   const newGame = () => {
-    const newGame = NewGame();
-    updateGameState(newGame);
-  };
+    const newGame = NewGame()
+    updateGameState(newGame)
+  }
 
-  const updateScoreToAdd = (type: "plus" | "minus") => {
-    if (type === "plus") {
-      setScoreToAdd((prevValue) => prevValue + (gameConfig.pointCount || 1));
+  const updateScoreToAdd = (type: 'plus' | 'minus') => {
+    if (type === 'plus') {
+      setScoreToAdd((prevValue) => prevValue + (gameConfig.pointCount || 1))
     } else {
-      setScoreToAdd((prevValue) => prevValue - (gameConfig.pointCount || 1));
+      setScoreToAdd((prevValue) => prevValue - (gameConfig.pointCount || 1))
     }
-  };
+  }
 
   const startNewRound = () => {
-    const newGame = initializeRound();
-    updateGameState(newGame);
-  };
+    const newGame = initializeRound()
+    updateGameState(newGame)
+  }
 
   const drawCard = () => {
     if (currentAction?.availableActions.includes(PLAYER_ACTION.DRAW)) {
       try {
-        const newGame = drawCardFromPrimaryDeck();
-        updateGameState(newGame);
-        completeAction(PLAYER_ACTION.DRAW);
+        const newGame = drawCardFromPrimaryDeck()
+        updateGameState(newGame)
+        completeAction(PLAYER_ACTION.DRAW)
       } catch (err) {
-        console.error("error drawing card", err);
+        console.error('error drawing card', err)
       }
     }
 
     if (currentAction?.availableActions.includes(PLAYER_ACTION.BURN_CARD)) {
       try {
-        const newGame = burnCardFromPrimaryDeck();
-        updateGameState(newGame);
-        completeAction(PLAYER_ACTION.BURN_CARD);
+        const newGame = burnCardFromPrimaryDeck()
+        updateGameState(newGame)
+        completeAction(PLAYER_ACTION.BURN_CARD)
       } catch (err) {
-        console.error("error burning card", err);
+        console.error('error burning card', err)
       }
     }
-  };
+  }
 
   const discardPileClick = () => {
     if (
       currentAction?.availableActions.includes(PLAYER_ACTION.DISCARD) &&
       selectedCard
     ) {
-      const newCard = { ...selectedCard };
-      discardCard(newCard);
+      const newCard = { ...selectedCard }
+      discardCard(newCard)
     }
 
     if (currentAction?.availableActions.includes(PLAYER_ACTION.DRAW)) {
       try {
-        const newGame = drawCardFromDiscardDeck();
-        updateGameState(newGame);
-        completeAction(PLAYER_ACTION.DRAW);
+        const newGame = drawCardFromDiscardDeck()
+        updateGameState(newGame)
+        completeAction(PLAYER_ACTION.DRAW)
       } catch (err) {
-        console.error("error drawing card", err);
+        console.error('error drawing card', err)
       }
     }
-  };
+  }
 
   const changeCardOrder = (card: Card, orderAdjustment: number) => {
     if (game && myPlayer) {
       const playerIndex = game.players.findIndex(
         (player) => player.id === playerId
-      );
-      const newGame = { ...game };
-      const newPlayerCards = [...myPlayer.cards];
-      const cardIndex = newPlayerCards.findIndex((c) => c.id === card.id);
-      const cardToSwap = newPlayerCards[cardIndex + orderAdjustment];
+      )
+      const newGame = { ...game }
+      const newPlayerCards = [...myPlayer.cards]
+      const cardIndex = newPlayerCards.findIndex((c) => c.id === card.id)
+      const cardToSwap = newPlayerCards[cardIndex + orderAdjustment]
       if (!cardToSwap) {
-        return;
+        return
       }
-      newPlayerCards[cardIndex + orderAdjustment] = card;
-      newPlayerCards[cardIndex] = cardToSwap;
-      newGame.players[playerIndex].cards = newPlayerCards;
-      updateGameState(newGame, true);
+      newPlayerCards[cardIndex + orderAdjustment] = card
+      newPlayerCards[cardIndex] = cardToSwap
+      newGame.players[playerIndex].cards = newPlayerCards
+      updateGameState(newGame, true)
     }
-  };
+  }
 
   const dealCards = () => {
-    const newGame = dealCardsToPlayers();
-    updateGameState(newGame);
-  };
+    const newGame = dealCardsToPlayers()
+    updateGameState(newGame)
+  }
 
   const startGame = () => {
     try {
-      const newGame = StartGame();
-      updateGameState(newGame);
+      const newGame = StartGame()
+      updateGameState(newGame)
     } catch (err) {
-      console.error("error starting game", err);
+      console.error('error starting game', err)
     }
-  };
+  }
 
   const startTurn = () => {
-    setPeekedCards([]);
-    completeAction(PLAYER_ACTION.START_TURN);
-  };
+    setPeekedCards([])
+    completeAction(PLAYER_ACTION.START_TURN)
+  }
 
   const discardCard = (card: Card) => {
     if (
       GameTypes.MINI_GOLF === game.gameType &&
-      card.status === "visible-never-discard"
+      card.status === 'visible-never-discard'
     ) {
-      return;
+      return
     }
 
-    if (card.status === "visible-discard-draw") {
-      return;
+    if (card.status === 'visible-discard-draw') {
+      return
     }
 
-    const playerIndex = getPlayerIndexById(game, playerId);
+    const playerIndex = getPlayerIndexById(game, playerId)
 
     if (myPlayer && playerIndex !== null && playerIndex !== undefined) {
-      const newGame = { ...game };
-      const newDiscardDeck = [...newGame.discardDeck, card];
-      newGame.discardDeck = newDiscardDeck;
-      const newPlayerCards = myPlayer.cards.filter((c) => c.id !== card.id);
-      newGame.players[playerIndex].cards = newPlayerCards;
+      const newGame = { ...game }
+      const newDiscardDeck = [...newGame.discardDeck, card]
+      newGame.discardDeck = newDiscardDeck
+      const newPlayerCards = myPlayer.cards.filter((c) => c.id !== card.id)
+      newGame.players[playerIndex].cards = newPlayerCards
 
-      setSelectedCard(null);
+      setSelectedCard(null)
 
       newGame.lastMove = {
         playerId: myPlayer.id,
-        action: "discard",
+        action: 'discard',
         card: card,
-      };
-      updateGameState(newGame);
+      }
+      updateGameState(newGame)
 
-      if (card.status === "visible-deck-draw") {
-        completeAction(PLAYER_ACTION.DISCARD_DRAWN_CARD);
+      if (card.status === 'visible-deck-draw') {
+        completeAction(PLAYER_ACTION.DISCARD_DRAWN_CARD)
       } else {
-        completeAction(PLAYER_ACTION.DISCARD);
+        completeAction(PLAYER_ACTION.DISCARD)
       }
     }
-  };
+  }
 
   const isLastRound = () => {
     if (game) {
-      return game.currentRound === game.rounds.length - 1;
+      return game.currentRound === game.rounds.length - 1
     }
-  };
+  }
 
   const onCardInHandClick = (card: Card) => {
     if (selectedCard && selectedCard.id === card.id) {
-      setSelectedCard(null);
+      setSelectedCard(null)
     } else {
-      setSelectedCard(card);
+      setSelectedCard(card)
     }
-  };
+  }
 
   const revealCard = (card: Card) => {
     if (game) {
-      const newGame = { ...game };
-      const playerIndex = getPlayerIndexById(newGame, playerId);
+      const newGame = { ...game }
+      const playerIndex = getPlayerIndexById(newGame, playerId)
 
       if (playerIndex === null || playerIndex === undefined) {
-        return;
+        return
       }
 
       const cardIndex = newGame.players[playerIndex].cards.findIndex(
         (c) => c.id === card.id
-      );
+      )
 
       if (cardIndex >= 0) {
         newGame.players[playerIndex].cards[cardIndex].status =
-          "visible-never-discard";
+          'visible-never-discard'
         newGame.lastMove = {
-          playerId: myPlayer?.id || "",
-          action: "reveal-card",
+          playerId: myPlayer?.id || '',
+          action: 'reveal-card',
           card: card,
-        };
-        updateGameState(newGame);
-        completeAction(PLAYER_ACTION.REVEAL_CARD);
+        }
+        updateGameState(newGame)
+        completeAction(PLAYER_ACTION.REVEAL_CARD)
       }
     }
-  };
+  }
 
   const onPeekCard = (card: Card) => {
     if (!game) {
-      return;
+      return
     }
 
     if (peekedCards.length >= 2) {
-      return;
+      return
     }
 
     if (peekedCards.find((c) => c.id === card.id)) {
-      return;
+      return
     }
 
-    setPeekedCards((prevValue) => [...prevValue, card]);
-  };
+    setPeekedCards((prevValue) => [...prevValue, card])
+  }
 
   const sortHand = () => {
     if (!game || !myPlayer) {
-      return;
+      return
     }
 
     // sort player cards by value
     const sortedCards = [...myPlayer.cards].sort((a, b) => {
       if (a.value === undefined || b.value === undefined) {
-        return 0;
+        return 0
       }
-      return a.value - b.value;
-    });
+      return a.value - b.value
+    })
 
-    const newGame = { ...game };
+    const newGame = { ...game }
     const playerIndex = newGame.players.findIndex(
       (player) => player.id === playerId
-    );
-    newGame.players[playerIndex].cards = sortedCards;
-    updateGameState(newGame, true);
-  };
+    )
+    newGame.players[playerIndex].cards = sortedCards
+    updateGameState(newGame, true)
+  }
 
   const onReportScore = () => {
     if (game) {
-      const newGame = { ...game };
+      const newGame = { ...game }
 
       newGame.players.forEach((player) => {
         if (player.id === playerId) {
-          player.score += scoreToAdd;
+          player.score += scoreToAdd
         }
-      });
+      })
 
-      setScoreToAdd(0);
+      setScoreToAdd(0)
 
       newGame.lastMove = {
-        playerId: myPlayer?.id || "",
-        action: "report-score",
+        playerId: myPlayer?.id || '',
+        action: 'report-score',
         card: null,
-      };
-      updateGameState(newGame);
+      }
+      updateGameState(newGame)
     }
-  };
+  }
 
   useEffect(() => {
     if (game?.lastMove) {
-      if (game.lastMove.action === "claim-round") {
-        setShowWinnerAlert(true);
+      if (game.lastMove.action === 'claim-round') {
+        setShowWinnerAlert(true)
         setTimeout(() => {
-          setShowWinnerAlert(false);
-        }, 3000);
+          setShowWinnerAlert(false)
+        }, 3000)
       }
 
       if (
-        game.lastMove?.action === "new-game" ||
-        game.lastMove?.action === "start-round" ||
-        game.lastMove?.action === "new-deal" ||
-        game.lastMove?.action === "end-turn"
+        game.lastMove?.action === 'new-game' ||
+        game.lastMove?.action === 'start-round' ||
+        game.lastMove?.action === 'new-deal' ||
+        game.lastMove?.action === 'end-turn'
       ) {
-        resetActions();
+        resetActions()
       }
     }
-  }, [game]);
+  }, [game])
 
   useEffect(() => {
-    const playerId = searchParams.get("playerId");
+    const playerId = searchParams.get('playerId')
 
     if (playerId) {
-      setPlayerId(playerId);
+      setPlayerId(playerId)
     }
-  }, [searchParams]);
+  }, [searchParams])
 
   if (!game) {
-    return <div>Loading...</div>;
+    return <div>Loading...</div>
   }
 
   return (
     <>
       <Header game={game} gameConfig={gameConfig} />
 
-      {game.status === "open" && !playerId && <JoinGameForm />}
+      {game.status === 'open' && !playerId && <JoinGameForm />}
 
       <GameNotifications />
 
-      <div className="relative py-4 px-3 bg-slate-100 w-full">
+      <div className="relative w-full bg-slate-100 px-3 py-4">
         {game.players.length > 0 && (
           <Players playerTurn={game.playerTurn} players={game.players} />
         )}
       </div>
 
-      <div className="flex items-center justify-center grow relative flex-col w-full bg-slate-100 py-6">
+      <div className="relative flex w-full grow flex-col items-center justify-center bg-slate-100 py-6">
         <div className="w-full">
           {showWinnerAlert && (
-            <div className="absolute top-0 left-0 w-full h-full winner-alert justify-center flex items-center z-30">
-              <strong className="text-5xl text-violet-600 text-sh">
+            <div className="winner-alert absolute left-0 top-0 z-30 flex h-full w-full items-center justify-center">
+              <strong className="text-sh text-5xl text-violet-600">
                 GRANDMA!
               </strong>
             </div>
           )}
 
-          {game.status === "in-progress" && (
+          {game.status === 'in-progress' && (
             <>
-              {currentRound?.status === "complete" &&
+              {currentRound?.status === 'complete' &&
                 gameConfig.type === GameTypes.GRANDMA && (
                   <div>
                     <h2 className="text-center text-base text-violet-600">
                       {!isLastRound() ? (
                         <>
-                          <strong>{getCurrentRoundWinner(game)?.name}</strong>{" "}
+                          <strong>{getCurrentRoundWinner(game)?.name}</strong>{' '}
                           won the round!
                         </>
                       ) : (
@@ -377,11 +374,11 @@ const GamePage: FC = () => {
                             <div
                               key={card.id}
                               style={{
-                                minWidth: "2rem",
-                                maxWidth: "6rem",
+                                minWidth: '2rem',
+                                maxWidth: '6rem',
                                 zIndex: index,
                               }}
-                              className="relative w-12 h-14"
+                              className="relative h-14 w-12"
                             >
                               <div className="absolute left-0 top-0">
                                 <CardComponent
@@ -396,15 +393,15 @@ const GamePage: FC = () => {
                               </div>
                             </div>
                           </>
-                        );
+                        )
                       })}
                     </HandContainer>
                   </div>
                 )}
 
-              {(currentRound?.status === "in-progress" ||
-                currentRound?.status === "last-turn") && (
-                <div className="flex mb-6 justify-center">
+              {(currentRound?.status === 'in-progress' ||
+                currentRound?.status === 'last-turn') && (
+                <div className="mb-6 flex justify-center">
                   <div className="mx-1">
                     <Deck
                       cards={game.deck}
@@ -417,7 +414,7 @@ const GamePage: FC = () => {
                           )
                       )}
                       onClick={drawCard}
-                      animation={getDeckAnimation("deck")}
+                      animation={getDeckAnimation('deck')}
                     />
                   </div>
 
@@ -426,7 +423,7 @@ const GamePage: FC = () => {
                     game.discardDeck[game.discardDeck.length - 1] ? (
                       (() => {
                         const card =
-                          game.discardDeck[game.discardDeck.length - 1];
+                          game.discardDeck[game.discardDeck.length - 1]
                         return (
                           <div className="relative">
                             {(currentAction?.availableActions.includes(
@@ -436,26 +433,26 @@ const GamePage: FC = () => {
                                 PLAYER_ACTION.DISCARD
                               ) &&
                                 selectedCard)) && (
-                              <div className="w-full h-full flex items-center justify-center absolute left-0 top-0 z-0">
-                                <div className="animate-ping bg-blue-500 w-3/5 h-3/5 rounded-md"></div>
+                              <div className="absolute left-0 top-0 z-0 flex h-full w-full items-center justify-center">
+                                <div className="h-3/5 w-3/5 animate-ping rounded-md bg-blue-500"></div>
                               </div>
                             )}
 
                             {game.lastMove?.card &&
                               game.lastMove.card.id >= 0 &&
-                              (game.lastMove.action === "draw-from-discard" ||
-                                game.lastMove.action === "discard") && (
+                              (game.lastMove.action === 'draw-from-discard' ||
+                                game.lastMove.action === 'discard') && (
                                 <div
                                   className={`absolute left-0 top-0 ${
-                                    game.lastMove.action === "discard"
-                                      ? "z-0"
-                                      : "z-20"
+                                    game.lastMove.action === 'discard'
+                                      ? 'z-0'
+                                      : 'z-20'
                                   }`}
                                 >
                                   <CardComponent
                                     card={
                                       game.lastMove.action ===
-                                      "draw-from-discard"
+                                      'draw-from-discard'
                                         ? card
                                         : game.discardDeck[
                                             game.discardDeck.length - 2
@@ -472,7 +469,7 @@ const GamePage: FC = () => {
                                       )
                                     }
                                     onClick={discardPileClick}
-                                    animation={getDeckAnimation("discard-bg")}
+                                    animation={getDeckAnimation('discard-bg')}
                                   />
                                 </div>
                               )}
@@ -494,11 +491,11 @@ const GamePage: FC = () => {
                                     )
                                   )
                                 }
-                                animation={getDeckAnimation("discard")}
+                                animation={getDeckAnimation('discard')}
                               />
                             </div>
                           </div>
-                        );
+                        )
                       })()
                     ) : (
                       <div className="relative">
@@ -506,8 +503,8 @@ const GamePage: FC = () => {
                           PLAYER_ACTION.DISCARD
                         ) &&
                           selectedCard && (
-                            <div className="w-full h-full flex items-center justify-center absolute left-0 top-0 z-0">
-                              <div className="animate-ping bg-blue-500 w-3/5 h-3/5 rounded-md"></div>
+                            <div className="absolute left-0 top-0 z-0 flex h-full w-full items-center justify-center">
+                              <div className="h-3/5 w-3/5 animate-ping rounded-md bg-blue-500"></div>
                             </div>
                           )}
                         <CardComponent onClick={discardPileClick} />
@@ -517,22 +514,22 @@ const GamePage: FC = () => {
                 </div>
               )}
 
-              {currentRound?.status === "complete" && (
+              {currentRound?.status === 'complete' && (
                 <>
-                  <div className="w-full py-3 mb-4 mt-4 border border-white bg-slate-50">
-                    <div className="flex items-center justify-center mb-4">
+                  <div className="my-4 w-full border border-white bg-slate-50 py-3">
+                    <div className="mb-4 flex items-center justify-center">
                       <button
-                        className="px-2 py-1 mx-1 w-12 h-12 bg-red-300 rounded-full shadow-md flex items-center justify-center"
-                        onClick={() => updateScoreToAdd("minus")}
+                        className="mx-1 flex h-12 w-12 items-center justify-center rounded-full bg-red-300 px-2 py-1 shadow-md"
+                        onClick={() => updateScoreToAdd('minus')}
                       >
                         <FaMinus />
                       </button>
                       <div className="w-8 text-center">
-                        <span className="font-bold text-lg">{scoreToAdd}</span>
+                        <span className="text-lg font-bold">{scoreToAdd}</span>
                       </div>
                       <button
-                        className="px-2 py-1 mx-1 w-12 h-12 bg-violet-300 rounded-full shadow-md flex items-center justify-center"
-                        onClick={() => updateScoreToAdd("plus")}
+                        className="mx-1 flex h-12 w-12 items-center justify-center rounded-full bg-violet-300 px-2 py-1 shadow-md"
+                        onClick={() => updateScoreToAdd('plus')}
                       >
                         <FaPlus />
                       </button>
@@ -540,10 +537,10 @@ const GamePage: FC = () => {
 
                     <div className="text-center">
                       <button
-                        className="px-6 py-2 mx-1 bg-blue-300 rounded-md shadow-md align-middle"
+                        className="mx-1 rounded-md bg-blue-300 px-6 py-2 align-middle shadow-md"
                         onClick={onReportScore}
                       >
-                        Save Score{" "}
+                        Save Score{' '}
                         <span className="">
                           ({(myPlayer?.score || 0) + scoreToAdd})
                         </span>
@@ -551,10 +548,10 @@ const GamePage: FC = () => {
                     </div>
                   </div>
 
-                  {!isLastRound() && myPlayer?.type === "host" && (
+                  {!isLastRound() && myPlayer?.type === 'host' && (
                     <div className="flex justify-center">
                       <button
-                        className="px-6 py-2 mx-1 bg-blue-300 rounded-md shadow-md"
+                        className="mx-1 rounded-md bg-blue-300 px-6 py-2 shadow-md"
                         onClick={startNewRound}
                       >
                         Start New Round
@@ -568,31 +565,31 @@ const GamePage: FC = () => {
         </div>
       </div>
 
-      <div className="pb-4 bg-slate-100 w-full grow-0 relative z-20">
-        <div className="flex justify-center absolute left-0 bottom-full w-full">
-          {currentRound?.status === "complete" && isLastRound() && (
+      <div className="relative z-20 w-full grow-0 bg-slate-100 pb-4">
+        <div className="absolute bottom-full left-0 flex w-full justify-center">
+          {currentRound?.status === 'complete' && isLastRound() && (
             <button
-              className="px-6 py-2 mb-2 mx-1 bg-blue-300 rounded-md shadow-md"
+              className="mx-1 mb-2 rounded-md bg-blue-300 px-6 py-2 shadow-md"
               onClick={newGame}
             >
               New Game
             </button>
           )}
-          {game.status === "open" &&
-            myPlayer?.type === "host" &&
+          {game.status === 'open' &&
+            myPlayer?.type === 'host' &&
             game.players.length >= gameConfig.minPlayers && (
               <button
-                className="px-6 py-2 mb-2 mx-1 bg-blue-300 rounded-md shadow-md"
+                className="mx-1 mb-2 rounded-md bg-blue-300 px-6 py-2 shadow-md"
                 onClick={startGame}
               >
                 Start Game
               </button>
             )}
-          {currentRound?.status === "open" &&
+          {currentRound?.status === 'open' &&
             playerId &&
             currentRound?.dealer === playerId && (
               <button
-                className="px-6 py-2 mb-2 mx-1 bg-blue-300 rounded-md shadow-md"
+                className="mx-1 mb-2 rounded-md bg-blue-300 px-6 py-2 shadow-md"
                 onClick={dealCards}
               >
                 Deal
@@ -604,7 +601,7 @@ const GamePage: FC = () => {
           ) &&
             selectedCard && (
               <button
-                className="px-6 py-2 mb-2 mx-1 bg-blue-300 rounded-md shadow-md"
+                className="mx-1 mb-2 rounded-md bg-blue-300 px-6 py-2 shadow-md"
                 onClick={() => revealCard(selectedCard)}
               >
                 Reveal Card
@@ -615,7 +612,7 @@ const GamePage: FC = () => {
             <>
               {peekedCards.length < 2 && selectedCard && (
                 <button
-                  className="px-6 py-2 mb-2 mx-1 bg-blue-300 rounded-md shadow-md"
+                  className="mx-1 mb-2 rounded-md bg-blue-300 px-6 py-2 shadow-md"
                   onClick={() => onPeekCard(selectedCard)}
                 >
                   Peek at Card
@@ -624,7 +621,7 @@ const GamePage: FC = () => {
 
               {peekedCards.length >= 2 && (
                 <button
-                  className="px-6 py-2 mb-2 mx-1 bg-blue-300 rounded-md shadow-md"
+                  className="mx-1 mb-2 rounded-md bg-blue-300 px-6 py-2 shadow-md"
                   onClick={startTurn}
                 >
                   Start Turn
@@ -639,18 +636,18 @@ const GamePage: FC = () => {
         <div className="relative">
           {selectedCard && game.gameType !== GameTypes.MINI_GOLF && (
             <>
-              <div className="absolute -left-4 flex items-center z-50 top-1/2 -translate-y-1/2">
+              <div className="absolute -left-4 top-1/2 z-50 flex -translate-y-1/2 items-center">
                 <button
-                  className="px-2 py-1 mx-1 w-12 h-12 bg-blue-300 rounded-full shadow-md flex items-center justify-center"
+                  className="mx-1 flex h-12 w-12 items-center justify-center rounded-full bg-blue-300 px-2 py-1 shadow-md"
                   onClick={() => changeCardOrder(selectedCard, -1)}
                 >
                   <FaAngleLeft />
                 </button>
               </div>
 
-              <div className="absolute -right-4 flex items-center z-50 top-1/2 -translate-y-1/2">
+              <div className="absolute -right-4 top-1/2 z-50 flex -translate-y-1/2 items-center">
                 <button
-                  className="px-2 py-1 mx-1 w-12 h-12 bg-blue-300 rounded-full shadow-md flex items-center justify-center"
+                  className="mx-1 flex h-12 w-12 items-center justify-center rounded-full bg-blue-300 px-2 py-1 shadow-md"
                   onClick={() => changeCardOrder(selectedCard, 1)}
                 >
                   <FaAngleRight />
@@ -672,10 +669,10 @@ const GamePage: FC = () => {
       {Boolean(myPlayer?.cards?.length) &&
         !selectedCard &&
         (game.gameType !== GameTypes.MINI_GOLF ||
-          currentRound?.status === "complete") && (
-          <div className="absolute right-0 flex items-center z-50 -bottom-4 -translate-y-1/2">
+          currentRound?.status === 'complete') && (
+          <div className="absolute -bottom-4 right-0 z-50 flex -translate-y-1/2 items-center">
             <button
-              className="px-2 py-1 mx-1 w-12 h-12 bg-blue-300 rounded-full shadow-md flex items-center justify-center"
+              className="mx-1 flex h-12 w-12 items-center justify-center rounded-full bg-blue-300 px-2 py-1 shadow-md"
               onClick={() => sortHand()}
             >
               <FaShuffle />
@@ -683,7 +680,7 @@ const GamePage: FC = () => {
           </div>
         )}
     </>
-  );
-};
+  )
+}
 
-export default GamePage;
+export default GamePage

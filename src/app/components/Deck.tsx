@@ -1,16 +1,16 @@
-import { FC, useEffect } from "react";
-import CardComponent from "./Card";
-import { Card, CardAnimation, Game } from "../types";
-import CardFactory from "./CardFactory";
+import { FC, useEffect } from 'react'
+import { Card, CardAnimation } from '../types'
+import CardFactory from './CardFactory'
+import React from 'react'
 
 interface DeckProps {
-  cards: Card[];
-  enabled: boolean;
-  animation?: CardAnimation;
-  size?: "small" | "medium" | "large" | "full";
-  disabledPulse?: boolean;
-  onClick: (card: Card) => void;
-  onEmpty?: () => void;
+  cards: Card[]
+  enabled: boolean
+  animation?: CardAnimation
+  size?: 'small' | 'medium' | 'large' | 'full'
+  disabledPulse?: boolean
+  onClick: (card: Card) => void
+  onEmpty?: () => void
 }
 
 const Deck: FC<DeckProps> = ({
@@ -24,37 +24,37 @@ const Deck: FC<DeckProps> = ({
 }) => {
   const getSizeClasses = () => {
     switch (size) {
-      case "small":
-        return "rounded-md";
-      case "medium":
-        return "rounded-md";
-      case "large":
-        return "rounded-lg";
-      case "full":
-        return "rounded-xl";
+      case 'small':
+        return 'rounded-md'
+      case 'medium':
+        return 'rounded-md'
+      case 'large':
+        return 'rounded-lg'
+      case 'full':
+        return 'rounded-xl'
       default:
-        return "rounded-lg";
+        return 'rounded-lg'
     }
-  };
+  }
 
   useEffect(() => {
     if (cards.length === 0 && onEmpty) {
-      onEmpty();
+      onEmpty()
     }
-  }, [cards]);
+  }, [cards])
 
   return (
     <>
       {cards.length > 0 ? (
         (() => {
-          const card = cards[cards.length - 1];
+          const card = cards[cards.length - 1]
           return (
             <div className="relative">
               {/* <span>{game.deck.length}</span> */}
               {enabled && !disabledPulse && (
-                <div className="w-full h-full flex items-center justify-center absolute left-0 top-0 z-0">
+                <div className="absolute left-0 top-0 z-0 flex h-full w-full items-center justify-center">
                   <div
-                    className={`animate-ping bg-blue-500 w-3/5 h-3/5 ${getSizeClasses()}`}
+                    className={`h-3/5 w-3/5 animate-ping bg-blue-500 ${getSizeClasses()}`}
                   ></div>
                 </div>
               )}
@@ -68,20 +68,20 @@ const Deck: FC<DeckProps> = ({
                   key={card.id}
                   card={card}
                   onClick={() => onClick(card)}
-                  hidden={card.status !== "visible"}
+                  hidden={card.status !== 'visible'}
                   disabled={!enabled}
                   animation={animation}
                   size={size}
                 ></CardFactory>
               </div>
             </div>
-          );
+          )
         })()
       ) : (
         <CardFactory size={size} disabled />
       )}
     </>
-  );
-};
+  )
+}
 
-export default Deck;
+export default Deck

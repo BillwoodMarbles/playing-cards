@@ -326,7 +326,7 @@ const GamePage: FC = () => {
 
   return (
     <>
-      <Header game={game} gameConfig={gameConfig} />
+      <Header />
 
       {game.status === 'open' && !playerId && <JoinGameForm />}
 
@@ -342,9 +342,7 @@ const GamePage: FC = () => {
         <div className="w-full">
           {showWinnerAlert && (
             <div className="winner-alert absolute left-0 top-0 z-30 flex h-full w-full items-center justify-center">
-              <strong className="text-sh text-5xl text-violet-600">
-                GRANDMA!
-              </strong>
+              <strong className="text-5xl text-violet-600">GRANDMA!</strong>
             </div>
           )}
 

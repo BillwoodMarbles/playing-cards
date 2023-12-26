@@ -86,6 +86,7 @@ export interface PlayerMove {
     | 'end-game'
     | 'report-score'
     | 'reveal-card'
+    | 'reset-game'
     | 'none'
   card: Card | null
 }

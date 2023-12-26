@@ -15,6 +15,7 @@ import { GameContext } from '../../contexts/GameContext'
 import PartyBoard from './Board'
 import { PlayerContext } from '../../contexts/PlayerContext'
 import { GameTypes } from '../../data/game-configs'
+import { v4 as UUID } from 'uuid'
 
 const client = generateClient()
 Amplify.configure(amplifyconfig)
@@ -24,8 +25,8 @@ export default function Play() {
   const [game, setGame] = useState<Game>({
     id: '',
     code: '',
-    players: [],
-    gameType: GameTypes.FREE_PLAY,
+    players: [{ id: UUID(), name: 'Host', cards: [], type: 'host', score: 0 }],
+    gameType: GameTypes.CARD_PARTY,
     rounds: [],
     deck: [],
     discardDeck: [],

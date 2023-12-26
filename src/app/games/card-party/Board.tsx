@@ -17,7 +17,7 @@ import { shuffleCards } from '@/app/utils/cards'
 import React, { FC, useState } from 'react'
 
 const PartyBoard: FC = () => {
-  const { game, gameConfig, myPlayer, updateGameState } = GameContext()
+  const { game, myPlayer, updateGameState } = GameContext()
   const { burnCardFromPrimaryDeck, revealCard: RevealCard } = useGame(
     game,
     myPlayer
@@ -125,7 +125,7 @@ const PartyBoard: FC = () => {
   }
 
   const showStartGameCTA = () => {
-    return !game.deck.length
+    return game.status === 'open' && getCountOfAllToggledGames() > 0
   }
 
   const getRequirementIconComponent = (item: {
@@ -258,7 +258,7 @@ const PartyBoard: FC = () => {
 
   return (
     <>
-      <Header game={game} gameConfig={gameConfig} />
+      <Header />
 
       {game.status === 'open' && (
         <div className="w-full px-4 py-6 pb-14">

@@ -1,19 +1,25 @@
 import React, { FC } from 'react'
 import { FaShareFromSquare } from 'react-icons/fa6'
-import { Game, GameConfig } from '../types'
+import { useGame as GameContext } from '../contexts/GameContext'
+import { IoExit } from 'react-icons/io5'
+import useGame from '../hooks/useGame'
 
-interface HeaderProps {
-  game: Game
-  gameConfig: GameConfig
-}
+interface HeaderProps {}
 
-const Header: FC<HeaderProps> = ({ game, gameConfig }) => {
+const Header: FC<HeaderProps> = () => {
+  const { game, gameConfig, updateGameState } = GameContext()
+  const { resetGame: ResetGame } = useGame(game)
   const currentRound = game?.rounds[game?.currentRound]
 
   const copyCurrentRouteToClipboard = () => {
     let path = window.location.href.split('?')[0]
     path += `?code=${game?.code}`
     navigator.clipboard.writeText(path)
+  }
+
+  const resetGame = () => {
+    const newGame = ResetGame()
+    updateGameState(newGame)
   }
 
   return (
@@ -38,7 +44,11 @@ const Header: FC<HeaderProps> = ({ game, gameConfig }) => {
         )}
       </div>
 
-      <div className="flex w-1/4 justify-end"></div>
+      <div className="flex w-1/4 justify-end">
+        <button className="ml-2 flex items-center" onClick={resetGame}>
+          <IoExit className="ml-2 text-xl" />
+        </button>
+      </div>
     </header>
   )
 }

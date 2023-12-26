@@ -161,6 +161,7 @@ export const getPartyCardDeck = (): Card[] => {
 export const getPartyCardDeckWithConfig = (config: {
   [key in MiniGameType]?: boolean
 }): Card[] => {
+  console.log('Card list:', config, partyCards)
   return partyCards.reduce((acc, card) => {
     if (config[card.title]) {
       acc.push({
@@ -758,19 +759,6 @@ export const partyCards: MiniGame[] = [
     reward: '1 point',
     icon: LuSprout,
     requirements: ['drawing'],
-  },
-  {
-    title: MiniGameType.FIRST_TO_THREE,
-    description: [
-      'Threes and Jokers are wild!',
-      'Deal 3 cards to each player.',
-      'Take turns drawing a card from the deck or the discard pile.',
-      'First player to get three of a kind or a straight flush yells \'Grandma!\'. Once "Grandma" is called, Everone else gets one more turn.',
-      'All players with three of a kind or a straight flush win!',
-    ],
-    reward: '1 point each',
-    icon: PiNumberCircleThreeBold,
-    requirements: ['cards'],
   },
   {
     title: MiniGameType.POUR_ONE_FOR_A_HOMIE,

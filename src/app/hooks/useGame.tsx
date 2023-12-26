@@ -4,7 +4,7 @@ import { Card, Game, Player, Round } from '../types'
 import { shuffleCards } from '../utils/cards'
 import { getCurrentRoundWinner, getNextPlayer } from '../utils/game'
 
-const useGame = (game: Game, player: Player | null) => {
+const useGame = (game: Game, player?: Player | null) => {
   const resetPlayerHands = () => {
     let newPlayers = [...game.players]
     newPlayers = newPlayers.map((newPlayer) => {
@@ -138,15 +138,22 @@ const useGame = (game: Game, player: Player | null) => {
     return newGame
   }
 
+  const resetGame = () => {
+    const newGame = { ...game }
+    newGame.status = 'open'
+    newGame.lastMove = {
+      playerId: player?.id || '',
+      action: 'reset-game',
+      card: null,
+    }
+    return newGame
+  }
+
   const revealCard = (card: Card) => {
     // set card status to visible
     const newGame = { ...game }
     const newCard = { ...card }
     newCard.status = 'visible'
-
-    if (!player) {
-      throw new Error('Player not found')
-    }
 
     newGame.deck = newGame.deck.map((_card) => {
       if (_card.id === card.id) {
@@ -158,7 +165,7 @@ const useGame = (game: Game, player: Player | null) => {
 
     // set last move
     newGame.lastMove = {
-      playerId: player?.id,
+      playerId: player?.id || '',
       card: newCard,
       action: 'reveal-card',
     }
@@ -170,9 +177,9 @@ const useGame = (game: Game, player: Player | null) => {
     const newGame = { ...game }
     const topCard = newGame.deck[newGame.deck.length - 1]
 
-    if (!player) {
-      throw new Error('Player not found')
-    }
+    // if (!player) {
+    //   throw new Error('Player not found')
+    // }
 
     if (!topCard) {
       throw new Error('No card found in draw deck')
@@ -189,7 +196,7 @@ const useGame = (game: Game, player: Player | null) => {
 
     // set last move
     newGame.lastMove = {
-      playerId: player.id,
+      playerId: player?.id || '',
       card: topCard,
       action: 'burn-from-deck',
     }
@@ -458,6 +465,7 @@ const useGame = (game: Game, player: Player | null) => {
     claimRound,
     initializeRound,
     newGame,
+    resetGame,
     revealCard,
     startGame,
     endTurn,

@@ -1,13 +1,13 @@
 import React, { FC } from 'react'
 import { FaShareFromSquare } from 'react-icons/fa6'
-import { useGame as GameContext } from '../contexts/GameContext'
+import { useGameContext } from '../contexts/GameContext'
 import { IoExit } from 'react-icons/io5'
 import useGame from '../hooks/useGame'
 
 interface HeaderProps {}
 
 const Header: FC<HeaderProps> = () => {
-  const { game, gameConfig, updateGameState } = GameContext()
+  const { game, gameConfig, updateGameState } = useGameContext()
   const { resetGame: ResetGame } = useGame(game)
   const currentRound = game?.rounds[game?.currentRound]
 

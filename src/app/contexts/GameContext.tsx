@@ -3,54 +3,31 @@ import React, {
   createContext,
   useContext,
   useEffect,
+  useReducer,
   useState,
 } from 'react'
 import { Game, GameConfig, Player, Round } from '../types'
 import { getCurrentRound } from '../utils/game'
 import { generateClient } from 'aws-amplify/api'
 import { updateGame } from '@/graphql/mutations'
-import { GameTypes, getGameConfig } from '../data/game-configs'
-import { v4 as UUID } from 'uuid'
+import { getGameConfig } from '../data/game-configs'
 import { getPlayerById } from '../utils/player'
+import { gameReducer } from '../reducers/gameReducer'
 
 const client = generateClient()
 
-const initialContext: {
+interface GameContextValue {
+  gameState: Game
+  dispatch: any
   currentRound: Round | null
   game: Game
   gameConfig: GameConfig
   myPlayer: Player | null
   isMyTurn: () => boolean
-  addPlayer: (playerName: string) => Player | void
   updateGameState: (game: Game, skipDataSync?: boolean) => void
-} = {
-  currentRound: null,
-  game: {
-    id: '',
-    code: '',
-    players: [],
-    gameType: GameTypes.GRANDMA,
-    rounds: [],
-    deck: [],
-    discardDeck: [],
-    playerTurn: '',
-    status: 'open',
-    currentRound: 0,
-    lastMove: null,
-    mode: 'local',
-  },
-  gameConfig: getGameConfig(),
-  myPlayer: null,
-  isMyTurn: () => false,
-  addPlayer: (playerName: string) => {
-    console.log(playerName)
-  },
-  updateGameState: (game: Game) => {
-    console.log(game)
-  },
 }
 
-const MyGameContext = createContext(initialContext)
+const GameContext = createContext<GameContextValue | undefined>(undefined)
 
 interface GameContextProps {
   initialGame: Game
@@ -58,11 +35,13 @@ interface GameContextProps {
   children: React.ReactNode
 }
 
-export const GameContext: FC<GameContextProps> = ({
+export const GameContextProvider: FC<GameContextProps> = ({
   children,
   playerId,
   initialGame,
 }) => {
+  const [gameState, dispatch] = useReducer(gameReducer, initialGame)
+
   const [myPlayer, setMyPlayer] = useState<Player | null>(null)
   const [game, setGame] = useState<Game>(initialGame)
   const [gameConfig, setGameConfig] = useState<GameConfig>(getGameConfig())
@@ -115,32 +94,6 @@ export const GameContext: FC<GameContextProps> = ({
     setGame(newGame)
   }
 
-  const addPlayer = (
-    playerName: string,
-    type: 'host' | 'player' = 'player'
-  ) => {
-    const newGame = { ...game }
-
-    const newPlayer: Player = {
-      score: 0,
-      name: playerName,
-      cards: [],
-      id: UUID(),
-      type,
-    }
-    newGame.players.push(newPlayer)
-
-    newGame.lastMove = {
-      playerId: newPlayer.id,
-      action: 'player-join',
-      card: null,
-    }
-
-    updateGameState(newGame)
-
-    return newPlayer
-  }
-
   useEffect(() => {
     if (initialGame) {
       setGame(initialGame)
@@ -160,20 +113,29 @@ export const GameContext: FC<GameContextProps> = ({
   }, [game])
 
   return (
-    <MyGameContext.Provider
+    <GameContext.Provider
       value={{
+        gameState,
+        dispatch,
         currentRound,
         game,
         gameConfig,
         myPlayer,
-        addPlayer,
         isMyTurn,
         updateGameState,
       }}
     >
       {children}
-    </MyGameContext.Provider>
+    </GameContext.Provider>
   )
 }
 
-export const useGame = () => useContext(MyGameContext)
+export const useGameContext = () => {
+  const context = useContext(GameContext)
+
+  if (context === undefined) {
+    throw new Error('useGameContext must be used within a GameContextProvider')
+  }
+
+  return context
+}

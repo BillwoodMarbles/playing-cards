@@ -1,5 +1,5 @@
 import React, { FC } from 'react'
-import { useGame as GameContext } from '../contexts/GameContext'
+import { useGameContext } from '../contexts/GameContext'
 import { usePlayer } from '../contexts/PlayerContext'
 import { PLAYER_ACTION } from '../types'
 import useGame from '../hooks/useGame'
@@ -7,7 +7,7 @@ import useGame from '../hooks/useGame'
 interface PlayerCTAsProps {}
 
 const PlayerCTAs: FC<PlayerCTAsProps> = () => {
-  const { game, myPlayer, updateGameState } = GameContext()
+  const { game, myPlayer, updateGameState } = useGameContext()
   const { currentAction, completeAction } = usePlayer()
   const { claimRound, endTurn } = useGame(game, myPlayer)
 

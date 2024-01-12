@@ -7,34 +7,27 @@ import React, {
 } from 'react'
 import { PLAYER_ACTION, PlayerAction } from '../types'
 import { getNextAction } from '../utils/actions'
-import { useGame } from './GameContext'
+import { useGameContext } from './GameContext'
 
-const initialContext: {
+interface PlayerContextValue {
   currentAction: PlayerAction | null
   playerActions: PlayerAction[]
   resetActions: () => void
   completeAction: (action: PLAYER_ACTION) => void
-} = {
-  currentAction: null,
-  playerActions: [],
-  resetActions: () => {},
-  completeAction: (action: PLAYER_ACTION) => {
-    console.log(action)
-  },
 }
 
-const MyPlayerContext = createContext(initialContext)
+const PlayerContext = createContext<PlayerContextValue | undefined>(undefined)
 
 interface PlayerContextProps {
   children: React.ReactNode
   playerId: string
 }
 
-export const PlayerContext: FC<PlayerContextProps> = ({
+export const PlayerContextProvider: FC<PlayerContextProps> = ({
   children,
   playerId,
 }) => {
-  const { game } = useGame()
+  const { game } = useGameContext()
   const [playerActions, setPlayerActions] = useState<PlayerAction[]>([])
   const [currentAction, setCurrentAction] = useState<PlayerAction | null>(null)
 
@@ -71,7 +64,7 @@ export const PlayerContext: FC<PlayerContextProps> = ({
   }, [])
 
   return (
-    <MyPlayerContext.Provider
+    <PlayerContext.Provider
       value={{
         currentAction,
         playerActions,
@@ -80,8 +73,16 @@ export const PlayerContext: FC<PlayerContextProps> = ({
       }}
     >
       {children}
-    </MyPlayerContext.Provider>
+    </PlayerContext.Provider>
   )
 }
 
-export const usePlayer = () => useContext(MyPlayerContext)
+export const usePlayer = () => {
+  const context = useContext(PlayerContext)
+
+  if (!context) {
+    throw new Error('usePlayer must be used within a PlayerContextProvider')
+  }
+
+  return context
+}

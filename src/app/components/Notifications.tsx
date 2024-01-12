@@ -1,12 +1,12 @@
 import React, { FC } from 'react'
-import { useGame } from '../contexts/GameContext'
+import { useGameContext } from '../contexts/GameContext'
 import { usePlayer } from '../contexts/PlayerContext'
 import { GameTypes, getGameConfig } from '../data/game-configs'
 
 interface GameNotificationsProps {}
 
 const GameNotifications: FC<GameNotificationsProps> = () => {
-  const { currentRound, game, myPlayer, isMyTurn } = useGame()
+  const { currentRound, game, myPlayer, isMyTurn } = useGameContext()
   const { currentAction } = usePlayer()
 
   const isLastRound = () => {

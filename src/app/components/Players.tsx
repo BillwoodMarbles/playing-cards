@@ -1,16 +1,27 @@
 import React, { FC } from 'react'
 import { Player } from '../types'
 import { useRouter } from 'next/navigation'
-import { useGame } from '../contexts/GameContext'
+import { useGameContext } from '../contexts/GameContext'
 
 interface PlayersProps {
   players: Player[]
   playerTurn: string
 }
 
+const colors = [
+  'bg-red-500',
+  'bg-yellow-500',
+  'bg-green-500',
+  'bg-blue-500',
+  'bg-indigo-500',
+  'bg-purple-500',
+  'bg-pink-500',
+  'bg-cyan-500',
+]
+
 const Players: FC<PlayersProps> = ({ players, playerTurn }) => {
   const router = useRouter()
-  const { game } = useGame()
+  const { game } = useGameContext()
 
   const playerClick = (playerId: string) => {
     if (game.mode === 'local') {
@@ -30,19 +41,7 @@ const Players: FC<PlayersProps> = ({ players, playerTurn }) => {
   }
 
   const getPlayerColorByIndex = (index: number) => {
-    const colors = [
-      'bg-red-500',
-      'bg-yellow-500',
-      'bg-green-500',
-      'bg-blue-500',
-      'bg-indigo-500',
-      'bg-purple-500',
-      'bg-pink-500',
-      'bg-cyan-500',
-    ]
-
     const newIndex = index % colors.length
-
     return colors[newIndex]
   }
 
@@ -57,7 +56,7 @@ const Players: FC<PlayersProps> = ({ players, playerTurn }) => {
               </div>
             )}
             <div
-              className={`flex h-12 w-12 items-center justify-center rounded-full border-2 border-white duration-100 ease-in-out${getPlayerColorByIndex(
+              className={`flex h-12 w-12 items-center justify-center rounded-full border-2 border-white duration-100 ease-in-out ${getPlayerColorByIndex(
                 index
               )}`}
               onClick={() => playerClick(player.id)}

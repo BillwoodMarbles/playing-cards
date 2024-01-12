@@ -308,6 +308,7 @@ export const partyCards: MiniGame[] = [
     reward: '1 point',
     icon: FaGolfBallTee,
     requirements: ['cards'],
+    isBeta: true,
   },
   {
     title: MiniGameType.QUARTER_RACE,

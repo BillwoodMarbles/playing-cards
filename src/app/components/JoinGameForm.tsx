@@ -1,19 +1,49 @@
-import React, { FC, useState } from 'react'
-import { useGame } from '../contexts/GameContext'
+import React, { FC, FormEvent, useState } from 'react'
+import { useGameContext } from '../contexts/GameContext'
 import { useRouter } from 'next/navigation'
+import { Player } from '../types'
+import { v4 as UUID } from 'uuid'
+import { gameReducer } from '../reducers/gameReducer'
 
 interface JoinGameFormProps {}
 
 const JoinGameForm: FC<JoinGameFormProps> = () => {
   const [playerName, setPlayerName] = useState('')
+  const { game, updateGameState } = useGameContext()
 
   const router = useRouter()
-  const { game, addPlayer } = useGame()
 
-  const onSubmit = (e: any) => {
+  const createNewPlayer = (playerName: string): Player => {
+    return {
+      score: 0,
+      name: playerName,
+      cards: [],
+      id: UUID(),
+      type: 'player',
+    }
+  }
+
+  const createPlayerAndAddToGame = (name: string) => {
+    const player = createNewPlayer(name)
+    const newGameState = gameReducer(game, {
+      type: 'ADD_PLAYER',
+      payload: player,
+    })
+
+    updateGameState(newGameState)
+
+    return player
+  }
+
+  const navigateToGame = (gameCode: string, playerId: string) => {
+    router.push(`/play?code=${gameCode}&playerId=${playerId}`)
+  }
+
+  const onSubmit = (e: FormEvent) => {
     e.preventDefault()
-    const player = addPlayer(playerName)
-    router.push(`/play?code=${game?.code}&playerId=${player?.id}`)
+
+    const player = createPlayerAndAddToGame(playerName)
+    navigateToGame(game?.code, player?.id)
   }
 
   return (

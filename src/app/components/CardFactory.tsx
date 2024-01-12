@@ -45,10 +45,7 @@ const CardFactory: FC<CardFactoryProps> = ({
       )
     default:
       return (
-        <div
-          className={`relative flex items-center justify-center rounded-lg border border-gray-300 bg-gray-100 transition duration-75 ease-in-out  
-`}
-        >
+        <div className="relative flex items-center justify-center rounded-lg border border-gray-300 bg-gray-100 transition duration-75 ease-in-out">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             height="420"

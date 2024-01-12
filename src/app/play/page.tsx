@@ -11,9 +11,9 @@ import amplifyconfig from '../../amplifyconfiguration.json'
 import { Card, Game, GameStatus } from '../types'
 import '../styles/animations.css'
 import { sortPlayerCards } from '../utils/player'
-import { GameContext } from '../contexts/GameContext'
+import { GameContextProvider } from '../contexts/GameContext'
 import GamePage from './Game'
-import { PlayerContext } from '../contexts/PlayerContext'
+import { PlayerContextProvider } from '../contexts/PlayerContext'
 import { GameTypes } from '../data/game-configs'
 
 const client = generateClient()
@@ -167,10 +167,10 @@ export default function Play() {
   }
 
   return (
-    <GameContext playerId={playerId} initialGame={game}>
-      <PlayerContext playerId={playerId}>
+    <GameContextProvider playerId={playerId} initialGame={game}>
+      <PlayerContextProvider playerId={playerId}>
         <GamePage />
-      </PlayerContext>
-    </GameContext>
+      </PlayerContextProvider>
+    </GameContextProvider>
   )
 }

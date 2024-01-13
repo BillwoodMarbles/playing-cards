@@ -177,10 +177,6 @@ const useGame = (game: Game, player?: Player | null) => {
     const newGame = { ...game }
     const topCard = newGame.deck[newGame.deck.length - 1]
 
-    // if (!player) {
-    //   throw new Error('Player not found')
-    // }
-
     if (!topCard) {
       throw new Error('No card found in draw deck')
     }
@@ -453,11 +449,24 @@ const useGame = (game: Game, player?: Player | null) => {
     return newGame
   }
 
+  const addPlayer = (player: Player) => {
+    const newGame = { ...game }
+    newGame.players = [...newGame.players, player]
+    newGame.lastMove = {
+      playerId: player?.id || '',
+      action: 'player-join',
+      card: null,
+    }
+
+    return newGame
+  }
+
   const getCurrentRound = () => {
     return game.rounds[game.currentRound]
   }
 
   return {
+    addPlayer,
     burnCardFromPrimaryDeck,
     drawCardFromDiscardDeck,
     drawCardFromPrimaryDeck,

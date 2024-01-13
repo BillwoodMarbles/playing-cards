@@ -3,13 +3,14 @@ import { useGameContext } from '../contexts/GameContext'
 import { useRouter } from 'next/navigation'
 import { Player } from '../types'
 import { v4 as UUID } from 'uuid'
-import { gameReducer } from '../reducers/gameReducer'
+import useGame from '../hooks/useGame'
 
 interface JoinGameFormProps {}
 
 const JoinGameForm: FC<JoinGameFormProps> = () => {
   const [playerName, setPlayerName] = useState('')
   const { game, updateGameState } = useGameContext()
+  const { addPlayer } = useGame(game)
 
   const router = useRouter()
 
@@ -25,13 +26,8 @@ const JoinGameForm: FC<JoinGameFormProps> = () => {
 
   const createPlayerAndAddToGame = (name: string) => {
     const player = createNewPlayer(name)
-    const newGameState = gameReducer(game, {
-      type: 'ADD_PLAYER',
-      payload: player,
-    })
-
+    const newGameState = addPlayer(player)
     updateGameState(newGameState)
-
     return player
   }
 

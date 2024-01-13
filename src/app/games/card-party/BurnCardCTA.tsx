@@ -2,12 +2,13 @@ import React from 'react'
 import useGame from '@/app/hooks/useGame'
 import { useGameContext } from '@/app/contexts/GameContext'
 import { PLAYER_ACTION } from '@/app/types'
-import { usePlayer } from '@/app/contexts/PlayerContext'
+import { usePlayerContext } from '@/app/contexts/PlayerContext'
 
 const BurnCardCTA = () => {
-  const { game, myPlayer, updateGameState } = useGameContext()
+  const { game, updateGameState } = useGameContext()
+  const { myPlayer, completeAction } = usePlayerContext()
+
   const { burnCardFromPrimaryDeck } = useGame(game, myPlayer)
-  const { completeAction } = usePlayer()
 
   const burdCard = () => {
     const newGame = burnCardFromPrimaryDeck()

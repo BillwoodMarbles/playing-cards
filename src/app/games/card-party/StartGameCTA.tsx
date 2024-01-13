@@ -1,4 +1,5 @@
 import { useGameContext } from '@/app/contexts/GameContext'
+import { usePlayerContext } from '@/app/contexts/PlayerContext'
 import { getPartyCardDeckWithConfig } from '@/app/data/party-cards'
 import { Round } from '@/app/types'
 import { shuffleCards } from '@/app/utils/cards'
@@ -9,7 +10,8 @@ interface StartGameCTAProps {
 }
 
 const StartGameCTA: FC<StartGameCTAProps> = ({ cardList }) => {
-  const { game, myPlayer, updateGameState } = useGameContext()
+  const { game, updateGameState } = useGameContext()
+  const { myPlayer } = usePlayerContext()
 
   const startGame = () => {
     try {

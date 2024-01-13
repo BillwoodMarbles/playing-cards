@@ -1,16 +1,16 @@
 import Deck from '@/app/components/Deck'
 import { useGameContext } from '@/app/contexts/GameContext'
-import { usePlayer } from '@/app/contexts/PlayerContext'
+import { usePlayerContext } from '@/app/contexts/PlayerContext'
 import useAnimations from '@/app/hooks/useAnimations'
 import useGame from '@/app/hooks/useGame'
 import { Card, PLAYER_ACTION } from '@/app/types'
 import React, { FC } from 'react'
 
 const MiniGameDeck: FC = () => {
-  const { game, myPlayer, updateGameState } = useGameContext()
-  const { revealCard: RevealCard } = useGame(game, myPlayer)
+  const { game, updateGameState } = useGameContext()
+  const { myPlayer, currentAction, completeAction } = usePlayerContext()
 
-  const { currentAction, completeAction } = usePlayer()
+  const { revealCard: RevealCard } = useGame(game, myPlayer)
   const { getDeckAnimation } = useAnimations(game, myPlayer)
 
   const revealCard = (card: Card) => {

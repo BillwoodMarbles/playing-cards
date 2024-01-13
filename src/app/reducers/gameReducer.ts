@@ -1,4 +1,4 @@
-import { Card, Game, GameStatus, Player } from '../types'
+import { Card, Game, GameStatus } from '../types'
 
 export const reduceGameData = (gameData: any) => {
   if (gameData) {
@@ -32,27 +32,4 @@ export const reduceGameData = (gameData: any) => {
   }
 
   return null
-}
-
-export const gameReducer = (
-  state: Game,
-  action: {
-    type: 'ADD_PLAYER'
-    payload: Player
-  }
-): Game => {
-  switch (action.type) {
-    case 'ADD_PLAYER':
-      return {
-        ...state,
-        players: [...state.players, action.payload],
-        lastMove: {
-          playerId: action.payload.id,
-          action: 'player-join',
-          card: null,
-        },
-      }
-    default:
-      return state
-  }
 }

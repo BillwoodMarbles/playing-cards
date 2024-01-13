@@ -27,15 +27,16 @@ import PlayerCTAs from '../components/PlayerCTAs'
 import Header from '../components/Header'
 import JoinGameForm from '../components/JoinGameForm'
 import { useGameContext } from '../contexts/GameContext'
-import { usePlayer as usePlayerContext } from '../contexts/PlayerContext'
+import { usePlayerContext } from '../contexts/PlayerContext'
 import useGame from '../hooks/useGame'
 import React from 'react'
 
 Amplify.configure(amplifyconfig)
 
 const GamePage: FC = () => {
-  const { currentRound, game, myPlayer, updateGameState } = useGameContext()
-  const { currentAction, completeAction, resetActions } = usePlayerContext()
+  const { currentRound, game, updateGameState } = useGameContext()
+  const { currentAction, myPlayer, completeAction, resetActions } =
+    usePlayerContext()
 
   const {
     burnCardFromPrimaryDeck,

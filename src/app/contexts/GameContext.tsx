@@ -3,27 +3,20 @@ import React, {
   createContext,
   useContext,
   useEffect,
-  useReducer,
   useState,
 } from 'react'
-import { Game, GameConfig, Player, Round } from '../types'
+import { Game, GameConfig, Round } from '../types'
 import { getCurrentRound } from '../utils/game'
 import { generateClient } from 'aws-amplify/api'
 import { updateGame } from '@/graphql/mutations'
 import { getGameConfig } from '../data/game-configs'
-import { getPlayerById } from '../utils/player'
-import { gameReducer } from '../reducers/gameReducer'
 
 const client = generateClient()
 
 interface GameContextValue {
-  gameState: Game
-  dispatch: any
   currentRound: Round | null
   game: Game
   gameConfig: GameConfig
-  myPlayer: Player | null
-  isMyTurn: () => boolean
   updateGameState: (game: Game, skipDataSync?: boolean) => void
 }
 
@@ -37,24 +30,12 @@ interface GameContextProps {
 
 export const GameContextProvider: FC<GameContextProps> = ({
   children,
-  playerId,
   initialGame,
 }) => {
-  const [gameState, dispatch] = useReducer(gameReducer, initialGame)
-
-  const [myPlayer, setMyPlayer] = useState<Player | null>(null)
   const [game, setGame] = useState<Game>(initialGame)
   const [gameConfig, setGameConfig] = useState<GameConfig>(getGameConfig())
 
   const currentRound = getCurrentRound(game)
-
-  const isMyTurn = () => {
-    if (game && playerId !== null) {
-      return game.playerTurn === playerId
-    }
-
-    return false
-  }
 
   const updateGameGQL = async (game: Game) => {
     try {
@@ -101,12 +82,6 @@ export const GameContextProvider: FC<GameContextProps> = ({
   }, [initialGame])
 
   useEffect(() => {
-    if (playerId) {
-      setMyPlayer(getPlayerById(game, playerId))
-    }
-  }, [game, playerId])
-
-  useEffect(() => {
     if (game) {
       setGameConfig(getGameConfig(game.gameType))
     }
@@ -115,13 +90,9 @@ export const GameContextProvider: FC<GameContextProps> = ({
   return (
     <GameContext.Provider
       value={{
-        gameState,
-        dispatch,
         currentRound,
         game,
         gameConfig,
-        myPlayer,
-        isMyTurn,
         updateGameState,
       }}
     >

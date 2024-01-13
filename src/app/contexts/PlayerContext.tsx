@@ -5,13 +5,16 @@ import React, {
   useEffect,
   useState,
 } from 'react'
-import { PLAYER_ACTION, PlayerAction } from '../types'
+import { PLAYER_ACTION, Player, PlayerAction } from '../types'
 import { getNextAction } from '../utils/actions'
 import { useGameContext } from './GameContext'
+import { getPlayerById } from '../utils/player'
 
 interface PlayerContextValue {
   currentAction: PlayerAction | null
   playerActions: PlayerAction[]
+  myPlayer: Player | null
+  isMyTurn: () => boolean
   resetActions: () => void
   completeAction: (action: PLAYER_ACTION) => void
 }
@@ -28,6 +31,8 @@ export const PlayerContextProvider: FC<PlayerContextProps> = ({
   playerId,
 }) => {
   const { game } = useGameContext()
+
+  const [myPlayer, setMyPlayer] = useState<Player | null>(null)
   const [playerActions, setPlayerActions] = useState<PlayerAction[]>([])
   const [currentAction, setCurrentAction] = useState<PlayerAction | null>(null)
 
@@ -50,6 +55,20 @@ export const PlayerContextProvider: FC<PlayerContextProps> = ({
     localStorage.setItem('playerActions', JSON.stringify([]))
   }
 
+  const isMyTurn = () => {
+    if (game && playerId !== null) {
+      return game.playerTurn === playerId
+    }
+
+    return false
+  }
+
+  useEffect(() => {
+    if (playerId) {
+      setMyPlayer(getPlayerById(game, playerId))
+    }
+  }, [game, playerId])
+
   useEffect(() => {
     const _currentAction = getNextAction(game, playerActions, playerId)
     setCurrentAction(_currentAction)
@@ -68,6 +87,8 @@ export const PlayerContextProvider: FC<PlayerContextProps> = ({
       value={{
         currentAction,
         playerActions,
+        myPlayer,
+        isMyTurn,
         resetActions,
         completeAction,
       }}
@@ -77,7 +98,7 @@ export const PlayerContextProvider: FC<PlayerContextProps> = ({
   )
 }
 
-export const usePlayer = () => {
+export const usePlayerContext = () => {
   const context = useContext(PlayerContext)
 
   if (!context) {

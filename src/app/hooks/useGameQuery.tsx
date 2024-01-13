@@ -79,13 +79,6 @@ const useGameQuery = (code: string, gameType: GameTypes) => {
       const parsedGame = reduceGameData(gameData)
 
       if (parsedGame) {
-        // parsedGame.players.forEach((player) => {
-        //   if (player.id === playerId) {
-        //     const sortedCards = sortPlayerCards(game, player)
-        //     player.cards = sortedCards
-        //   }
-        // })
-
         setGame(parsedGame)
       }
     }

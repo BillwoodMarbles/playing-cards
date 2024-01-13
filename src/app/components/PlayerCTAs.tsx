@@ -1,14 +1,14 @@
 import React, { FC } from 'react'
 import { useGameContext } from '../contexts/GameContext'
-import { usePlayer } from '../contexts/PlayerContext'
+import { usePlayerContext } from '../contexts/PlayerContext'
 import { PLAYER_ACTION } from '../types'
 import useGame from '../hooks/useGame'
 
 interface PlayerCTAsProps {}
 
 const PlayerCTAs: FC<PlayerCTAsProps> = () => {
-  const { game, myPlayer, updateGameState } = useGameContext()
-  const { currentAction, completeAction } = usePlayer()
+  const { game, updateGameState } = useGameContext()
+  const { currentAction, myPlayer, completeAction } = usePlayerContext()
   const { claimRound, endTurn } = useGame(game, myPlayer)
 
   const showClaimRoundCTA = () => {

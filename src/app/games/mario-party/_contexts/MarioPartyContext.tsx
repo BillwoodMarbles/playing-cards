@@ -78,6 +78,7 @@ const initialState: GameContextValue = {
 // Define action types
 enum ActionType {
   UPDATE_COINS = 'UPDATE_COINS',
+  UPDATE_STARS = 'UPDATE_STARS',
   ADD_ITEM = 'ADD_ITEM',
   USE_ITEM = 'USE_ITEM',
   ADD_ITEM_TO_SHOP = 'ADD_ITEM_TO_SHOP',
@@ -88,6 +89,10 @@ type GameAction =
   | {
       type: ActionType.UPDATE_COINS
       payload: { id: string; coins: number }
+    }
+  | {
+      type: ActionType.UPDATE_STARS
+      payload: { id: string; stars: number }
     }
   | {
       type: ActionType.ADD_ITEM
@@ -114,7 +119,16 @@ const gameReducer = (state: GameContextValue, action: GameAction) => {
         ...state,
         players: state.players.map((player) =>
           player.id === action.payload.id
-            ? { ...player, coins: action.payload.coins }
+            ? { ...player, coins: action.payload.coins + player.coins }
+            : player
+        ),
+      }
+    case ActionType.UPDATE_STARS:
+      return {
+        ...state,
+        players: state.players.map((player) =>
+          player.id === action.payload.id
+            ? { ...player, stars: action.payload.stars + player.stars }
             : player
         ),
       }
@@ -204,6 +218,9 @@ export function useGameDispatch() {
 // Example action creator
 export function updatePlayerCoins(id: string, coins: number) {
   return { type: ActionType.UPDATE_COINS, payload: { id, coins } }
+}
+export function updatePlayerStars(id: string, stars: number) {
+  return { type: ActionType.UPDATE_STARS, payload: { id, stars } }
 }
 export function addItemToPlayer(id: string, item: ItemCard) {
   return { type: ActionType.ADD_ITEM, payload: { id, item } }

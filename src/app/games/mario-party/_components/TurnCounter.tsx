@@ -2,7 +2,7 @@ import React, { FC, useState } from 'react'
 import { PiClockCountdown } from 'react-icons/pi'
 
 interface TurnCounterProps {
-  width: 'base' | 'full'
+  width?: 'base' | 'full'
 }
 
 const TurnCounter: FC<TurnCounterProps> = ({ width = 'base' }) => {

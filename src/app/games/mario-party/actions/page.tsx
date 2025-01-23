@@ -26,7 +26,7 @@ const ActionsPage = () => {
         </header>
 
         <div className="flex w-full grow flex-col items-center justify-center space-y-4 bg-slate-600 p-4">
-          <TurnCounter />
+          <TurnCounter width="base" />
           <DecksSection />
           <ActionsSection />
           <PlayersSection />

@@ -36,7 +36,7 @@ const DecksSection = () => {
   }
 
   return (
-    <section className="flex w-full flex-col justify-center rounded-2xl bg-white/25 p-2">
+    <section className="flex w-full grow flex-col rounded-2xl bg-white/25 p-2">
       <div className="mb-2 flex items-center justify-center rounded-2xl bg-white/25 p-2">
         <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-slate-50">
           <CgCardHearts />
@@ -44,7 +44,7 @@ const DecksSection = () => {
         <div className="ml-2">Decks</div>
       </div>
 
-      <div className="flex w-full items-center justify-center space-x-3">
+      <div className="flex w-full grow flex-wrap items-center justify-around gap-3">
         {decks.map(({ deck, name }) => (
           <Deck key={name} deck={deck} onDrawCard={handleDrawCard} />
         ))}

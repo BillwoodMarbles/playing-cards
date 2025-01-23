@@ -1,10 +1,19 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { IoDiceOutline } from 'react-icons/io5'
 import { dice } from '../_data/dice'
 import DiceBlock from './DiceBlock'
 
 const DiceSection = () => {
   const [result, setResult] = useState<string | number>('')
+
+  useEffect(() => {
+    if (result) {
+      console.log(result)
+    }
+  }, [result])
+
+  const movementDie = dice[0]
+  const playerDie = dice[1]
 
   return (
     <section className="flex w-full flex-col justify-center rounded-2xl bg-white/25 p-2">
@@ -16,13 +25,16 @@ const DiceSection = () => {
       </div>
 
       <div className="mb-2 flex items-center justify-center space-x-2">
-        {dice.map((die) => (
-          <DiceBlock key={die.name} die={die} onRollResult={setResult} />
-        ))}
-
-        <div className="flex h-16 w-16 items-center justify-center rounded-lg border-2 border-white bg-white/25 p-2 text-center text-lg leading-tight">
-          {result}
-        </div>
+        <DiceBlock
+          key={movementDie.name}
+          die={movementDie}
+          onRollResult={setResult}
+        />
+        <DiceBlock
+          key={playerDie.name}
+          die={playerDie}
+          onRollResult={setResult}
+        />
       </div>
     </section>
   )

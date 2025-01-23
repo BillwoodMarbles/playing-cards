@@ -35,7 +35,7 @@ const SideDrawer: FC<SideDrawerProps> = ({
               className="pointer-events-auto relative w-screen max-w-3xl transition duration-500 ease-in-out data-[closed]:translate-x-full sm:duration-700"
             >
               <TransitionChild>
-                <div className="absolute right-0 top-0 -ml-8 flex pr-2 pt-4 duration-500 ease-in-out data-[closed]:opacity-0 sm:-ml-10 sm:pr-4">
+                <div className="absolute right-0 top-0 z-10 -ml-8 flex pr-2 pt-4 duration-500 ease-in-out data-[closed]:opacity-0 sm:-ml-10 sm:pr-4">
                   <button
                     type="button"
                     onClick={() => setOpen(false)}

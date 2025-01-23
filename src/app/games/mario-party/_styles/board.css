@@ -1,0 +1,25 @@
+.board {
+  background-image: url('/mario-party/maps/yoshis-island.jpg');
+  background-color: rgb(61 172 181);
+  background-size: 75%;
+  background-repeat: no-repeat;
+  background-position: 50% 30%;
+  aspect-ratio: 1/1;
+}
+
+.board-wrapper {
+  background-color: rgb(61 172 181);
+}
+
+.deck {
+  aspect-ratio: 1.33/2;
+  width: 120px;
+}
+
+.deck.deck-small {
+  width: 80px;
+}
+
+.deck.deck-large {
+  width: 200px;
+}

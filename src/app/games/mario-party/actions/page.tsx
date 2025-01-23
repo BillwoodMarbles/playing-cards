@@ -16,7 +16,7 @@ const ActionsPage = () => {
 
   return (
     <GameProvider>
-      <div className="flex h-full w-full flex-col items-center justify-between">
+      <div className="flex h-full w-full grow flex-col items-center justify-between">
         <header className="flex w-full p-4 text-center text-4xl font-bold">
           <div className="w-10"></div>
           <div className="grow">Mario Party</div>
@@ -25,8 +25,8 @@ const ActionsPage = () => {
           </button>
         </header>
 
-        <div className="flex w-full grow flex-col items-center justify-center space-y-4 bg-slate-600 p-4">
-          <TurnCounter width="base" />
+        <div className="flex w-full grow flex-col items-center justify-between space-y-4 bg-slate-600 p-4">
+          <TurnCounter />
           <DecksSection />
           <ActionsSection />
           <PlayersSection />

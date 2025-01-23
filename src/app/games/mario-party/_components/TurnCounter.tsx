@@ -1,11 +1,9 @@
 import React, { FC, useState } from 'react'
 import { PiClockCountdown } from 'react-icons/pi'
 
-interface TurnCounterProps {
-  width?: 'base' | 'full'
-}
+interface TurnCounterProps {}
 
-const TurnCounter: FC<TurnCounterProps> = ({ width = 'base' }) => {
+const TurnCounter: FC<TurnCounterProps> = () => {
   const [currentTurn, setCurrentTurn] = useState(0)
 
   const handleNextTurn = () => {
@@ -29,25 +27,42 @@ const TurnCounter: FC<TurnCounterProps> = ({ width = 'base' }) => {
         </div>
       </div>
 
-      <div
-        className={`w-full ${
-          width !== 'full'
-            ? 'grid grid-cols-10 place-items-center  gap-2'
-            : 'flex justify-between'
-        }`}
-      >
-        {Array.from({ length: 20 }, (_, i) => (
-          <div
-            key={i}
-            className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-slate-50"
-            style={{
-              backgroundColor: i === currentTurn ? 'blue' : 'white',
-              color: i === currentTurn ? 'white' : 'black',
-            }}
-          >
-            {i + 1}
-          </div>
-        ))}
+      <div className="flex justify-center sm:hidden">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-slate-50">
+          {currentTurn + 1}
+        </div>
+      </div>
+
+      <div className={'hidden w-full flex-wrap justify-between sm:flex'}>
+        <div className="flex flex-1 justify-around">
+          {Array.from({ length: 10 }, (_, i) => (
+            <div
+              key={i}
+              className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-slate-50"
+              style={{
+                backgroundColor: i === currentTurn ? 'blue' : 'white',
+                color: i === currentTurn ? 'white' : 'black',
+              }}
+            >
+              {i + 1}
+            </div>
+          ))}
+        </div>
+
+        <div className="flex flex-1 justify-around">
+          {Array.from({ length: 10 }, (_, i) => (
+            <div
+              key={i + 10}
+              className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-slate-50"
+              style={{
+                backgroundColor: i + 10 === currentTurn ? 'blue' : 'white',
+                color: i + 10 === currentTurn ? 'white' : 'black',
+              }}
+            >
+              {i + 11}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )

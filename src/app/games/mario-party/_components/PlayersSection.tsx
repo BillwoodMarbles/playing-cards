@@ -41,11 +41,11 @@ const PlayersSection: FC<PlayersProps> = () => {
         <div className="ml-2">Players</div>
       </div>
 
-      <div className="flex w-full items-center justify-center space-x-3">
+      <div className="flex w-full flex-wrap items-center justify-around gap-6">
         {players.map((player) => (
           <div
             key={player.id}
-            className="relative mx-1 flex flex-col items-center justify-center"
+            className="relative flex flex-col items-center justify-center"
           >
             <div
               className="flex h-16 w-16 cursor-pointer items-center justify-center rounded-full border-2 border-white p-2 text-center text-white"

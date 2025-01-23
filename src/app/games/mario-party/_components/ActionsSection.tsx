@@ -20,7 +20,7 @@ const ActionsSection = () => {
   }
 
   return (
-    <section className="flex w-full flex-col justify-center rounded-2xl bg-white/25 p-2">
+    <section className="flex h-full w-full flex-col justify-start rounded-2xl bg-white/25 p-2">
       <div className="mb-2 flex items-center justify-center rounded-2xl bg-white/25 p-2">
         <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-slate-50">
           <FaExclamation />
@@ -28,7 +28,7 @@ const ActionsSection = () => {
         <div className="ml-2">Spaces</div>
       </div>
 
-      <div className="grid grid-cols-6 place-items-center gap-4">
+      <div className="flex flex-wrap justify-around gap-x-1 gap-y-3">
         {actions.map((action) => (
           <BoardSpace
             onClick={() => handleOpenModal(action)}

@@ -1,28 +1,27 @@
-import React, { FC } from 'react'
-import { Die } from '../_types/types'
+import React, { FC, useState } from 'react'
+import { Die as IDie } from '../_types/types'
+import Die from './Die'
 
 interface DiceBlockProps {
-  die: Die
+  die: IDie
   onRollResult: (value: string | number) => void
 }
 
 const DiceBlock: FC<DiceBlockProps> = ({ die, onRollResult }) => {
-  const onRollDice = () => {
-    const randomIndex = Math.floor(Math.random() * die.values.length)
-    onRollResult(die.values[randomIndex])
+  const [result, setResult] = useState<string | number>('')
+
+  const handleRollResult = (value: string | number) => {
+    setResult(value)
+    onRollResult(value)
   }
 
-  const Icon = die.icon
-
   return (
-    <button
-      key={die.name}
-      className="flex h-16 w-16 items-center justify-center rounded-lg border-2 border-white p-2 text-center text-white"
-      style={{ backgroundColor: die.color }}
-      onClick={onRollDice}
-    >
-      <Icon size={50} />
-    </button>
+    <div>
+      <Die die={die} onRollResult={handleRollResult} />
+      <div className="mt-2 flex h-16 w-16 items-center justify-center rounded-lg border-2 border-slate-400 bg-white/25 p-2 text-center text-lg leading-tight">
+        {result}
+      </div>
+    </div>
   )
 }
 

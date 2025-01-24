@@ -2,6 +2,7 @@ import {
   GiButtonFinger,
   GiChaingun,
   GiCoinflip,
+  GiCoins,
   GiDevilMask,
   GiGhost,
   GiGloves,
@@ -12,6 +13,7 @@ import {
   GiOpenTreasureChest,
   GiPoison,
   GiSlicedMushroom,
+  GiSlingshot,
   GiSuperMushroom,
   GiTwister,
 } from 'react-icons/gi'
@@ -22,7 +24,13 @@ import {
   ItemCard,
   MiniGameCard,
 } from '../_types/types'
-import { CgBell, CgDice2, CgDice3, CgStopwatch } from 'react-icons/cg'
+import {
+  CgBell,
+  CgDice2,
+  CgDice3,
+  CgSpinner,
+  CgStopwatch,
+} from 'react-icons/cg'
 import { PiHandCoins, PiPersonSimpleThrow, PiPhone } from 'react-icons/pi'
 import { MdPlumbing, MdQuestionAnswer, MdQuestionMark } from 'react-icons/md'
 import {
@@ -33,7 +41,7 @@ import {
   FaHorse,
   FaLayerGroup,
 } from 'react-icons/fa'
-import { FaBomb, FaStar } from 'react-icons/fa6'
+import { FaBomb, FaExplosion, FaStar } from 'react-icons/fa6'
 import { TbMoneybag } from 'react-icons/tb'
 import { LuBrain, LuCircleDashed } from 'react-icons/lu'
 import { FaHand } from 'react-icons/fa6'
@@ -47,6 +55,7 @@ export enum MiniGameType {
   CATEGORIES = 'Categories',
   RHYME_TIME = 'Rhyme Time',
   QUARTER_SPIN = 'Tornado Alley',
+  KEEP_IT_SPINNING = 'Keep it Spinning',
   DICE_ROULETTE = 'Dice Roulette',
   COIN_DARTS = 'Coin Darts',
   WHAT_ARE_YOU_DOING = 'What Are You Doing?',
@@ -64,6 +73,10 @@ export enum MiniGameType {
   HEADS_OR_FAILS = 'Heads or Fails',
   PUSH_THE_BUTTON = 'Push the Button',
   TEMPLE_OF_DOOM = 'Temple of Doom',
+  LEFT_RIGHT_CENTER = 'Left Right Center',
+  LAND_MINES = 'Land Mines',
+  SPIN_BATTLE = 'Spin Battle',
+  SLING_SHOT = 'Slingshot',
 }
 
 export const MiniGamesAllVSALL: MiniGameCard[] = [
@@ -143,12 +156,43 @@ export const MiniGamesAllVSALL: MiniGameCard[] = [
     name: MiniGameType.QUARTER_SPIN,
     description: '',
     fullDescription: [
-      'All players race to bounce a quarter into a shot glass.',
-      'Last player to make it is out!',
-      'Repeat until one player is left.',
+      'All players spinn their player token on the table at the same time.',
+      'Last player spinning wins!',
     ],
     type: DeckType.MINI_GAME_ALL_VS_ALL,
     icon: GiTwister,
+    requirements: ['coins'],
+    reward: 10,
+  },
+  {
+    name: MiniGameType.LEFT_RIGHT_CENTER,
+    description: '',
+    fullDescription: [
+      'Players start with one quarter each.',
+      'Take turns rolling a single die. The number you roll determines what happens to your quarter.',
+      '1 - 3: nothing happens',
+      '4 - add quarter to pot',
+      '5 - pass quarter to left',
+      '6 - pass quarter to right',
+      'If you you do not have a quarter, you do not roll. However, you can still win quarters from other players.',
+      'Last player with a quarter wins',
+    ],
+    type: DeckType.MINI_GAME_ALL_VS_ALL,
+    icon: GiCoins,
+    requirements: ['dice'],
+    reward: 10,
+  },
+  {
+    name: MiniGameType.LAND_MINES,
+    description: '',
+    fullDescription: [
+      'Start by spinning a quarter on the table.',
+      'Players take turns flicking the quarter to keep it spinning.',
+      'If a player knocks over the quarter, they are out, but they get to place another quarter anywhere on the table as an obstacle.',
+      'Last player standing wins!',
+    ],
+    type: DeckType.MINI_GAME_ALL_VS_ALL,
+    icon: FaExplosion,
     requirements: ['coins'],
     reward: 10,
   },
@@ -317,6 +361,21 @@ export const MiniGamesOneVSAll: MiniGameCard[] = [
     requirements: ['dice'],
     reward: 10,
   },
+  {
+    name: MiniGameType.SLING_SHOT,
+    description: '',
+    fullDescription: [
+      'The opposing team all spin their player token on the table at the same time.',
+      'The drawing player must flick their player token to hit another player token.',
+      'If the drawing player hits another player token, that player is out!',
+      'Play as many rounds as their are opposing players.',
+      'If the drawing player hits all opposing player tokens, they win!',
+    ],
+    type: DeckType.MINI_GAME_ALL_VS_ALL,
+    icon: GiSlingshot,
+    requirements: ['coins'],
+    reward: 10,
+  },
 ]
 
 export const MiniGamesTeams: MiniGameCard[] = [
@@ -447,6 +506,20 @@ export const MiniGamesDuel: MiniGameCard[] = [
     ],
     type: DeckType.MINI_GAME_ALL_VS_ALL,
     icon: GiButtonFinger,
+    requirements: ['coins'],
+    reward: 10,
+  },
+  {
+    name: MiniGameType.SPIN_BATTLE,
+    description: '',
+    fullDescription: [
+      'Start by spinning a quarter on the table.',
+      'Players take turns flicking the quarter to keep it spinning.',
+      'If a player knocks over the quarter, the other player wins a point!',
+      'First to 3 points wins!',
+    ],
+    type: DeckType.MINI_GAME_ALL_VS_ALL,
+    icon: CgSpinner,
     requirements: ['coins'],
     reward: 10,
   },

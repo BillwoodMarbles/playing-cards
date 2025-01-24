@@ -37,6 +37,8 @@ export const actions: Action[] = [
     color: ActionColor.BLUE,
     type: ActionSpaceType.SPACE,
     component: ChanceTime,
+    description:
+      'In any order, roll the player die twice and the chance time die once to determine the outcome',
   },
   {
     id: ActionId.VS,

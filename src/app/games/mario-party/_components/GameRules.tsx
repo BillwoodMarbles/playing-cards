@@ -14,7 +14,13 @@ import {
   MiniGameTeamDeck,
 } from '../_data/cards'
 import { buildDeck } from '../_utils/buildDeck'
-import { Card, CardDeck, ItemCard, MiniGameCard } from '../_types/types'
+import {
+  ActionSpaceType,
+  Card,
+  CardDeck,
+  ItemCard,
+  MiniGameCard,
+} from '../_types/types'
 import { actions } from '../_data/actions'
 import BoardSpace from './BoardSpace'
 
@@ -174,7 +180,13 @@ const GameRules = () => {
               <>
                 <tr>
                   <td className="border-b border-slate-100 p-2 text-sm text-slate-800 dark:border-slate-700 dark:text-slate-400">
-                    <BoardSpace action={action} onClick={() => {}} />
+                    <BoardSpace
+                      action={action}
+                      onClick={() => {}}
+                      variant={
+                        action.type === ActionSpaceType.PASS ? 'dark' : 'base'
+                      }
+                    />
                   </td>
                   <td className="border-b border-slate-100 p-2 align-top text-sm text-slate-800 dark:border-slate-700 dark:text-slate-400">
                     <strong>{action.name}</strong>
@@ -197,9 +209,7 @@ const GameRules = () => {
         <table className="w-full table-auto text-left">
           <thead>
             <tr>
-              <th className="border-b p-2 pb-3 pt-0 text-left align-bottom text-sm font-medium text-slate-400 dark:border-slate-600 dark:text-slate-200">
-                Icon
-              </th>
+              <th className="border-b p-2 pb-3 pt-0 text-left align-bottom text-sm font-medium text-slate-400 dark:border-slate-600 dark:text-slate-200"></th>
               <th className="border-b p-2 pb-3 pt-0 text-left align-bottom text-sm font-medium text-slate-400 dark:border-slate-600 dark:text-slate-200">
                 Name
               </th>
@@ -297,9 +307,7 @@ const GameRules = () => {
         <table className="mb-8 w-full table-auto text-left">
           <thead>
             <tr>
-              <th className="border-b p-2 pb-3 pt-0 text-left text-sm font-medium text-slate-400 dark:border-slate-600 dark:text-slate-200">
-                Icon
-              </th>
+              <th className="border-b p-2 pb-3 pt-0 text-left text-sm font-medium text-slate-400 dark:border-slate-600 dark:text-slate-200"></th>
               <th className="border-b p-2 pb-3 pt-0 text-left align-bottom text-sm font-medium text-slate-400 dark:border-slate-600 dark:text-slate-200">
                 Name
               </th>
@@ -339,9 +347,7 @@ const GameRules = () => {
         <table className="mb-8 w-full table-auto text-left">
           <thead>
             <tr>
-              <th className="border-b p-2 pb-3 pt-0 text-left text-sm font-medium text-slate-400 dark:border-slate-600 dark:text-slate-200">
-                Icon
-              </th>
+              <th className="border-b p-2 pb-3 pt-0 text-left text-sm font-medium text-slate-400 dark:border-slate-600 dark:text-slate-200"></th>
               <th className="border-b p-2 pb-3 pt-0 text-left align-bottom text-sm font-medium text-slate-400 dark:border-slate-600 dark:text-slate-200">
                 Name
               </th>
@@ -381,9 +387,7 @@ const GameRules = () => {
         <table className="mb-8 w-full table-auto text-left">
           <thead>
             <tr>
-              <th className="border-b p-2 pb-3 pt-0 text-left text-sm font-medium text-slate-400 dark:border-slate-600 dark:text-slate-200">
-                Icon
-              </th>
+              <th className="border-b p-2 pb-3 pt-0 text-left text-sm font-medium text-slate-400 dark:border-slate-600 dark:text-slate-200"></th>
               <th className="border-b p-2 pb-3 pt-0 text-left align-bottom text-sm font-medium text-slate-400 dark:border-slate-600 dark:text-slate-200">
                 Name
               </th>
@@ -423,9 +427,7 @@ const GameRules = () => {
         <table className="mb-8 w-full table-auto text-left">
           <thead>
             <tr>
-              <th className="border-b p-2 pb-3 pt-0 text-left text-sm font-medium text-slate-400 dark:border-slate-600 dark:text-slate-200">
-                Icon
-              </th>
+              <th className="border-b p-2 pb-3 pt-0 text-left text-sm font-medium text-slate-400 dark:border-slate-600 dark:text-slate-200"></th>
               <th className="border-b p-2 pb-3 pt-0 text-left align-bottom text-sm font-medium text-slate-400 dark:border-slate-600 dark:text-slate-200">
                 Name
               </th>

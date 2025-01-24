@@ -25,7 +25,7 @@ const ActionsPage = () => {
           </button>
         </header>
 
-        <div className="flex w-full grow flex-col items-center justify-between space-y-4 bg-slate-600 p-4">
+        <div className="flex w-full grow flex-col items-center justify-between space-y-4 bg-cyan-600 p-4">
           <TurnCounter />
           <DecksSection />
           <ActionsSection />

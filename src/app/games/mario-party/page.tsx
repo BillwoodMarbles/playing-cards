@@ -21,7 +21,7 @@ interface BoardProps {}
 const Board: FC<BoardProps> = () => {
   return (
     <div className="board-wrapper relative flex w-full grow flex-col items-center justify-center">
-      <div className="board w-full">
+      <div className="board w-full bg-cyan-600">
         <div className="absolute left-0 top-0 h-full w-full">
           <div className="absolute left-0 top-3 flex w-full items-center justify-center px-3">
             <DecksSection />

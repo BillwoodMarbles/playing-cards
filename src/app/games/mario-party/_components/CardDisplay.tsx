@@ -1,5 +1,5 @@
 import React, { FC } from 'react'
-import { Card, DeckType, ItemCard, MiniGameCard } from '../_types/types'
+import { Card, ItemCard, MiniGameCard } from '../_types/types'
 import { getRequirementIcon, MiniGameRequirements } from '@/data/party-cards'
 import { PiCoinVertical } from 'react-icons/pi'
 

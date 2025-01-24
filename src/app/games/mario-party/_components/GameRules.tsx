@@ -15,6 +15,8 @@ import {
 } from '../_data/cards'
 import { buildDeck } from '../_utils/buildDeck'
 import { Card, CardDeck, ItemCard, MiniGameCard } from '../_types/types'
+import { actions } from '../_data/actions'
+import BoardSpace from './BoardSpace'
 
 const GameRules = () => {
   const miniGameAllVSAllDeck = buildDeck(MiniGameAllVSAllDeck)
@@ -52,6 +54,12 @@ const GameRules = () => {
 
   return (
     <section className="w-full">
+      <article className="mb-10">
+        <div className="mb-2 border-b border-b-slate-300 pb-2">
+          <h4 className="font-semibold">Sumary</h4>
+        </div>
+      </article>
+
       <article className="mb-10">
         <div className="mb-2 border-b border-b-slate-300 pb-2">
           <h4 className="font-semibold">Included Items</h4>
@@ -107,6 +115,78 @@ const GameRules = () => {
           <li>25 5 Coins</li>
           <li>25 10 Coins</li>
         </ul>
+      </article>
+
+      <article className="mb-10">
+        <div className="mb-2 border-b border-b-slate-300 pb-2">
+          <h4 className="font-semibold">Setup</h4>
+        </div>
+
+        <div>
+          <ul className="list-inside list-disc">
+            <li>
+              Each player selects a pawn and places it on the starting space
+            </li>
+            <li>Give each player their associated player token</li>
+            <li>Give each player 10 coins to start the game.</li>
+            <li>
+              Choose the number of turns you want to play between 10, 15, and 20
+            </li>
+            <li>
+              Each player rolls the movement die to determine who goes first
+              (highest number wins)
+            </li>
+          </ul>
+        </div>
+      </article>
+
+      <article className="mb-10">
+        <div className="mb-2 border-b border-b-slate-300 pb-2">
+          <h4 className="font-semibold">Gameplay</h4>
+        </div>
+
+        <div>
+          <ul className="list-inside list-disc"></ul>
+        </div>
+      </article>
+
+      <article className="mb-10">
+        <div className="mb-2 border-b border-b-slate-300 pb-2">
+          <h4 className="font-semibold">Spaces</h4>
+        </div>
+
+        <table className="w-full table-auto text-left">
+          <thead>
+            <tr>
+              <th className="border-b p-2 pb-3 pt-0 text-left text-sm font-medium text-slate-400 dark:border-slate-600 dark:text-slate-200">
+                Space
+              </th>
+              <th className="border-b p-2 pb-3 pt-0 text-left align-bottom text-sm font-medium text-slate-400 dark:border-slate-600 dark:text-slate-200">
+                Name
+              </th>
+              <th className="border-b p-2 pb-3 pt-0 text-left align-bottom text-sm font-medium text-slate-400 dark:border-slate-600 dark:text-slate-200">
+                Description
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {actions.map((action) => (
+              <>
+                <tr>
+                  <td className="border-b border-slate-100 p-2 text-sm text-slate-800 dark:border-slate-700 dark:text-slate-400">
+                    <BoardSpace action={action} onClick={() => {}} />
+                  </td>
+                  <td className="border-b border-slate-100 p-2 align-top text-sm text-slate-800 dark:border-slate-700 dark:text-slate-400">
+                    <strong>{action.name}</strong>
+                  </td>
+                  <td className="border-b border-slate-100 p-2 align-top text-sm text-slate-800 dark:border-slate-700 dark:text-slate-400">
+                    {action.description}
+                  </td>
+                </tr>
+              </>
+            ))}
+          </tbody>
+        </table>
       </article>
 
       <article className="mb-10">

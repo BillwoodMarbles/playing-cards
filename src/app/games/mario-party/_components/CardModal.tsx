@@ -28,13 +28,31 @@ const CardModal: FC<CardModalProps> = ({ open, selectedCard, onClose }) => {
   }
 
   const CardAction = () => {
-    return (
-      <div className="flex items-center justify-center space-x-3">
-        {selectedCard?.type === DeckType.ITEM && (
+    if (
+      selectedCard?.type !== DeckType.ITEM &&
+      selectedCard?.type !== DeckType.BOWSER &&
+      selectedCard?.fullDescription
+    ) {
+      return (
+        <div>
+          {selectedCard?.fullDescription?.map((line, index) => (
+            <p key={index} className="text-xs sm:text-sm">
+              {line}
+            </p>
+          ))}
+        </div>
+      )
+    }
+
+    if (selectedCard?.type === DeckType.ITEM) {
+      return (
+        <div className="flex items-center justify-center space-x-3">
           <PlayerSelectButtons onPlayerClick={handlePlayerClick} />
-        )}
-      </div>
-    )
+        </div>
+      )
+    }
+
+    return null
   }
 
   return (

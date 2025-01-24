@@ -9,6 +9,8 @@ import {
   useGameDispatch,
   useGameState,
 } from '../_contexts/MarioPartyContext'
+import { PiCoinVertical, PiStar } from 'react-icons/pi'
+import PlayerToken from './PlayerToken'
 
 interface PlayerModalProps {
   open: boolean
@@ -48,13 +50,23 @@ const PlayerModal: FC<PlayerModalProps> = ({
   }
 
   const addCoins = (amount: number) => {
-    if (!selectedPlayer) return
-    dispatch(updatePlayerCoins(selectedPlayer?.id, amount))
+    if (!player) return
+
+    if (amount < 0 && player.coins + amount < 0) {
+      dispatch(updatePlayerCoins(player.id, -player.coins)) // Subtract only the player's current coins
+    } else {
+      dispatch(updatePlayerCoins(player.id, amount)) // Add or subtract the full amount
+    }
   }
 
   const updateStars = (amount: number) => {
-    if (!selectedPlayer) return
-    dispatch(updatePlayerStars(selectedPlayer?.id, amount))
+    if (!player) return
+
+    if (amount < 0 && player.stars + amount < 0) {
+      dispatch(updatePlayerStars(player.id, -player.stars))
+    } else {
+      dispatch(updatePlayerStars(player.id, amount))
+    }
   }
 
   if (!selectedPlayer) {
@@ -66,71 +78,71 @@ const PlayerModal: FC<PlayerModalProps> = ({
       <Modal open={open} handleClose={setOpen}>
         <div className="flex w-full items-center justify-center">
           {player && (
-            <div className="flex flex-col items-center justify-center rounded-lg border-2 border-white p-2 text-center ">
-              <header>{player.character}</header>
+            <div className="flex flex-col items-center justify-center text-center ">
+              <PlayerToken player={player} />
 
-              <div>
-                <div>C: {player.coins}</div>
-                <div className="flex items-center justify-center space-x-1">
-                  <button
-                    className="h-10 w-10 rounded-full border-2 border-red-600 bg-red-400"
-                    onClick={() => addCoins(-10)}
-                  >
-                    -10
-                  </button>
-                  <button
-                    className="h-10 w-10 rounded-full border-2 border-red-600 bg-red-400"
-                    onClick={() => addCoins(-5)}
-                  >
-                    -5
-                  </button>
-                  <button
-                    className="h-10 w-10 rounded-full border-2 border-red-600 bg-red-400"
-                    onClick={() => addCoins(-1)}
-                  >
-                    -1
-                  </button>
-                  <button
-                    className="h-10 w-10 rounded-full border-2 border-green-600 bg-green-400"
-                    onClick={() => addCoins(1)}
-                  >
-                    +1
-                  </button>
-                  <button
-                    className="h-10 w-10 rounded-full border-2 border-green-600 bg-green-400"
-                    onClick={() => addCoins(5)}
-                  >
-                    +5
-                  </button>
-
-                  <button
-                    className="h-10 w-10 rounded-full border-2 border-green-600 bg-green-400"
-                    onClick={() => addCoins(10)}
-                  >
-                    +10
-                  </button>
+              <div className="mb-2 mt-4 flex items-center justify-center space-x-1 border-b border-slate-300 p-2">
+                <button
+                  className="h-10 w-10 rounded-full border-2 border-red-600 bg-red-400"
+                  onClick={() => addCoins(-10)}
+                >
+                  -10
+                </button>
+                <button
+                  className="h-10 w-10 rounded-full border-2 border-red-600 bg-red-400"
+                  onClick={() => addCoins(-5)}
+                >
+                  -5
+                </button>
+                <button
+                  className="h-10 w-10 rounded-full border-2 border-red-600 bg-red-400"
+                  onClick={() => addCoins(-1)}
+                >
+                  -1
+                </button>
+                <div className="mx-1 flex h-8 w-16 items-center justify-center whitespace-nowrap rounded-full border-2 border-white bg-slate-50">
+                  <PiCoinVertical size={24} />: {player.coins}
                 </div>
+                <button
+                  className="h-10 w-10 rounded-full border-2 border-green-600 bg-green-400"
+                  onClick={() => addCoins(1)}
+                >
+                  +1
+                </button>
+                <button
+                  className="h-10 w-10 rounded-full border-2 border-green-600 bg-green-400"
+                  onClick={() => addCoins(5)}
+                >
+                  +5
+                </button>
+
+                <button
+                  className="h-10 w-10 rounded-full border-2 border-green-600 bg-green-400"
+                  onClick={() => addCoins(10)}
+                >
+                  +10
+                </button>
               </div>
 
-              <div>
-                <div>S: {player.stars}</div>
-                <div className="flex items-center justify-center space-x-1">
-                  <button
-                    className="h-10 w-10 rounded-full border-2 border-red-600 bg-red-400"
-                    onClick={() => updateStars(-1)}
-                  >
-                    -1
-                  </button>
-                  <button
-                    className="h-10 w-10 rounded-full border-2 border-green-600 bg-green-400"
-                    onClick={() => updateStars(1)}
-                  >
-                    +1
-                  </button>
+              <div className="mb-4 flex items-center justify-center space-x-1 p-2">
+                <button
+                  className="h-10 w-10 rounded-full border-2 border-red-600 bg-red-400"
+                  onClick={() => updateStars(-1)}
+                >
+                  -1
+                </button>
+                <div className="mx-1 flex h-8 w-16 items-center justify-center whitespace-nowrap rounded-full border-2 border-white bg-slate-50">
+                  <PiStar size={24} />: {player.stars}
                 </div>
+                <button
+                  className="h-10 w-10 rounded-full border-2 border-green-600 bg-green-400"
+                  onClick={() => updateStars(1)}
+                >
+                  +1
+                </button>
               </div>
 
-              <div className="mt-4 flex items-center justify-center space-x-3">
+              <div className="flex items-center justify-center space-x-3">
                 {player.items.map((item) => (
                   <div key={item.name} onClick={() => handleItemSelect(item)}>
                     <CardDisplay card={item} size="small" variant="dark" />

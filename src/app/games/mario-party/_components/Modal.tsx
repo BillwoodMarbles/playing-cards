@@ -34,12 +34,12 @@ const Modal: FC<ModalProps> = ({ open, handleClose, children, actions }) => {
               </button>
             </div>
 
-            <div className="flex w-full flex-col items-center justify-center bg-white p-6 sm:p-4">
+            <div className="flex w-full flex-col items-center justify-center bg-white p-4 sm:p-6">
               {children}
             </div>
 
             {actions && (
-              <div className="flex justify-center bg-gray-50 p-6 sm:p-4">
+              <div className="flex justify-center bg-gray-50 p-4 sm:p-6">
                 {actions}
               </div>
             )}

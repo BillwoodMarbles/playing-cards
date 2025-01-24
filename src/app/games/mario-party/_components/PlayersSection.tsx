@@ -1,8 +1,9 @@
 import React, { FC, useState } from 'react'
 import { ItemCard, MarioPartyPlayer } from '../_types/types'
-import { PiPerson } from 'react-icons/pi'
+import { PiCoinVertical, PiPerson, PiStar } from 'react-icons/pi'
 import PlayerModal from './PlayerModal'
 import { useGameState } from '../_contexts/MarioPartyContext'
+import PlayerToken from './PlayerToken'
 
 interface PlayersProps {}
 const PlayersSection: FC<PlayersProps> = () => {
@@ -47,20 +48,18 @@ const PlayersSection: FC<PlayersProps> = () => {
             key={player.id}
             className="relative flex flex-col items-center justify-center"
           >
-            <div
-              className="flex h-16 w-16 cursor-pointer items-center justify-center rounded-full border-2 border-white p-2 text-center text-white"
-              style={{ backgroundColor: player.color }}
+            <PlayerToken
+              player={player}
               onClick={() => handleOpenModal(player)}
-            ></div>
-            <div className="mb-1">{player.character}</div>
+            />
 
             <div className="mb-1 flex items-center justify-center">
-              <div className="mx-1 flex h-8 w-12 items-center justify-center rounded-full border-2 border-white bg-slate-50">
-                C: {player.coins}
+              <div className="mx-1 flex h-8 w-14 items-center justify-center whitespace-nowrap rounded-full border-2 border-white bg-slate-50">
+                <PiCoinVertical />: {player.coins}
               </div>
 
-              <div className="mx-1 flex h-8 w-12 items-center justify-center rounded-full border-2 border-white bg-slate-50">
-                S: {player.stars}
+              <div className="mx-1 flex h-8 w-14 items-center justify-center whitespace-nowrap rounded-full border-2 border-white bg-slate-50">
+                <PiStar />: {player.stars}
               </div>
             </div>
 

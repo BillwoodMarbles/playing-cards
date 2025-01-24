@@ -33,7 +33,9 @@ const TurnCounter: FC<TurnCounterProps> = () => {
         </div>
       </div>
 
-      <div className={'hidden w-full flex-wrap justify-between sm:flex'}>
+      <div
+        className={'hidden w-full flex-wrap justify-between gap-y-2 sm:flex'}
+      >
         <div className="flex flex-1 justify-around">
           {Array.from({ length: 10 }, (_, i) => (
             <div

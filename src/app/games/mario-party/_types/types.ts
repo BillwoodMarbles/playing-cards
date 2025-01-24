@@ -10,6 +10,15 @@ export enum DeckType {
   DUEL = 'duel',
 }
 
+export enum Characters {
+  MARIO = 'Mario',
+  LUIGI = 'Luigi',
+  PEACH = 'Peach',
+  YOSHI = 'Yoshi',
+  WARIO = 'Wario',
+  WALUIGI = 'Waluigi',
+}
+
 export interface CardDeck {
   cards: Card[]
   type: DeckType
@@ -37,17 +46,9 @@ export interface ItemCard extends Card {
   shopCost: number
 }
 
-export type Character =
-  | 'mario'
-  | 'luigi'
-  | 'peach'
-  | 'yoshi'
-  | 'wario'
-  | 'waluigi'
-
 export interface MarioPartyPlayer {
   id: string
-  character: Character
+  character: Characters
   color: string
   coins: number
   stars: number

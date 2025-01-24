@@ -10,7 +10,7 @@ const PlayerSelectButtons: FC<PlayerSelectButtonsProps> = ({
 }) => {
   const { players } = useGameState()
   return (
-    <div className="flex items-center justify-center space-x-3">
+    <div className="flex flex-wrap items-center justify-center gap-3">
       {players.map((player) => (
         <div
           key={player.id}

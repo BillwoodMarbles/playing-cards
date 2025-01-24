@@ -1,6 +1,6 @@
 // Import necessary modules
 import React, { createContext, FC, useContext, useReducer } from 'react'
-import { ItemCard, MarioPartyPlayer } from '../_types/types'
+import { Characters, ItemCard, MarioPartyPlayer } from '../_types/types'
 
 enum BoardType {
   YOSHIS_TROPICAL_ISLAND = "Yoshi's Tropical Island",
@@ -18,7 +18,7 @@ interface GameContextValue {
 const defaultPlayers: MarioPartyPlayer[] = [
   {
     id: '1',
-    character: 'mario',
+    character: Characters.MARIO,
     stars: 0,
     coins: 0,
     items: [],
@@ -26,7 +26,7 @@ const defaultPlayers: MarioPartyPlayer[] = [
   },
   {
     id: '2',
-    character: 'luigi',
+    character: Characters.LUIGI,
     stars: 0,
     coins: 0,
     items: [],
@@ -34,7 +34,7 @@ const defaultPlayers: MarioPartyPlayer[] = [
   },
   {
     id: '3',
-    character: 'peach',
+    character: Characters.PEACH,
     stars: 0,
     coins: 0,
     items: [],
@@ -42,7 +42,7 @@ const defaultPlayers: MarioPartyPlayer[] = [
   },
   {
     id: '4',
-    character: 'yoshi',
+    character: Characters.YOSHI,
     stars: 0,
     coins: 0,
     items: [],
@@ -50,7 +50,7 @@ const defaultPlayers: MarioPartyPlayer[] = [
   },
   {
     id: '5',
-    character: 'wario',
+    character: Characters.WARIO,
     stars: 0,
     coins: 0,
     items: [],
@@ -58,7 +58,7 @@ const defaultPlayers: MarioPartyPlayer[] = [
   },
   {
     id: '6',
-    character: 'waluigi',
+    character: Characters.WALUIGI,
     stars: 0,
     coins: 0,
     items: [],

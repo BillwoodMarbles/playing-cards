@@ -1,5 +1,7 @@
 import {
+  GiButtonFinger,
   GiChaingun,
+  GiCoinflip,
   GiDevilMask,
   GiGhost,
   GiGloves,
@@ -21,12 +23,13 @@ import {
   MiniGameCard,
 } from '../_types/types'
 import { CgBell, CgDice2, CgDice3, CgStopwatch } from 'react-icons/cg'
-import { PiHandCoins, PiPhone } from 'react-icons/pi'
+import { PiHandCoins, PiPersonSimpleThrow, PiPhone } from 'react-icons/pi'
 import { MdPlumbing, MdQuestionAnswer, MdQuestionMark } from 'react-icons/md'
 import {
   FaDog,
   FaDungeon,
   FaHandScissors,
+  FaHandshake,
   FaHorse,
   FaLayerGroup,
 } from 'react-icons/fa'
@@ -56,6 +59,11 @@ export enum MiniGameType {
   CLOCK_STOPERS = 'Clock Stoppers',
   HORSE_RACE = 'Horse Race',
   HOT_POTATO = 'Hot Potato',
+  ITS_ALL_A_CHARADE = "It's All a Charade",
+  SECRET_HANDSHAKE = 'Secret Handshake',
+  HEADS_OR_FAILS = 'Heads or Fails',
+  PUSH_THE_BUTTON = 'Push the Button',
+  TEMPLE_OF_DOOM = 'Temple of Doom',
 }
 
 export const MiniGamesAllVSALL: MiniGameCard[] = [
@@ -263,6 +271,21 @@ export const MiniGamesAllVSALL: MiniGameCard[] = [
 
 export const MiniGamesOneVSAll: MiniGameCard[] = [
   {
+    name: MiniGameType.ROCK_PAPER_SCISSORS,
+    description: '',
+    fullDescription: [
+      'Players face off in a rock paper scissors against the drawing player.',
+      'Play as many rounds as there are players.',
+      'If the drawing player beats your hand, you are out!',
+      'If the defending players survive all rounds, they win!',
+      '"Rock, Paper, Scissors, Shoot!"',
+    ],
+    type: DeckType.MINI_GAME_ALL_VS_ALL,
+    icon: FaHandScissors,
+    requirements: [],
+    reward: 10,
+  },
+  {
     name: MiniGameType.BOSS_BATTLE,
     description: '',
     fullDescription: [
@@ -271,6 +294,7 @@ export const MiniGamesOneVSAll: MiniGameCard[] = [
       "The boss rolls as many dice as there are other players. The sum of the rolls represents the boss's health.",
       "Each adventurer gets a single dice roll. The sum of all of the adventurers' rolls is their attack",
       "If the adventurers' attack is greater than the boss's health, the adventurers win!",
+      'First to three points wins!',
     ],
     type: DeckType.MINI_GAME_ALL_VS_ALL,
     icon: FaDungeon,
@@ -281,10 +305,10 @@ export const MiniGamesOneVSAll: MiniGameCard[] = [
     name: MiniGameType.HIDE_AND_SEEK,
     description: '',
     fullDescription: [
-      'On three, everyone holds up a number of fingers between 1 and 5.',
+      'On three, everyone holds up a number of fingers between 1 and 4.',
       'If the drawing player holds up the same number of fingers as another player, they are out!',
-      'On the next round, hold a number between 1 and 4.',
-      'On the final round, hold a number between 1 and 3.',
+      'On the next round, hold a number between 1 and 3.',
+      'On the final round, hold a number between 1 and 2.',
       'The last player standing wins!',
       'Opposing players are not allowed to hint at their number.',
     ],
@@ -310,6 +334,48 @@ export const MiniGamesTeams: MiniGameCard[] = [
     icon: LuBrain,
     reward: 10,
     requirements: [],
+  },
+  {
+    name: MiniGameType.ITS_ALL_A_CHARADE,
+    description: '',
+    fullDescription: [
+      'The aposing team picks a word or phrase for the drawing team to act out.',
+      'The drawing team has 30 seconds to act out the word or phrase.',
+      'If the opposing team guesses correctly, they win a point.',
+      'Repeat until each player has had a turn.',
+      'If there is a tie, two players from each team will choose a final together and the first team to guess wins.',
+    ],
+    type: DeckType.MINI_GAME_ALL_VS_ALL,
+    icon: PiPersonSimpleThrow,
+    requirements: [],
+    reward: 10,
+  },
+  {
+    name: MiniGameType.SECRET_HANDSHAKE,
+    description: '',
+    fullDescription: [
+      'The drawing player creates one move for a secret handshake.',
+      'The other player must try to mimic the handshake then add a move of their own.',
+      'The handshake continues to grow until one player messes up.',
+      'Whatever team messes up first loses!',
+    ],
+    type: DeckType.MINI_GAME_ALL_VS_ALL,
+    icon: FaHandshake,
+    requirements: [],
+    reward: 10,
+  },
+  {
+    name: MiniGameType.HEADS_OR_FAILS,
+    description: '',
+    fullDescription: [
+      'Each team flips their player token at the same time.',
+      'If both tokens are the same, the team wins a point.',
+      'First team to three points wins!',
+    ],
+    type: DeckType.MINI_GAME_ALL_VS_ALL,
+    icon: GiCoinflip,
+    requirements: ['coins'],
+    reward: 10,
   },
 ]
 
@@ -366,6 +432,23 @@ export const MiniGamesDuel: MiniGameCard[] = [
     icon: FaBomb,
     reward: 10,
     requirements: ['coins'],
+  },
+  {
+    name: MiniGameType.PUSH_THE_BUTTON,
+    description: '',
+    fullDescription: [
+      'Each player must vote to push the button or not.',
+      'Tails means you do not push the button, heads means you do.',
+      'Keep your vote hidden by hiding your coin under their hand.',
+      'At the count of three, reveal your vote.',
+      'If only one player votes to push the button, they win the pot!',
+      'If both players vote to push the button, they both lose their wagered coins.',
+      'If no players votes to push the button, both players get their wagered coins back.',
+    ],
+    type: DeckType.MINI_GAME_ALL_VS_ALL,
+    icon: GiButtonFinger,
+    requirements: ['coins'],
+    reward: 10,
   },
 ]
 

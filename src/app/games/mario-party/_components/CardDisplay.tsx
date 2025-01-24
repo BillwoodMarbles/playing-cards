@@ -1,6 +1,7 @@
 import React, { FC } from 'react'
-import { Card, ItemCard, MiniGameCard } from '../_types/types'
+import { Card, DeckType, ItemCard, MiniGameCard } from '../_types/types'
 import { getRequirementIcon, MiniGameRequirements } from '@/data/party-cards'
+import { PiCoinVertical } from 'react-icons/pi'
 
 interface CardDisplayProps {
   card: Card | ItemCard | MiniGameCard
@@ -68,7 +69,11 @@ const CardDisplay: FC<CardDisplayProps> = ({
       <div className="w-full">
         {size !== 'small' && 'shopCost' in card && (
           <div className="flex items-center justify-center border-t border-t-slate-300 pt-2">
-            <span className="text-sm">Shop Cost:</span> {card.shopCost}
+            <span className="mr-1 text-sm">
+              {size === 'large' && 'Shop'} Cost:
+            </span>{' '}
+            <PiCoinVertical />
+            {card.shopCost}
           </div>
         )}
       </div>
